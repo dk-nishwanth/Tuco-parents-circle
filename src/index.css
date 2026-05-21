@@ -1,0 +1,74 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Nunito:wght@400;600;700;800;900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "DM Sans", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Nunito", sans-serif;
+  
+  --color-tuco-cyan: #35B5EC;
+  --color-tuco-cyan-hover: #219FD5;
+  --color-tuco-yellow: #FED018;
+  --color-tuco-orange: #FF5E2B;
+  --color-tuco-orange-hover: #E44211;
+  --color-tuco-cream: #FCFAF6;
+  --color-tuco-dark: #1F1B19;
+  --color-tuco-border: #E8E2DA;
+}
+
+/* Bright, clean white background to reflect the fresh organic skincare look of tucokids.com */
+html, body {
+  background-color: #FAF8F4;
+  font-family: "DM Sans", sans-serif;
+  color: #1F1B19;
+}
+
+/* Simple focus state styling */
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: #35B5EC !important;
+  box-shadow: 0 0 0 3px rgba(53, 181, 236, 0.15);
+}
+
+/* Rounded, clean scrollbar matching website aesthetic */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #FCFAF6;
+}
+::-webkit-scrollbar-thumb {
+  background: #E8E2DA;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #35B5EC;
+}
+
+@keyframes loading-logo-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.04);
+    opacity: 0.92;
+  }
+}
+
+@keyframes loading-bar {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(200%);
+  }
+}
+
+.loading-logo {
+  animation: loading-logo-pulse 1.8s ease-in-out infinite;
+}
+
+.loading-bar-fill {
+  width: 45%;
+  animation: loading-bar 1.2s ease-in-out infinite;
+}
