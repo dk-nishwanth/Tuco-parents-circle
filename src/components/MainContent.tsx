@@ -60,8 +60,11 @@ export function MainContent({
       <div className="main-top flex flex-col gap-2 pb-2 md:pb-3 border-b border-neutral-200">
         <div>
           <h2 className="font-display font-black text-base md:text-lg lg:text-xl text-neutral-800 flex items-center gap-2">
-            <span>{selectIcon}</span>
-            <span className="truncate">{selectTitle}</span>
+            <span className="truncate md:hidden">Tuco Parents Circle</span>
+            <span className="hidden md:flex items-center gap-2 min-w-0">
+              <span>{selectIcon}</span>
+              <span className="truncate">{selectTitle}</span>
+            </span>
           </h2>
           <p className="font-sans text-xs text-neutral-400 font-bold mt-1">
             {processedThreads.length} discussions found.
