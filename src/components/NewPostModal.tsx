@@ -11,7 +11,7 @@ interface NewPostModalProps {
 
 export function NewPostModal({ isOpen, onClose, onSubmit, isTucoTeam }: NewPostModalProps) {
   const [title, setTitle] = useState('');
-  const [category, setCategory] = useState('skin');
+  const [category, setCategory] = useState('skincare');
   const [author, setAuthor] = useState('');
   const [city, setCity] = useState('');
   const [text, setText] = useState('');
@@ -42,7 +42,7 @@ export function NewPostModal({ isOpen, onClose, onSubmit, isTucoTeam }: NewPostM
 
     // Reset fields
     setTitle('');
-    setCategory('skin');
+    setCategory('skincare');
     setAuthor('');
     setCity('');
     setText('');

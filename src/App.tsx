@@ -16,7 +16,7 @@ import { ProfileModal } from './components/ProfileModal';
 import { WarningModal } from './components/WarningModal';
 import { NotificationsPage } from './components/NotificationsPage';
 import { ReportModal } from './components/ReportModal';
-import { ALL_CONVERSATIONS } from './data/conversations';
+import { INITIAL_CONVERSATIONS } from './data/conversations';
 import { Conversation, Reply, User, ModerationStatus, DateFilter, PendingReviewSession } from './types';
 import {
   analyzeContent,
@@ -101,10 +101,10 @@ export default function App() {
       try {
         setConversations(enrichConversations(JSON.parse(cachedData)));
       } catch {
-        setConversations(enrichConversations(ALL_CONVERSATIONS));
+        setConversations(enrichConversations(INITIAL_CONVERSATIONS));
       }
     } else {
-      const seeded = enrichConversations(mergeSeedWithExisting(ALL_CONVERSATIONS, 100));
+      const seeded = enrichConversations(mergeSeedWithExisting(INITIAL_CONVERSATIONS, 100));
       setConversations(seeded);
       localStorage.setItem('tuco_conversations_v1', JSON.stringify(seeded));
     }
@@ -698,7 +698,7 @@ export default function App() {
   const handleResetToDefault = () => {
     localStorage.removeItem('tuco_conversations_v1');
     localStorage.removeItem('tuco_votes_v1');
-    const seeded = enrichConversations(mergeSeedWithExisting(ALL_CONVERSATIONS, 100));
+    const seeded = enrichConversations(mergeSeedWithExisting(INITIAL_CONVERSATIONS, 100));
     setConversations(seeded);
     setVotedThreads({});
     setActiveCategory('all');

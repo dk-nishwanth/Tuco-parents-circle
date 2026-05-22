@@ -1,3 +1,4 @@
+
 import { Conversation } from '../types';
 import { CATEGORIES } from '../data/categories';
 
@@ -15,77 +16,40 @@ const AUTHORS = [
 ];
 
 const TITLE_TEMPLATES: Record<string, string[]> = {
-  skin: [
-    'Best moisturiser for dry cheeks in winter?',
+  skincare: [
+    'Best sunscreen for outdoor cricket this summer?',
+    'My 5-year-old has dry flaky patches on cheeks — mild eczema or something else?',
     'Chapped lips in AC classrooms — what helps?',
+    'Gentle hair oil for 3yo with dry scalp?',
     'Sun tan removal safe for 6 year old?',
-    'Cradle cap at 4 months — still normal?',
-  ],
-  health: [
-    'Fever 102°F — when to visit paediatrician?',
-    'Vitamin D drops — which brand in India?',
-    'Hand foot mouth — how to comfort child?',
-    'Seasonal allergies in Delhi pollution — tips?',
-  ],
-  nutrition: [
-    'Picky eater refuses dal — any tricks?',
-    'Iron-rich foods for vegetarian toddler?',
-    'School tiffin ideas without junk?',
-    'Cow milk vs almond milk for 3yo?',
-  ],
-  sleep: [
-    'Bedtime resistance every night — help!',
-    'Co-sleeping transition to own bed?',
-    'Night terrors at age 5 — normal?',
-    'Nap strike at 18 months',
-  ],
-  dev: [
-    'Speech delay at 2.5 years — experiences?',
-    'Potty training regression after vacation',
-    'When to start writing practice?',
-    'Screen time limits that actually work?',
   ],
   school: [
     'CBSE vs ICSE for grade 1 — thoughts?',
     'Homework battles — how do you cope?',
-    'Bullying in primary school — next steps?',
-    'Online classes vs physical — your view?',
+    'School lunch box ideas that don\'t get boring?',
+    'Best stationary for 1st standard?',
+    'How to help child with reading?',
   ],
-  behav: [
-    'Tantrums in supermarket — embarrassing!',
-    'Sibling jealousy after new baby',
-    'Hitting phase at 3 — how long?',
-    'Shy child at birthday parties',
+  kids_growth: [
+    'Height growth tips for 7 year old?',
+    'My kid is a picky eater — help!',
+    'Weight gain for underweight 4yo?',
+    'Best calcium-rich foods for kids?',
+    'Sleep requirements by age?',
   ],
-  play: [
-    'Indoor activities for rainy Mumbai days',
-    'Best parks in Bangalore for toddlers?',
-    'Craft ideas without too much mess',
-    'Board games for 7 year olds?',
+  active_kids: [
+    'Best sports for 5 year old to start?',
+    'Cycling safety tips for kids?',
+    'Swimming classes — when to start?',
+    'Football gear for young kids?',
+    'Outdoor activity ideas for weekends?',
   ],
-  travel: [
-    'Goa trip with 2yo — packing list?',
-    'Flight ear pain — what worked?',
-    'Car seat rules in India — confused',
-    'Hill station with infant — altitude?',
-  ],
-  shop: [
-    'Stroller under 10k — recommendations?',
-    'School bag ergonomic brands?',
-    'Water bottle BPA free options',
-    'Raincoat that actually stays on',
-  ],
-  hacks: [
-    'Morning routine hack that saved us',
-    'Label everything for school — tips',
+  parenting_hacks: [
+    'Morning routine hack that saved us!',
+    'Quick and easy breakfast ideas for school days',
+    'How to get kids to clean their room?',
+    'Travel hack with toddlers — lifesaver!',
     'Medicine reminder system parents use',
-    'Weekend meal prep for working moms',
-  ],
-  special: [
-    'Nut allergy — school snack policies',
-    'ADHD diagnosis journey in India',
-    'Gluten free tiffin ideas',
-    'Sensory processing — OT experiences',
   ],
 };
 
@@ -114,7 +78,7 @@ export function generateSeededThreads(count: number, startId: number = 200): Con
 
   for (let i = 0; i < count; i++) {
     const cat = categoryIds[i % categoryIds.length];
-    const templates = TITLE_TEMPLATES[cat] || TITLE_TEMPLATES.skin;
+    const templates = TITLE_TEMPLATES[cat] || TITLE_TEMPLATES.skincare;
     const title = templates[i % templates.length];
     const author = AUTHORS[i % AUTHORS.length];
     const days = (i % 90) + 1;
@@ -136,7 +100,7 @@ export function generateSeededThreads(count: number, startId: number = 200): Con
       id: startId + i,
       title,
       category: cat,
-      isPinned: i === 0 && cat === 'health',
+      isPinned: i === 0 && cat === 'skincare',
       isHot: i % 7 === 0,
       isFeatured: i % 15 === 0,
       featuredLabel: i % 15 === 0 ? 'Circle Mom of the Month' : undefined,

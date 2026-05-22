@@ -3,6 +3,7 @@ import { Badge, BadgeType, User } from '../types';
 export const BADGE_CRITERIA: Record<BadgeType, { threads: number; upvotes: number; days: number }> = {
   community_member: { threads: 1, upvotes: 0, days: 0 },
   community_insider: { threads: 5, upvotes: 0, days: 0 },
+  trusted_member: { threads: 10, upvotes: 25, days: 30 },
   insider_plus: { threads: 15, upvotes: 50, days: 0 },
   community_vip: { threads: 30, upvotes: 150, days: 180 },
   circle_elder: { threads: 50, upvotes: 300, days: 365 },
@@ -18,6 +19,11 @@ export const BADGE_DISPLAY: Record<BadgeType, { name: string; icon: string; colo
     name: 'Community Insider',
     icon: '⭐',
     color: 'bg-yellow-100 text-yellow-700',
+  },
+  trusted_member: {
+    name: 'Trusted Member',
+    icon: '✅',
+    color: 'bg-cyan-100 text-cyan-700',
   },
   insider_plus: {
     name: 'Community Insider+',
@@ -39,6 +45,7 @@ export const BADGE_DISPLAY: Record<BadgeType, { name: string; icon: string; colo
 export const DISCOUNT_CODES: Record<BadgeType, { discount: number; validity: number }> = {
   community_member: { discount: 0, validity: 0 },
   community_insider: { discount: 5, validity: 30 },
+  trusted_member: { discount: 7, validity: 30 },
   insider_plus: { discount: 10, validity: 30 },
   community_vip: { discount: 15, validity: 45 },
   circle_elder: { discount: 15, validity: 45 },

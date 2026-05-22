@@ -103,6 +103,7 @@ export interface User {
 export type BadgeType =
   | 'community_member'
   | 'community_insider'
+  | 'trusted_member'
   | 'insider_plus'
   | 'community_vip'
   | 'circle_elder';
