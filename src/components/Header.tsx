@@ -219,7 +219,7 @@ export function Header({
                 </button>
                 
                 {showNotificationsDropdown && (
-                  <div className="absolute right-0 top-full mt-2 w-[360px] bg-white border border-neutral-200 rounded-2xl shadow-xl z-[100] animate-in fade-in-0 zoom-in-95 duration-200">
+                  <div className="absolute right-2 top-full mt-2 w-[90vw] max-w-[360px] bg-white border border-neutral-200 rounded-2xl shadow-xl z-[100] animate-in fade-in-0 zoom-in-95 duration-200">
                     <div className="p-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50 rounded-t-2xl">
                       <div className="flex items-center gap-2">
                         <Bell className="w-4 h-4 text-tuco-cyan" />
@@ -364,7 +364,7 @@ export function Header({
               </button>
               
               {showNotificationsDropdown && (
-                <div className="absolute right-0 top-full mt-2 w-[320px] bg-white border border-neutral-200 rounded-2xl shadow-xl z-[100] animate-in fade-in-0 zoom-in-95 duration-200">
+                <div className="absolute right-1 top-full mt-1 w-[88vw] max-w-[300px] bg-white border border-neutral-200 rounded-2xl shadow-xl z-[100] animate-in fade-in-0 zoom-in-95 duration-200 md:right-2 md:w-[360px] md:max-w-[360px]">
                   <div className="p-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50 rounded-t-2xl">
                     <div className="flex items-center gap-2">
                       <Bell className="w-4 h-4 text-tuco-cyan" />
