@@ -2,7 +2,7 @@ import { AIApprovalOutcome, GreyAreaFlag, UserRole } from '../types';
 
 // Comprehensive bad words list (English + common Hinglish/Indian expletives)
 const BAD_WORDS = [
-  'fuck', 'fucking', 'fucked', 'fuckoff', 'fuck off', 'shit', 'shitting', 'shitted', 'bullshit',
+  'fuck', 'fucking', 'fucked', 'fuckoff', 'fuck off', 'shit', 'shitting', 'shitted', 'bullshit', 'horseshit',
   'asshole', 'assholes', 'bitch', 'bitches', 'cunt', 'dick', 'dicks',
   'piss', 'pissing', 'pissed', 'bastard', 'bastards', 'whore', 'whores',
   'slut', 'sluts', 'twat', 'wanker', 'wankers', 'bollocks', 'arse', 'arsehole',
@@ -26,10 +26,32 @@ const BAD_WORDS = [
   'chakal', 'akkal', 'bewakoof', 'bewaqoof', 'bewaqoof', 'ullu', 'ullu ka pattha',
   'saala', 'saale', 'kaminey', 'kamina', 'chamar', 'chamaar', 'bhangi',
   'low caste', 'dalit', 'obc', 'sc st', 'schedule caste', 'brahmin', 'kshatriya',
-  'vaishya', 'shudra', 'untouchable', 'casteist', 'anti-caste'
+  'vaishya', 'shudra', 'untouchable', 'casteist', 'anti-caste',
+  'the hell', 'what the hell', 'why the hell', 'how the hell', 'who the hell', 'hell yeah', 'hell no',
+  'damn', 'dammit', 'god damn', 'goddamn', 'hellish', 'bloody', 'bugger', 'sod',
+  'arsewipe', 'arsewipe', 'dickhead', 'dick head', 'prickish', 'coward', 'loser',
+  'pathetic', 'worthless', 'disgusting', 'vile', 'repulsive', 'scum', 'trash', 'garbage',
+  'wtf', 'what the f', 'what the fuck', 'what the heck', 'heck', 'jeez', 'jeezus',
+  'lame', 'pathetic', 'idiotic', 'moronic', 'brainless', 'mindless', 'witless',
+  'harrassment', 'harass', 'threaten', 'threat', 'intimidate', 'intimidation',
+  'disgrace', 'shameful', 'shame', 'disgraceful', 'horrendous', 'awful', 'terrible', 'horrible', 'disgusting'
 ];
 
-const BAD_WORD_PATTERNS = BAD_WORDS.map(word => new RegExp(`\\b${word}\\b`, 'gi'));
+const BAD_WORD_PATTERNS = BAD_WORDS.map(word => {
+  if (word.includes('the hell') || word.includes('what the') || word.includes('god damn')) {
+    return new RegExp(word.replace(/\s+/g, '\\s*'), 'gi');
+  }
+  if (word === 'the hell') {
+    return new RegExp(/the\s*hell/gi);
+  }
+  if (word === 'fuck') {
+    return new RegExp(/fuck|f\s*u\s*c\s*k/gi);
+  }
+  if (word === 'shit') {
+    return new RegExp(/shit|s\s*h\s*i\s*t/gi);
+  }
+  return new RegExp(`\\b${word}\\b`, 'gi');
+});
 
 // AI Content Moderation Rules
 const MEDICAL_PRESCRIPTION_PATTERNS = [
@@ -211,7 +233,25 @@ export function aiModerationCheck(postContent: string, category: string): AIAppr
 
 export function analyzeContent(postContent: string, category: string): ModerationAnalysis {
   const greyAreaFlags = detectGreyAreas(postContent);
+  const lowerContent = postContent.toLowerCase();
 
+  // Catch any form of "fuck" or "shit" - joined or spaced
+  if (lowerContent.includes('fuck') || lowerContent.includes('shit')) {
+    return { outcome: 'CLEAR_VIOLATION', greyAreaFlags };
+  }
+  // Catch any form of "hell" with question words (why, what, how, who)
+  if (lowerContent.includes('why') && lowerContent.includes('hell')) {
+    return { outcome: 'CLEAR_VIOLATION', greyAreaFlags };
+  }
+  if (lowerContent.includes('what') && lowerContent.includes('hell')) {
+    return { outcome: 'CLEAR_VIOLATION', greyAreaFlags };
+  }
+  if (lowerContent.includes('how') && lowerContent.includes('hell')) {
+    return { outcome: 'CLEAR_VIOLATION', greyAreaFlags };
+  }
+  if (lowerContent.includes('who') && lowerContent.includes('hell')) {
+    return { outcome: 'CLEAR_VIOLATION', greyAreaFlags };
+  }
   if (BAD_WORD_PATTERNS.some((p) => p.test(postContent))) {
     return { outcome: 'CLEAR_VIOLATION', greyAreaFlags };
   }
