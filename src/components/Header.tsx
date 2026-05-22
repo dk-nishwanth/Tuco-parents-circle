@@ -271,19 +271,19 @@ export function Header({
             {(currentUser?.role === 'moderator' || currentUser?.role === 'tuco_team') && (
               <button
                 onClick={onAdminClick}
-                className="hidden lg:flex items-center gap-2 bg-purple-50 hover:bg-purple-100 text-purple-700 font-display font-black text-sm py-2 px-4 rounded-lg transition-all"
+                className="flex items-center gap-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 font-display font-black text-xs py-1.5 px-2.5 rounded-lg transition-all md:text-sm md:py-2 md:px-4"
               >
                 <span>⚙️</span>
-                <span>Admin</span>
+                <span className="hidden md:inline">Admin</span>
               </button>
             )}
             {currentUser?.role === 'moderator' && (
               <button
                 onClick={onModerationClick}
-                className="hidden lg:flex items-center gap-2 bg-orange-50 hover:bg-orange-100 text-orange-700 font-display font-black text-sm py-2 px-4 rounded-lg transition-all"
+                className="flex items-center gap-1.5 bg-orange-50 hover:bg-orange-100 text-orange-700 font-display font-black text-xs py-1.5 px-2.5 rounded-lg transition-all md:text-sm md:py-2 md:px-4"
               >
                 <span>⚖️</span>
-                <span>Moderation</span>
+                <span className="hidden md:inline">Moderation</span>
               </button>
             )}
             <button
@@ -298,6 +298,7 @@ export function Header({
                 currentUser={currentUser}
                 onLogout={onLogout}
                 onModerationClick={onModerationClick}
+                onAdminClick={onAdminClick}
                 onProfileClick={onProfileClick}
                 showUserMenu={showUserMenu}
                 setShowUserMenu={setShowUserMenu}
@@ -412,6 +413,24 @@ export function Header({
               )}
             </div>
           )}
+          {(currentUser?.role === 'moderator' || currentUser?.role === 'tuco_team') && (
+            <button
+              onClick={onAdminClick}
+              className="p-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-lg transition-all shrink-0"
+              title="Admin"
+            >
+              ⚙️
+            </button>
+          )}
+          {currentUser?.role === 'moderator' && (
+            <button
+              onClick={onModerationClick}
+              className="p-1.5 bg-orange-50 hover:bg-orange-100 text-orange-700 rounded-lg transition-all shrink-0"
+              title="Moderation"
+            >
+              ⚖️
+            </button>
+          )}
           <button
             onClick={onNewPostClick}
             className="bg-tuco-cyan hover:bg-tuco-cyan-hover text-white font-display font-black text-xs py-1.5 px-2.5 rounded transition-all shrink-0"
@@ -423,6 +442,7 @@ export function Header({
               currentUser={currentUser}
               onLogout={onLogout}
               onModerationClick={onModerationClick}
+              onAdminClick={onAdminClick}
               onProfileClick={onProfileClick}
               showUserMenu={showUserMenu}
               setShowUserMenu={setShowUserMenu}
@@ -442,6 +462,7 @@ function UserMenu({
   currentUser,
   onLogout,
   onModerationClick,
+  onAdminClick,
   onProfileClick,
   showUserMenu,
   setShowUserMenu,
@@ -450,6 +471,7 @@ function UserMenu({
   currentUser: UserType;
   onLogout: () => void;
   onModerationClick?: () => void;
+  onAdminClick?: () => void;
   onProfileClick?: () => void;
   showUserMenu: boolean;
   setShowUserMenu: (v: boolean) => void;
@@ -498,6 +520,17 @@ function UserMenu({
               <LogOut className="w-4 h-4" />
               Sign Out
             </button>
+            {(currentUser.role === 'moderator' || currentUser.role === 'tuco_team') && (
+              <button
+                onClick={() => {
+                  onAdminClick?.();
+                  setShowUserMenu(false);
+                }}
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm font-bold text-purple-700 hover:bg-purple-50 rounded"
+              >
+                ⚙️ Admin
+              </button>
+            )}
             {currentUser.role === 'moderator' && (
               <button
                 onClick={() => {
