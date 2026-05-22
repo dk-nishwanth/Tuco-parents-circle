@@ -13,6 +13,7 @@ import { ThreadReviewConfirmation } from './components/ThreadReviewConfirmation'
 import { AdminToolsPanel } from './components/AdminToolsPanel';
 import { LoadingScreen } from './components/LoadingScreen';
 import { ProfileModal } from './components/ProfileModal';
+import { WarningModal } from './components/WarningModal';
 import { ALL_CONVERSATIONS } from './data/conversations';
 import { Conversation, Reply, User, ModerationStatus, DateFilter, PendingReviewSession } from './types';
 import {
@@ -81,6 +82,12 @@ export default function App() {
     email: string;
     password: string;
   } | null>(null);
+  const [warningModal, setWarningModal] = useState<{
+    isOpen: boolean;
+    type?: 'warning' | 'success' | 'info' | 'error';
+    title: string;
+    message: string;
+  }>({ isOpen: false, title: '', message: '' });
 
   useEffect(() => {
     const cachedData = localStorage.getItem('tuco_conversations_v1');
@@ -189,7 +196,12 @@ export default function App() {
       const badgeNames = eligibleBadges
         .map((b) => `${BADGE_DISPLAY[b].icon} ${BADGE_DISPLAY[b].name}`)
         .join(', ');
-      alert(`🎉 Congratulations! You've earned: ${badgeNames}`);
+      setWarningModal({
+        isOpen: true,
+        type: 'success',
+        title: 'Congratulations!',
+        message: `You've earned: ${badgeNames}`,
+      });
     }
   };
 
@@ -339,12 +351,26 @@ export default function App() {
       setIsAuthOpen(true);
       return;
     }
+
+    const thread = conversations.find((c) => c.id === threadId);
+    const analysis = analyzeContent(text, thread?.category || 'general');
+
+    if (analysis.outcome === 'CLEAR_VIOLATION') {
+      setWarningModal({
+        isOpen: true,
+        type: 'error',
+        title: 'Reply Rejected',
+        message: 'Your reply was rejected due to community guidelines violation. Please review the Moderation Rules.',
+      });
+      return;
+    }
+
     const newReply: Reply = {
       id: Date.now(),
       author: name,
       city,
       time: 'Just now',
-      text,
+      text: analysis.civilityReminder ? `${text}\n\n---\n💛 ${analysis.civilityReminder}` : text,
       tucoRec: detectProductRecommendation(text),
       likes: 0,
       authorRole: currentUser.role,
@@ -393,7 +419,12 @@ export default function App() {
     if (currentUser.role === 'tuco_team') {
       const teamCheck = canTucoTeamPost(category, title, text);
       if (!teamCheck.allowed) {
-        alert(`⚠️ ${teamCheck.reason}`);
+        setWarningModal({
+          isOpen: true,
+          type: 'warning',
+          title: 'Not Allowed',
+          message: teamCheck.reason!,
+        });
         return;
       }
     }
@@ -402,22 +433,22 @@ export default function App() {
       (Date.now() - new Date(currentUser.createdAt).getTime()) / (1000 * 60 * 60 * 24);
     if (currentUser.role === 'member' && accountAgeDays < 1) {
       const hoursRemaining = Math.ceil((1 - accountAgeDays) * 24);
-      alert(
-        `New members have a 24-hour cooling period before posting. You can post again in ${hoursRemaining} hours.`
-      );
+      setWarningModal({
+        isOpen: true,
+        type: 'warning',
+        title: '24-Hour Cooling Period',
+        message: `New members have a 24-hour cooling period before posting. You can post again in ${hoursRemaining} hours.`,
+      });
       return;
     }
 
     const analysis = analyzeContent(text + ' ' + title, category);
-    let moderationStatus: ModerationStatus = 'approved';
+    let moderationStatus: ModerationStatus = 'pending';
 
     if (analysis.outcome === 'CLEAR_VIOLATION') {
       moderationStatus = 'rejected';
-    } else if (
-      shouldTriggerHumanReview(analysis.outcome, currentUser.trustScore, currentUser.role)
-    ) {
-      moderationStatus = 'pending';
     }
+    // All new threads go to human review, no auto-approval
 
     const newThread: Conversation = {
       id: Date.now(),
@@ -446,9 +477,12 @@ export default function App() {
     };
 
     if (moderationStatus === 'rejected') {
-      alert(
-        '❌ Your post was rejected due to community guidelines violation. Please review the Moderation Rules.'
-      );
+      setWarningModal({
+        isOpen: true,
+        type: 'error',
+        title: 'Post Rejected',
+        message: 'Your post was rejected due to community guidelines violation. Please review the Moderation Rules.',
+      });
       return;
     }
 
@@ -467,7 +501,12 @@ export default function App() {
         submittedAt: new Date().toISOString(),
       });
     } else {
-      alert('✅ Your discussion is now live!');
+      setWarningModal({
+        isOpen: true,
+        type: 'success',
+        title: 'Discussion Live!',
+        message: 'Your discussion is now live!',
+      });
     }
   };
 
@@ -486,7 +525,12 @@ export default function App() {
         sendThreadApprovalEmail(author, thread.title);
       }
     }
-    alert('✅ Thread approved and is now live! Approval email sent.');
+    setWarningModal({
+      isOpen: true,
+      type: 'success',
+      title: 'Thread Approved',
+      message: 'Thread approved and is now live! Approval email sent.',
+    });
   };
 
   const handleRejectThread = (threadId: number, reason: string) => {
@@ -501,7 +545,12 @@ export default function App() {
         : c
     );
     saveConversations(updated);
-    alert(`❌ Thread rejected. Reason: ${reason}`);
+    setWarningModal({
+      isOpen: true,
+      type: 'error',
+      title: 'Thread Rejected',
+      message: `Thread rejected. Reason: ${reason}`,
+    });
   };
 
   const handlePinThread = (threadId: number, pinned: boolean) => {
@@ -562,6 +611,7 @@ export default function App() {
         onModerationClick={() => setIsModerationOpen(true)}
         onAdminClick={() => setIsAdminOpen(true)}
         onProfileClick={() => setIsProfileOpen(true)}
+        onOpenCategories={() => setActiveCategory(activeCategory === 'sidebar-open' ? 'all' : 'sidebar-open')}
         onSuggestionSelect={(id) => {
           const thread = conversations.find((c) => c.id === id);
           if (thread) setSearchTerm(thread.title.split(' ').slice(0, 3).join(' '));
@@ -728,6 +778,14 @@ export default function App() {
           </div>
         </div>
       )}
+
+      <WarningModal
+        isOpen={warningModal.isOpen}
+        type={warningModal.type}
+        title={warningModal.title}
+        message={warningModal.message}
+        onClose={() => setWarningModal({ ...warningModal, isOpen: false })}
+      />
     </div>
   );
 }

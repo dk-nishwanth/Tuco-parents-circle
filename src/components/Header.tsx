@@ -1,5 +1,5 @@
 import { useState, ChangeEvent, useRef, useEffect } from 'react';
-import { MessageSquarePlus, Search, LogOut, User, X } from 'lucide-react';
+import { MessageSquarePlus, Search, LogOut, User, X, Menu } from 'lucide-react';
 import tucoLogo from '../assets/tuco-logo.webp';
 import { Conversation, User as UserType } from '../types';
 import { searchThreadsWithRanking } from '../utils/helpers';
@@ -16,6 +16,7 @@ interface HeaderProps {
   onAdminClick?: () => void;
   onProfileClick?: () => void;
   onSuggestionSelect?: (threadId: number) => void;
+  onOpenCategories?: () => void;
 }
 
 function SearchInput({
@@ -125,6 +126,7 @@ export function Header({
   onAdminClick,
   onProfileClick,
   onSuggestionSelect,
+  onOpenCategories,
 }: HeaderProps) {
   const [showUserMenu, setShowUserMenu] = useState(false);
 
@@ -204,6 +206,13 @@ export function Header({
         </div>
 
         <div className="md:hidden flex items-center justify-between gap-2">
+          <button
+            onClick={onOpenCategories}
+            className="p-1.5 hover:bg-neutral-100 rounded shrink-0 flex items-center justify-center"
+            title="Categories"
+          >
+            <Menu className="w-5 h-5 text-neutral-700" />
+          </button>
           <div className="flex items-center gap-1 cursor-pointer select-none" onClick={clearSearch}>
             <img src={tucoLogo} alt="Tuco" className="h-6 w-auto" />
           </div>

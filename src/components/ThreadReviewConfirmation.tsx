@@ -33,8 +33,7 @@ export function ThreadReviewConfirmation({
             <div>
               <p className="font-display font-black text-sm text-neutral-800">Review time</p>
               <p className="text-xs text-neutral-500 mt-1 font-medium">
-                Most posts are reviewed within <strong>4–6 hours</strong>. You'll receive an
-                email notification when your post is approved and goes live.
+                Tuco commits to reviewing every new thread within <strong>4–6 hours during working hours</strong>. You'll receive an email notification when your post is approved and goes live.
               </p>
             </div>
           </div>
