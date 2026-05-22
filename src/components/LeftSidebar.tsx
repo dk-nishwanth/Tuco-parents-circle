@@ -1,23 +1,24 @@
 import { CATEGORIES } from '../data/categories';
 import { Conversation } from '../types';
 import { Home, ShieldCheck, Bookmark } from 'lucide-react';
-
 interface LeftSidebarProps {
   activeCategory: string;
   onCategoryChange: (category: string) => void;
   conversations: Conversation[];
   savedPosts?: number[];
 }
-
-export function LeftSidebar({ activeCategory, onCategoryChange, conversations, savedPosts = [] }: LeftSidebarProps) {
-  // Compute thread count dynamically for each category
+export function LeftSidebar({
+  activeCategory,
+  onCategoryChange,
+  conversations,
+  savedPosts = [],
+}: LeftSidebarProps) {
   const getThreadCount = (catId: string) => {
-    return conversations.filter((c) => c.category === catId).length;
+    return conversations.filter(c => c.category === catId).length;
   };
-
   return (
     <aside className="sidebar flex flex-col gap-6">
-      {/* Category Selection Panel */}
+      {}
       <div className="bg-white border border-neutral-200 rounded-3xl overflow-hidden shadow-xs">
         <div className="bg-neutral-50 px-5 py-3.5 border-b border-neutral-200 flex items-center justify-between">
           <span className="font-display font-black text-tuco-dark text-xs uppercase tracking-wider">
@@ -27,9 +28,8 @@ export function LeftSidebar({ activeCategory, onCategoryChange, conversations, s
             {conversations.length} topics
           </span>
         </div>
-
         <div className="flex flex-col">
-          {/* All topics */}
+          {}
           <button
             onClick={() => onCategoryChange('all')}
             className={`cat-row flex items-center gap-3 w-full text-left px-5 py-3 hover:bg-neutral-50 transition-all cursor-pointer font-display font-black text-sm border-b border-neutral-100 ${
@@ -42,14 +42,15 @@ export function LeftSidebar({ activeCategory, onCategoryChange, conversations, s
             <span className="flex-1">All Discussions</span>
             <span
               className={`text-[11px] px-2 py-0.5 rounded-full font-bold border ${
-                activeCategory === 'all' ? 'bg-white border-white text-tuco-cyan' : 'bg-neutral-100 border-neutral-200 text-neutral-500'
+                activeCategory === 'all'
+                  ? 'bg-white border-white text-tuco-cyan'
+                  : 'bg-neutral-100 border-neutral-200 text-neutral-500'
               }`}
             >
               {conversations.length}
             </span>
           </button>
-
-          {/* Saved posts */}
+          {}
           <button
             onClick={() => onCategoryChange('saved')}
             className={`cat-row flex items-center gap-3 w-full text-left px-5 py-3 hover:bg-neutral-50 transition-all cursor-pointer font-display font-black text-sm border-b border-neutral-100 ${
@@ -62,14 +63,15 @@ export function LeftSidebar({ activeCategory, onCategoryChange, conversations, s
             <span className="flex-1">Saved</span>
             <span
               className={`text-[11px] px-2 py-0.5 rounded-full font-bold border ${
-                activeCategory === 'saved' ? 'bg-white border-white text-tuco-cyan' : 'bg-neutral-100 border-neutral-200 text-neutral-500'
+                activeCategory === 'saved'
+                  ? 'bg-white border-white text-tuco-cyan'
+                  : 'bg-neutral-100 border-neutral-200 text-neutral-500'
               }`}
             >
               {savedPosts.length}
             </span>
           </button>
-
-          {/* Individual categories */}
+          {}
           {Object.values(CATEGORIES).map((cat, idx, arr) => {
             const isLast = idx === arr.length - 1;
             const isSelected = activeCategory === cat.id;
@@ -87,9 +89,13 @@ export function LeftSidebar({ activeCategory, onCategoryChange, conversations, s
               >
                 <span className="text-lg shrink-0 leading-none">{cat.icon}</span>
                 <span className="flex-1 truncate">{cat.label}</span>
-                <span className={`text-[10px] px-2 py-0.5 rounded-full font-black font-mono border ${
-                  isSelected ? 'bg-tuco-cyan text-white border-tuco-cyan' : 'bg-neutral-50 text-neutral-400 border-neutral-200/50'
-                }`}>
+                <span
+                  className={`text-[10px] px-2 py-0.5 rounded-full font-black font-mono border ${
+                    isSelected
+                      ? 'bg-tuco-cyan text-white border-tuco-cyan'
+                      : 'bg-neutral-50 text-neutral-400 border-neutral-200/50'
+                  }`}
+                >
                   {getThreadCount(cat.id)}
                 </span>
               </button>
@@ -97,8 +103,7 @@ export function LeftSidebar({ activeCategory, onCategoryChange, conversations, s
           })}
         </div>
       </div>
-
-      {/* Rules Box Panel */}
+      {}
       <div className="bg-[#FFFDF9] border border-[#F0EAE1] rounded-3xl p-5 shadow-xs">
         <div className="flex items-center gap-2 mb-3">
           <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0" />

@@ -3,7 +3,6 @@ import { MessageSquarePlus, Search, LogOut, User, X, Menu, Bell } from 'lucide-r
 import tucoLogo from '../assets/tuco-logo.webp';
 import { Conversation, User as UserType } from '../types';
 import { searchThreadsWithRanking } from '../utils/helpers';
-
 interface HeaderProps {
   searchTerm: string;
   onSearch: (term: string) => void;
@@ -19,7 +18,6 @@ interface HeaderProps {
   onSuggestionSelect?: (threadId: number) => void;
   onOpenCategories?: () => void;
 }
-
 function SearchInput({
   searchTerm,
   onSearch,
@@ -35,12 +33,8 @@ function SearchInput({
 }) {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
-
   const suggestions =
-    searchTerm.trim().length >= 2
-      ? searchThreadsWithRanking(conversations, searchTerm, 6)
-      : [];
-
+    searchTerm.trim().length >= 2 ? searchThreadsWithRanking(conversations, searchTerm, 6) : [];
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
@@ -50,13 +44,11 @@ function SearchInput({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     onSearch(value);
     setShowSuggestions(value.trim().length >= 2);
   };
-
   return (
     <div ref={wrapperRef} className={`relative ${compact ? 'flex-1' : 'flex-1 max-w-sm'}`}>
       <div
@@ -64,7 +56,9 @@ function SearchInput({
           compact ? 'py-1.5 px-2.5' : 'py-2 px-3'
         }`}
       >
-        <Search className={`text-neutral-400 mr-2 shrink-0 ${compact ? 'w-3.5 h-3.5' : 'w-4 h-4'}`} />
+        <Search
+          className={`text-neutral-400 mr-2 shrink-0 ${compact ? 'w-3.5 h-3.5' : 'w-4 h-4'}`}
+        />
         <input
           type="text"
           placeholder={compact ? 'Search' : 'Search discussions...'}
@@ -88,10 +82,9 @@ function SearchInput({
           </button>
         )}
       </div>
-
       {showSuggestions && suggestions.length > 0 && (
         <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-neutral-200 rounded-xl shadow-lg z-[60] overflow-hidden max-h-64 overflow-y-auto">
-          {suggestions.map((thread) => (
+          {suggestions.map(thread => (
             <button
               key={thread.id}
               type="button"
@@ -114,7 +107,6 @@ function SearchInput({
     </div>
   );
 }
-
 export function Header({
   searchTerm,
   onSearch,
@@ -132,7 +124,6 @@ export function Header({
 }: HeaderProps) {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotificationsDropdown, setShowNotificationsDropdown] = useState(false);
-  
   const [notifications] = useState([
     {
       id: 1,
@@ -159,11 +150,8 @@ export function Header({
       read: true,
     },
   ]);
-
   const unreadCount = notifications.filter(n => !n.read).length;
-  
   const notificationsRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (notificationsRef.current && !notificationsRef.current.contains(e.target as Node)) {
@@ -173,9 +161,7 @@ export function Header({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
   const clearSearch = () => onSearch('');
-
   return (
     <header className="header bg-white border-b border-neutral-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-8 py-3 md:py-4">
@@ -194,14 +180,12 @@ export function Header({
               </p>
             </div>
           </div>
-
           <SearchInput
             searchTerm={searchTerm}
             onSearch={onSearch}
             conversations={conversations}
             onSuggestionSelect={onSuggestionSelect}
           />
-
           <div className="flex items-center justify-end gap-2 shrink-0">
             {currentUser && (
               <div ref={notificationsRef} className="relative">
@@ -217,16 +201,17 @@ export function Header({
                     </span>
                   )}
                 </button>
-                
                 {showNotificationsDropdown && (
                   <div className="absolute right-2 top-full mt-2 w-[90vw] max-w-[360px] bg-white border border-neutral-200 rounded-2xl shadow-xl z-[100] animate-in fade-in-0 zoom-in-95 duration-200">
                     <div className="p-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50 rounded-t-2xl">
                       <div className="flex items-center gap-2">
                         <Bell className="w-4 h-4 text-tuco-cyan" />
-                        <h4 className="font-display font-black text-sm text-neutral-800">Notifications</h4>
+                        <h4 className="font-display font-black text-sm text-neutral-800">
+                          Notifications
+                        </h4>
                       </div>
                       <button
-                        onClick={(e) => {
+                        onClick={e => {
                           e.stopPropagation();
                           setShowNotificationsDropdown(false);
                           onNotificationsClick();
@@ -236,15 +221,14 @@ export function Header({
                         View all
                       </button>
                     </div>
-                    
                     <div className="max-h-[380px] overflow-y-auto">
                       {notifications.length > 0 ? (
                         <div className="divide-y divide-neutral-100">
-                          {notifications.map((n) => (
+                          {notifications.map(n => (
                             <div
                               key={n.id}
                               className={`p-4 hover:bg-neutral-50 cursor-pointer transition-colors ${!n.read ? 'bg-blue-50/30' : ''}`}
-                              onClick={(e) => {
+                              onClick={e => {
                                 e.stopPropagation();
                                 setShowNotificationsDropdown(false);
                               }}
@@ -329,7 +313,6 @@ export function Header({
             )}
           </div>
         </div>
-
         <div className="md:hidden flex items-center justify-between gap-2">
           <button
             onClick={onOpenCategories}
@@ -362,16 +345,17 @@ export function Header({
                   </span>
                 )}
               </button>
-              
               {showNotificationsDropdown && (
                 <div className="absolute right-1 top-full mt-1 w-[88vw] max-w-[300px] bg-white border border-neutral-200 rounded-2xl shadow-xl z-[100] animate-in fade-in-0 zoom-in-95 duration-200 md:right-2 md:w-[360px] md:max-w-[360px]">
                   <div className="p-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50 rounded-t-2xl">
                     <div className="flex items-center gap-2">
                       <Bell className="w-4 h-4 text-tuco-cyan" />
-                      <h4 className="font-display font-black text-sm text-neutral-800">Notifications</h4>
+                      <h4 className="font-display font-black text-sm text-neutral-800">
+                        Notifications
+                      </h4>
                     </div>
                     <button
-                      onClick={(e) => {
+                      onClick={e => {
                         e.stopPropagation();
                         setShowNotificationsDropdown(false);
                         onNotificationsClick();
@@ -381,15 +365,14 @@ export function Header({
                       View all
                     </button>
                   </div>
-                  
                   <div className="max-h-[320px] overflow-y-auto">
                     {notifications.length > 0 ? (
                       <div className="divide-y divide-neutral-100">
-                        {notifications.map((n) => (
+                        {notifications.map(n => (
                           <div
                             key={n.id}
                             className={`p-3 hover:bg-neutral-50 cursor-pointer transition-colors ${!n.read ? 'bg-blue-50/30' : ''}`}
-                            onClick={(e) => {
+                            onClick={e => {
                               e.stopPropagation();
                               setShowNotificationsDropdown(false);
                             }}
@@ -455,7 +438,6 @@ export function Header({
     </header>
   );
 }
-
 function UserMenu({
   currentUser,
   onLogout,

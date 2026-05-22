@@ -1,6 +1,4 @@
-
 import { Conversation } from '../types';
-
 export const INITIAL_CONVERSATIONS: Conversation[] = [
   {
     id: 1,
@@ -14,7 +12,7 @@ export const INITIAL_CONVERSATIONS: Conversation[] = [
       author: 'Priya_Rao',
       city: 'Mumbai',
       time: '2 days ago',
-      text: 'My 8-year-old son plays cricket outdoors every single evening and on weekends it\'s 4+ hours of direct sun. I\'ve been using a random adult sunscreen on him but I\'m not confident it\'s safe. Which sunscreen actually works for Indian kids in this heat? He sweats a lot so worried it wipes off too quickly. SPF 30 or 50? Mineral or chemical?',
+      text: "My 8-year-old son plays cricket outdoors every single evening and on weekends it's 4+ hours of direct sun. I've been using a random adult sunscreen on him but I'm not confident it's safe. Which sunscreen actually works for Indian kids in this heat? He sweats a lot so worried it wipes off too quickly. SPF 30 or 50? Mineral or chemical?",
     },
     replies: [
       {
@@ -22,7 +20,7 @@ export const INITIAL_CONVERSATIONS: Conversation[] = [
         author: 'AnanyaK',
         city: 'Bangalore',
         time: '2 days ago',
-        text: 'Same exact situation with my 9-year-old! We\'ve been through 5–6 sunscreens. The key for sporty kids is water/sweat resistance. We now use Tuco\'s Daily Shield SPF 50 — it\'s specifically made for Indian kids, non-greasy, and actually stays on through a full practice session. Mineral-based so no chemicals to worry about.',
+        text: "Same exact situation with my 9-year-old! We've been through 5–6 sunscreens. The key for sporty kids is water/sweat resistance. We now use Tuco's Daily Shield SPF 50 — it's specifically made for Indian kids, non-greasy, and actually stays on through a full practice session. Mineral-based so no chemicals to worry about.",
         tucoRec: 'sunscreen',
         likes: 12,
       },
@@ -47,7 +45,7 @@ export const INITIAL_CONVERSATIONS: Conversation[] = [
         author: 'KavyaT',
         city: 'Chennai',
         time: '1 day ago',
-        text: 'One thing most parents miss — ears, back of neck and back of hands! Kids get badly tanned there during sport. Also don\'t forget UPF-rated clothing for extra protection. Chennai sun is unforgiving!',
+        text: "One thing most parents miss — ears, back of neck and back of hands! Kids get badly tanned there during sport. Also don't forget UPF-rated clothing for extra protection. Chennai sun is unforgiving!",
         likes: 4,
       },
       {
@@ -72,7 +70,7 @@ export const INITIAL_CONVERSATIONS: Conversation[] = [
       author: 'SnehaVerma',
       city: 'Delhi',
       time: '3 days ago',
-      text: 'My 5-year-old daughter has these dry, slightly flaky patches on her cheeks — especially after bathing. They\'ve been there since winter and now in summer they haven\'t gone away. The skin isn\'t red or itchy but it looks rough. Our paediatrician said it\'s mild eczema-prone skin. What moisturiser should I be using? Should I be bathing her less frequently?',
+      text: "My 5-year-old daughter has these dry, slightly flaky patches on her cheeks — especially after bathing. They've been there since winter and now in summer they haven't gone away. The skin isn't red or itchy but it looks rough. Our paediatrician said it's mild eczema-prone skin. What moisturiser should I be using? Should I be bathing her less frequently?",
     },
     replies: [
       {
@@ -80,7 +78,7 @@ export const INITIAL_CONVERSATIONS: Conversation[] = [
         author: 'DeepikaSharma',
         city: 'Jaipur',
         time: '3 days ago',
-        text: 'My son had the exact same thing! Dermat explained that bath water (especially hard water) strips natural oils from kids\' skin. The key is: lukewarm water, not hot; 5–7 minute baths max; pat dry — never rub; and moisturiser within 3 minutes of bath while skin is still slightly damp. That window is crucial.',
+        text: "My son had the exact same thing! Dermat explained that bath water (especially hard water) strips natural oils from kids' skin. The key is: lukewarm water, not hot; 5–7 minute baths max; pat dry — never rub; and moisturiser within 3 minutes of bath while skin is still slightly damp. That window is crucial.",
         likes: 10,
       },
       {
@@ -88,7 +86,7 @@ export const INITIAL_CONVERSATIONS: Conversation[] = [
         author: 'AnanyaK',
         city: 'Bangalore',
         time: '2 days ago',
-        text: 'We use Tuco\'s Nourish Night Moisturiser on my daughter\'s cheeks — it was recommended by our paediatric dermat for eczema-prone kids. Fragrance-free, no parabens. Within 2 weeks the flakiness reduced noticeably. It has ceramides which help repair the skin barrier.',
+        text: "We use Tuco's Nourish Night Moisturiser on my daughter's cheeks — it was recommended by our paediatric dermat for eczema-prone kids. Fragrance-free, no parabens. Within 2 weeks the flakiness reduced noticeably. It has ceramides which help repair the skin barrier.",
         tucoRec: 'moisturiser',
         likes: 14,
       },
@@ -150,7 +148,7 @@ export const INITIAL_CONVERSATIONS: Conversation[] = [
       author: 'DeepikaSharma',
       city: 'Jaipur',
       time: '5 days ago',
-      text: 'Planning our first family trip with kids 3 and 6. Looking for places in India that are not too crowded, not too hot (or have good indoor options), and have kid-friendly activities. Beach or hill station? Would prefer places where we don\'t have to worry too much about food safety.',
+      text: "Planning our first family trip with kids 3 and 6. Looking for places in India that are not too crowded, not too hot (or have good indoor options), and have kid-friendly activities. Beach or hill station? Would prefer places where we don't have to worry too much about food safety.",
     },
     replies: [
       {
@@ -183,7 +181,7 @@ export const INITIAL_CONVERSATIONS: Conversation[] = [
       author: 'NehaMehta',
       city: 'Surat',
       time: '1 week ago',
-      text: 'My son just hates rote learning and forgets the tables within a day. Are there any fun methods or games that actually work? Especially for 2–10 tables which his school insists they learn this year. I don\'t want math to become a source of stress for him so early.',
+      text: "My son just hates rote learning and forgets the tables within a day. Are there any fun methods or games that actually work? Especially for 2–10 tables which his school insists they learn this year. I don't want math to become a source of stress for him so early.",
     },
     replies: [
       {
@@ -216,7 +214,7 @@ export const INITIAL_CONVERSATIONS: Conversation[] = [
       author: 'DivyaNair',
       city: 'Kochi',
       time: '2 weeks ago',
-      text: 'Ok this one is a game changer. We used to be stressed every single morning trying to get two kids ready for school and ourselves ready for work. Now we do 90% of the prep THE NIGHT BEFORE. Here\'s our routine...',
+      text: "Ok this one is a game changer. We used to be stressed every single morning trying to get two kids ready for school and ourselves ready for work. Now we do 90% of the prep THE NIGHT BEFORE. Here's our routine...",
       authorBadges: ['trusted_member'],
     },
     replies: [

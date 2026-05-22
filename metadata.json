@@ -1,6 +1,0 @@
-{
-  "name": "Tuco Parents Circle",
-  "description": "A vibrant and caring discussion community for parents, featuring expert guidance, community answers, and natural kids' skin & hair care recommendations.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}

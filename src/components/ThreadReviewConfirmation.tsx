@@ -1,13 +1,11 @@
 import { Conversation } from '../types';
 import { Clock, Mail, MessageCircle } from 'lucide-react';
-
 interface ThreadReviewConfirmationProps {
   threadTitle: string;
   relatedThreads: Conversation[];
   onBrowseRelated: (id: number) => void;
   onClose: () => void;
 }
-
 export function ThreadReviewConfirmation({
   threadTitle,
   relatedThreads,
@@ -26,18 +24,18 @@ export function ThreadReviewConfirmation({
             <strong>"{threadTitle}"</strong> has been submitted to our moderation team.
           </p>
         </div>
-
         <div className="p-6 space-y-4">
           <div className="flex items-start gap-3 bg-neutral-50 rounded-xl p-4 border border-neutral-100">
             <Clock className="w-5 h-5 text-tuco-orange shrink-0 mt-0.5" />
             <div>
               <p className="font-display font-black text-sm text-neutral-800">Review time</p>
               <p className="text-xs text-neutral-500 mt-1 font-medium">
-                Tuco commits to reviewing every new thread within <strong>4–6 hours during working hours</strong>. You'll receive an email notification when your post is approved and goes live.
+                Tuco commits to reviewing every new thread within{' '}
+                <strong>4–6 hours during working hours</strong>. You'll receive an email
+                notification when your post is approved and goes live.
               </p>
             </div>
           </div>
-
           <div className="flex items-start gap-3 bg-neutral-50 rounded-xl p-4 border border-neutral-100">
             <Mail className="w-5 h-5 text-tuco-cyan shrink-0 mt-0.5" />
             <div>
@@ -48,7 +46,6 @@ export function ThreadReviewConfirmation({
               </p>
             </div>
           </div>
-
           {relatedThreads.length > 0 && (
             <div>
               <p className="font-display font-black text-xs text-neutral-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
@@ -56,7 +53,7 @@ export function ThreadReviewConfirmation({
                 While you wait — related discussions
               </p>
               <div className="space-y-2">
-                {relatedThreads.map((t) => (
+                {relatedThreads.map(t => (
                   <button
                     key={t.id}
                     onClick={() => onBrowseRelated(t.id)}
@@ -73,7 +70,6 @@ export function ThreadReviewConfirmation({
               </div>
             </div>
           )}
-
           <button
             onClick={onClose}
             className="w-full py-3 bg-tuco-cyan hover:bg-tuco-cyan-hover text-white font-display font-black text-sm rounded-xl transition-all"

@@ -1,4 +1,3 @@
-
 export interface ShopifyProduct {
   id: string;
   title: string;

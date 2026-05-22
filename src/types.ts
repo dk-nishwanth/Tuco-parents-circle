@@ -6,7 +6,6 @@ export interface Op {
   authorRole?: UserRole;
   authorBadges?: BadgeType[];
 }
-
 export interface Reply {
   id: number;
   author: string;
@@ -18,9 +17,7 @@ export interface Reply {
   authorRole?: UserRole;
   authorBadges?: BadgeType[];
 }
-
 export type DateFilter = 'all' | 'today' | 'week' | 'month' | 'year';
-
 export interface Conversation {
   id: number;
   title: string;
@@ -41,13 +38,11 @@ export interface Conversation {
   greyAreaFlags?: GreyAreaFlag[];
   reviewPriority?: number;
 }
-
 export type GreyAreaFlag =
   | 'religious_cultural'
   | 'mental_health'
   | 'hinglish'
   | 'negative_tuco_review';
-
 export interface Category {
   id: string;
   label: string;
@@ -55,13 +50,11 @@ export interface Category {
   className: string;
   count: number;
 }
-
 export interface CategoryColor {
   bg: string;
   text: string;
   border: string;
 }
-
 export interface Product {
   id: string;
   name: string;
@@ -71,17 +64,13 @@ export interface Product {
   price: string;
   linkUrl: string;
 }
-
 export interface Trending {
   id: number;
   rank: string;
   title: string;
   meta: string;
 }
-
-// User & Auth Types
 export type UserRole = 'guest' | 'member' | 'trusted' | 'moderator' | 'tuco_team';
-
 export interface User {
   id: string;
   username: string;
@@ -99,7 +88,6 @@ export interface User {
   emailNotifications?: boolean;
   savedPosts?: number[];
 }
-
 export type BadgeType =
   | 'community_member'
   | 'community_insider'
@@ -107,32 +95,26 @@ export type BadgeType =
   | 'insider_plus'
   | 'community_vip'
   | 'circle_elder';
-
 export interface Badge {
   type: BadgeType;
   earnedAt: string;
   discountCode?: string;
   discountExpiry?: string;
 }
-
-// Moderation Types
 export type ModerationStatus = 'pending' | 'approved' | 'rejected' | 'flagged';
 export type AIApprovalOutcome = 'CLEAN' | 'UNCERTAIN' | 'CLEAR_VIOLATION';
-
 export interface ConversationWithMeta extends Conversation {
   moderationStatus: ModerationStatus;
   moderatedBy?: string;
   moderationReason?: string;
   createdAt: string;
 }
-
 export interface PendingReviewSession {
   threadId: number;
   title: string;
   category: string;
   submittedAt: string;
 }
-
 export interface EmailLogEntry {
   id: string;
   type: 'approval' | 'weekly_engagement' | 'launch';

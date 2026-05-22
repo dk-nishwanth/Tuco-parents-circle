@@ -1,7 +1,6 @@
 import { User, Conversation } from '../types';
 import { MemberProfile } from './MemberProfile';
 import { X } from 'lucide-react';
-
 interface ProfileModalProps {
   isOpen: boolean;
   user: User;
@@ -11,7 +10,6 @@ interface ProfileModalProps {
   onClose: () => void;
   onThreadOpen?: (id: number) => void;
 }
-
 export function ProfileModal({
   isOpen,
   user,
@@ -22,11 +20,10 @@ export function ProfileModal({
   onThreadOpen,
 }: ProfileModalProps) {
   if (!isOpen) return null;
-
   return (
     <div
       className="fixed inset-0 bg-neutral-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 overflow-y-auto"
-      onClick={(e) => e.target === e.currentTarget && onClose()}
+      onClick={e => e.target === e.currentTarget && onClose()}
     >
       <div className="bg-white border border-neutral-200 rounded-3xl w-full max-w-md overflow-hidden shadow-xl animate-in fade-in-50 zoom-in-95 duration-200 relative my-auto">
         <button

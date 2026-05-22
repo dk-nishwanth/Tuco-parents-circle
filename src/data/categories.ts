@@ -1,6 +1,4 @@
-
 import { Category, CategoryColor } from '../types';
-
 export const CATEGORIES: Record<string, Category> = {
   skincare: {
     id: 'skincare',
@@ -38,7 +36,6 @@ export const CATEGORIES: Record<string, Category> = {
     count: 19,
   },
 };
-
 export const CATEGORY_COLORS: Record<string, CategoryColor> = {
   skincare: { bg: '#FFF0E8', text: '#D84315', border: '#FFD8C2' },
   school: { bg: '#FEE8F4', text: '#880E4F', border: '#FDBBDD' },
@@ -46,5 +43,4 @@ export const CATEGORY_COLORS: Record<string, CategoryColor> = {
   active_kids: { bg: '#E8F3FF', text: '#0D47A1', border: '#C4E1FF' },
   parenting_hacks: { bg: '#F1F9F1', text: '#2E7D32', border: '#D3ECD5' },
 };
-
 export type CategoryId = keyof typeof CATEGORIES;

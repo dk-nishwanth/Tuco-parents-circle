@@ -1,5 +1,4 @@
 import { Badge, BadgeType, User } from '../types';
-
 export const BADGE_CRITERIA: Record<BadgeType, { threads: number; upvotes: number; days: number }> = {
   community_member: { threads: 1, upvotes: 0, days: 0 },
   community_insider: { threads: 5, upvotes: 0, days: 0 },
@@ -8,7 +7,6 @@ export const BADGE_CRITERIA: Record<BadgeType, { threads: number; upvotes: numbe
   community_vip: { threads: 30, upvotes: 150, days: 180 },
   circle_elder: { threads: 50, upvotes: 300, days: 365 },
 };
-
 export const BADGE_DISPLAY: Record<BadgeType, { name: string; icon: string; color: string }> = {
   community_member: {
     name: 'Community Member',
@@ -41,7 +39,6 @@ export const BADGE_DISPLAY: Record<BadgeType, { name: string; icon: string; colo
     color: 'bg-red-100 text-red-700',
   },
 };
-
 export const DISCOUNT_CODES: Record<BadgeType, { discount: number; validity: number }> = {
   community_member: { discount: 0, validity: 0 },
   community_insider: { discount: 5, validity: 30 },
@@ -50,13 +47,11 @@ export const DISCOUNT_CODES: Record<BadgeType, { discount: number; validity: num
   community_vip: { discount: 15, validity: 45 },
   circle_elder: { discount: 15, validity: 45 },
 };
-
 export function checkEligibleBadges(user: User): BadgeType[] {
   const eligible: BadgeType[] = [];
   const accountAgeDays = Math.floor(
     (Date.now() - new Date(user.createdAt).getTime()) / (1000 * 60 * 60 * 24)
   );
-
   for (const [badgeType, criteria] of Object.entries(BADGE_CRITERIA)) {
     if (
       user.postCount >= criteria.threads &&
@@ -67,10 +62,8 @@ export function checkEligibleBadges(user: User): BadgeType[] {
       eligible.push(badgeType as BadgeType);
     }
   }
-
   return eligible;
 }
-
 export function generateDiscountCode(userId: string, badgeType: BadgeType): string {
   const badge = BADGE_DISPLAY[badgeType];
   const code = `${badgeType.toUpperCase()}_${userId.substring(0, 6).toUpperCase()}`;

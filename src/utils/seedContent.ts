@@ -1,7 +1,5 @@
-
 import { Conversation } from '../types';
 import { CATEGORIES } from '../data/categories';
-
 const AUTHORS = [
   { author: 'Priya_Rao', city: 'Mumbai' },
   { author: 'AnanyaK', city: 'Bangalore' },
@@ -14,7 +12,6 @@ const AUTHORS = [
   { author: 'DivyaNair', city: 'Kochi' },
   { author: 'PoojaReddy', city: 'Hyderabad' },
 ];
-
 const TITLE_TEMPLATES: Record<string, string[]> = {
   skincare: [
     'Best sunscreen for outdoor cricket this summer?',
@@ -52,7 +49,6 @@ const TITLE_TEMPLATES: Record<string, string[]> = {
     'Medicine reminder system parents use',
   ],
 };
-
 const REPLY_SNIPPETS = [
   'We went through the same — what helped us was consistency and patience.',
   'Our paediatrician suggested we track symptoms for 3 days before worrying.',
@@ -62,7 +58,6 @@ const REPLY_SNIPPETS = [
   'Please be kind in replies — mental health topics need gentle support.',
   'Every family\'s cultural practice is different — respect goes both ways.',
 ];
-
 function daysAgo(days: number): string {
   if (days === 0) return 'Just now';
   if (days === 1) return '1 day ago';
@@ -71,11 +66,9 @@ function daysAgo(days: number): string {
   if (days < 30) return `${Math.floor(days / 7)} weeks ago`;
   return `${Math.floor(days / 30)} month${days >= 60 ? 's' : ''} ago`;
 }
-
 export function generateSeededThreads(count: number, startId: number = 200): Conversation[] {
   const categoryIds = Object.keys(CATEGORIES);
   const threads: Conversation[] = [];
-
   for (let i = 0; i < count; i++) {
     const cat = categoryIds[i % categoryIds.length];
     const templates = TITLE_TEMPLATES[cat] || TITLE_TEMPLATES.skincare;
@@ -83,7 +76,6 @@ export function generateSeededThreads(count: number, startId: number = 200): Con
     const author = AUTHORS[i % AUTHORS.length];
     const days = (i % 90) + 1;
     const replyCount = (i % 6) + 1;
-
     const replies = Array.from({ length: replyCount }, (_, r) => {
       const replier = AUTHORS[(i + r + 1) % AUTHORS.length];
       return {
@@ -95,7 +87,6 @@ export function generateSeededThreads(count: number, startId: number = 200): Con
         likes: Math.floor(Math.random() * 12) + 1,
       };
     });
-
     threads.push({
       id: startId + i,
       title,
@@ -118,10 +109,8 @@ export function generateSeededThreads(count: number, startId: number = 200): Con
       replies,
     });
   }
-
   return threads;
 }
-
 export function mergeSeedWithExisting(
   existing: Conversation[],
   targetTotal: number = 100

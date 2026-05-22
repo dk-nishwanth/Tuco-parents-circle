@@ -1,13 +1,11 @@
 import { TRENDING } from '../data/products';
 import { Conversation } from '../types';
 import { Flame, Instagram, TrendingUp } from 'lucide-react';
-
 interface RightSidebarProps {
   onTrendingClick: (id: number) => void;
   featuredThreads?: Conversation[];
   onFeaturedClick?: (id: number) => void;
 }
-
 export function RightSidebar({
   onTrendingClick,
   featuredThreads = [],
@@ -23,11 +21,10 @@ export function RightSidebar({
           </h4>
         </div>
         <p className="font-sans text-xs text-neutral-600 leading-relaxed font-semibold">
-          Tuco Parents Circle is a safe, judgment-free space to ask questions, share experiences
-          and support each other. Hindi, Hinglish & regional languages welcome.
+          Tuco Parents Circle is a safe, judgment-free space to ask questions, share experiences and
+          support each other. Hindi, Hinglish & regional languages welcome.
         </p>
       </div>
-
       {featuredThreads.length > 0 && (
         <div className="bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 rounded-3xl p-5 shadow-xs">
           <h4 className="font-display font-black text-neutral-800 text-xs uppercase tracking-wider mb-3 pb-2 border-b border-purple-100 flex items-center gap-1.5">
@@ -38,7 +35,7 @@ export function RightSidebar({
             Featured on @tucokids Instagram — celebrate community voices
           </p>
           <div className="flex flex-col gap-2">
-            {featuredThreads.map((t) => (
+            {featuredThreads.map(t => (
               <button
                 key={t.id}
                 onClick={() => onFeaturedClick?.(t.id)}
@@ -55,7 +52,6 @@ export function RightSidebar({
           </div>
         </div>
       )}
-
       <div className="bg-white border border-neutral-200 rounded-3xl p-5 shadow-xs">
         <h4 className="font-display font-black text-neutral-800 text-xs uppercase tracking-wider mb-3.5 pb-2 border-b border-neutral-100 flex items-center gap-1.5">
           <TrendingUp className="w-4 h-4 text-tuco-cyan" />
@@ -76,7 +72,6 @@ export function RightSidebar({
           </div>
         </div>
       </div>
-
       <div className="bg-white border border-neutral-200 rounded-3xl p-5 shadow-xs text-left">
         <h4 className="font-display font-black text-neutral-800 text-xs uppercase tracking-wider mb-3 pb-2 border-b border-neutral-100 flex items-center gap-1.5">
           <Flame className="w-4 h-4 text-tuco-orange" />

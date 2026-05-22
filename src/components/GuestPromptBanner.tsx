@@ -1,20 +1,15 @@
 import { useState } from 'react';
 import { MessageSquarePlus, X } from 'lucide-react';
-
 const DISMISS_KEY = 'tuco_guest_prompt_dismissed';
-
 interface GuestPromptBannerProps {
   onSignIn: () => void;
   onNewPost: () => void;
 }
-
 export function GuestPromptBanner({ onSignIn, onNewPost }: GuestPromptBannerProps) {
   const [dismissed, setDismissed] = useState(() => {
     return localStorage.getItem(DISMISS_KEY) === 'true';
   });
-
   if (dismissed) return null;
-
   return (
     <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-6 md:max-w-sm z-40 animate-in slide-in-from-bottom-4 duration-300">
       <div className="bg-white border border-tuco-cyan/30 rounded-2xl shadow-lg p-4 flex gap-3 items-start">

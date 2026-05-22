@@ -1,15 +1,12 @@
 import { BadgeType, UserRole } from '../types';
 import { BADGE_DISPLAY } from '../utils/badgeSystem';
-
 interface AuthorBadgesProps {
   badges?: BadgeType[];
   role?: UserRole;
   compact?: boolean;
 }
-
 export function AuthorBadges({ badges = [], role, compact = true }: AuthorBadgesProps) {
   const topBadge = badges.length > 0 ? badges[badges.length - 1] : null;
-
   return (
     <span className="inline-flex items-center gap-0.5 shrink-0">
       {role === 'tuco_team' && (

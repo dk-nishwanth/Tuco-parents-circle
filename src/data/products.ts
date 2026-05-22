@@ -8,7 +8,7 @@ export const PRODUCTS: Product[] = [
     subtitle: '100% Mineral · Sweat & Water Resistant · Non-Greasy',
     tag: '⭐ Best Seller',
     price: '₹449',
-    linkUrl: 'https://tucokids.com/collections/sunscreen'
+    linkUrl: 'https://tucokids.com/products/sunscreen',
   },
   {
     id: 'shampoo',
@@ -17,7 +17,7 @@ export const PRODUCTS: Product[] = [
     subtitle: 'With Coconut Oil & Aloe Vera · Tear-Free',
     tag: '🌿 dermatologist tested',
     price: '₹379',
-    linkUrl: 'https://tucokids.com/collections/shampoo'
+    linkUrl: 'https://tucokids.com/products/shampoo',
   },
   {
     id: 'bodywash',
@@ -26,7 +26,7 @@ export const PRODUCTS: Product[] = [
     subtitle: 'With Oat Straw & Calendula · Hydrates & Calms Skin',
     tag: '💧 No Parabens',
     price: '₹399',
-    linkUrl: 'https://tucokids.com/collections/wash-soap'
+    linkUrl: 'https://tucokids.com/products/bodywash',
   },
   {
     id: 'moisturiser',
@@ -35,7 +35,7 @@ export const PRODUCTS: Product[] = [
     subtitle: 'With Shea Butter & Ceramides · Eczema Safe',
     tag: '✨ Eczema-Prone Safe',
     price: '₹429',
-    linkUrl: 'https://tucokids.com/collections/face-cream'
+    linkUrl: 'https://tucokids.com/products/moisturiser',
   },
 ];
 

@@ -1,5 +1,4 @@
 import { X, Bell, ThumbsUp, MessageCircle, Award } from 'lucide-react';
-
 interface Notification {
   id: number;
   type: 'reply' | 'like' | 'badge' | 'system';
@@ -8,12 +7,10 @@ interface Notification {
   time: string;
   read: boolean;
 }
-
 interface NotificationsPageProps {
   isOpen: boolean;
   onClose: () => void;
 }
-
 export function NotificationsPage({ isOpen, onClose }: NotificationsPageProps) {
   const notifications: Notification[] = [
     {
@@ -44,14 +41,12 @@ export function NotificationsPage({ isOpen, onClose }: NotificationsPageProps) {
       id: 4,
       type: 'system',
       title: 'Welcome to Tuco Parents Circle!',
-      description: 'We\'re glad you\'re here. Start engaging with the community.',
+      description: "We're glad you're here. Start engaging with the community.",
       time: '2 days ago',
       read: true,
     },
   ];
-
   if (!isOpen) return null;
-
   const getIcon = (type: Notification['type']) => {
     switch (type) {
       case 'reply':
@@ -64,11 +59,10 @@ export function NotificationsPage({ isOpen, onClose }: NotificationsPageProps) {
         return <Bell className="w-5 h-5 text-neutral-500" />;
     }
   };
-
   return (
     <div
       className="fixed inset-0 bg-neutral-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 overflow-y-auto"
-      onClick={(e) => e.target === e.currentTarget && onClose()}
+      onClick={e => e.target === e.currentTarget && onClose()}
     >
       <div className="bg-white border border-neutral-200 rounded-3xl w-full max-w-lg overflow-hidden shadow-xl animate-in fade-in-50 zoom-in-95 duration-200 relative my-auto">
         <div className="bg-neutral-50 px-5 py-4 border-b border-neutral-200 sticky top-0 z-10 flex items-center justify-between gap-4">
@@ -86,21 +80,20 @@ export function NotificationsPage({ isOpen, onClose }: NotificationsPageProps) {
             <X className="w-4 h-4" />
           </button>
         </div>
-
         <div className="modal-bd p-4 overflow-y-auto max-h-[70vh]">
           {notifications.length > 0 ? (
             <div className="space-y-3">
-              {notifications.map((notification) => (
+              {notifications.map(notification => (
                 <div
                   key={notification.id}
                   className={`p-4 rounded-xl border ${
-                    notification.read ? 'bg-white border-neutral-200' : 'bg-neutral-50 border-tuco-cyan/30'
+                    notification.read
+                      ? 'bg-white border-neutral-200'
+                      : 'bg-neutral-50 border-tuco-cyan/30'
                   } hover:shadow-xs transition-all`}
                 >
                   <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 mt-0.5">
-                      {getIcon(notification.type)}
-                    </div>
+                    <div className="flex-shrink-0 mt-0.5">{getIcon(notification.type)}</div>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-display font-black text-xs sm:text-sm text-neutral-800">
                         {notification.title}

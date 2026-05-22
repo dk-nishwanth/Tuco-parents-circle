@@ -1,40 +1,238 @@
 import { AIApprovalOutcome, GreyAreaFlag, UserRole } from '../types';
 
-// Comprehensive bad words list (English + common Hinglish/Indian expletives)
 const BAD_WORDS = [
-  'fuck', 'fucking', 'fucked', 'fuckoff', 'fuck off', 'shit', 'shitting', 'shitted', 'bullshit', 'horseshit',
-  'asshole', 'assholes', 'bitch', 'bitches', 'cunt', 'dick', 'dicks',
-  'piss', 'pissing', 'pissed', 'bastard', 'bastards', 'whore', 'whores',
-  'slut', 'sluts', 'twat', 'wanker', 'wankers', 'bollocks', 'arse', 'arsehole',
-  'motherfucker', 'motherfuckers', 'suck', 'sucks', 'sucked', 'sucking',
-  'chut', 'chutiya', 'chutiyap', 'gandu', 'gand', 'lund', 'lauda', 'laund',
-  'bc', 'mc', 'bhenchod', 'madarchod', 'bsdk', 'randi', 'sala', 'harami',
-  'kutta', 'kaminay', 'behenchod', 'maa chod', 'teri maa ki', 'chinal',
-  'fucktard', 'dipshit', 'douchebag', 'douchebags', 'jackass', 'jackasses',
-  'prick', 'pricks', 'cock', 'cocks', 'pussy', 'pussies', 'retard', 'retards',
-  'idiot', 'stupid', 'moron', 'dumb', 'ignorant', 'fool', 'foolish',
-  'shithead', 'shit head', 'dumbass', 'dumb ass', 'asswipe', 'ass wipe',
-  'cum', 'cumming', 'cumshot', 'blowjob', 'blow job', 'handjob', 'hand job',
-  'boobs', 'boob', 'tits', 'tit', 'porn', 'porno', 'nudity', 'nude',
-  'rape', 'rapist', 'molest', 'molester', 'pedo', 'pedophile',
-  'kill', 'killing', 'killed', 'murder', 'murderer', 'die', 'death',
-  'hate speech', 'hatespeech', 'nigger', 'nigga', 'chink', 'gook', 'spic',
-  'faggot', 'fag', 'dyke', 'tranny', 'transphobic', 'homophobic', 'racist',
-  'sexist', 'misogynist', 'misogynistic', 'terrorist', 'terrorism',
-  'chuti', 'chutiye', 'gandu', 'gandm', 'lundfad', 'laundfad',
-  'terimaa', 'teri maa', 'teri maa ki chut', 'bhosda', 'hosda', 'gaand', 'gaandu',
-  'chakal', 'akkal', 'bewakoof', 'bewaqoof', 'bewaqoof', 'ullu', 'ullu ka pattha',
-  'saala', 'saale', 'kaminey', 'kamina', 'chamar', 'chamaar', 'bhangi',
-  'low caste', 'dalit', 'obc', 'sc st', 'schedule caste', 'brahmin', 'kshatriya',
-  'vaishya', 'shudra', 'untouchable', 'casteist', 'anti-caste',
-  'the hell', 'what the hell', 'why the hell', 'how the hell', 'who the hell', 'hell yeah', 'hell no',
-  'damn', 'dammit', 'god damn', 'goddamn', 'hellish', 'bloody', 'bugger', 'sod',
-  'arsewipe', 'arsewipe', 'dickhead', 'dick head', 'prickish', 'coward', 'loser',
-  'pathetic', 'worthless', 'disgusting', 'vile', 'repulsive', 'scum', 'trash', 'garbage',
-  'wtf', 'what the f', 'what the fuck', 'what the heck', 'heck', 'jeez', 'jeezus',
-  'lame', 'pathetic', 'idiotic', 'moronic', 'brainless', 'mindless', 'witless',
-  'harrassment', 'harass', 'threaten', 'threat', 'intimidate', 'intimidation',
-  'disgrace', 'shameful', 'shame', 'disgraceful', 'horrendous', 'awful', 'terrible', 'horrible', 'disgusting'
+  'fuck',
+  'fucking',
+  'fucked',
+  'fuckoff',
+  'fuck off',
+  'shit',
+  'shitting',
+  'shitted',
+  'bullshit',
+  'horseshit',
+  'asshole',
+  'assholes',
+  'bitch',
+  'bitches',
+  'cunt',
+  'dick',
+  'dicks',
+  'piss',
+  'pissing',
+  'pissed',
+  'bastard',
+  'bastards',
+  'whore',
+  'whores',
+  'slut',
+  'sluts',
+  'twat',
+  'wanker',
+  'wankers',
+  'bollocks',
+  'arse',
+  'arsehole',
+  'motherfucker',
+  'motherfuckers',
+  'suck',
+  'sucks',
+  'sucked',
+  'sucking',
+  'chut',
+  'chutiya',
+  'chutiyap',
+  'gandu',
+  'gand',
+  'lund',
+  'lauda',
+  'laund',
+  'bc',
+  'mc',
+  'bhenchod',
+  'madarchod',
+  'bsdk',
+  'randi',
+  'sala',
+  'harami',
+  'kutta',
+  'kaminay',
+  'behenchod',
+  'maa chod',
+  'teri maa ki',
+  'chinal',
+  'fucktard',
+  'dipshit',
+  'douchebag',
+  'douchebags',
+  'jackass',
+  'jackasses',
+  'prick',
+  'pricks',
+  'cock',
+  'cocks',
+  'pussy',
+  'pussies',
+  'retard',
+  'retards',
+  'idiot',
+  'stupid',
+  'moron',
+  'dumb',
+  'ignorant',
+  'fool',
+  'foolish',
+  'shithead',
+  'shit head',
+  'dumbass',
+  'dumb ass',
+  'asswipe',
+  'ass wipe',
+  'cum',
+  'cumming',
+  'cumshot',
+  'blowjob',
+  'blow job',
+  'handjob',
+  'hand job',
+  'boobs',
+  'boob',
+  'tits',
+  'tit',
+  'porn',
+  'porno',
+  'nudity',
+  'nude',
+  'rape',
+  'rapist',
+  'molest',
+  'molester',
+  'pedo',
+  'pedophile',
+  'kill',
+  'killing',
+  'killed',
+  'murder',
+  'murderer',
+  'die',
+  'death',
+  'hate speech',
+  'hatespeech',
+  'nigger',
+  'nigga',
+  'chink',
+  'gook',
+  'spic',
+  'faggot',
+  'fag',
+  'dyke',
+  'tranny',
+  'transphobic',
+  'homophobic',
+  'racist',
+  'sexist',
+  'misogynist',
+  'misogynistic',
+  'terrorist',
+  'terrorism',
+  'chuti',
+  'chutiye',
+  'gandu',
+  'gandm',
+  'lundfad',
+  'laundfad',
+  'terimaa',
+  'teri maa',
+  'teri maa ki chut',
+  'bhosda',
+  'hosda',
+  'gaand',
+  'gaandu',
+  'chakal',
+  'akkal',
+  'bewakoof',
+  'bewaqoof',
+  'bewaqoof',
+  'ullu',
+  'ullu ka pattha',
+  'saala',
+  'saale',
+  'kaminey',
+  'kamina',
+  'chamar',
+  'chamaar',
+  'bhangi',
+  'low caste',
+  'dalit',
+  'obc',
+  'sc st',
+  'schedule caste',
+  'brahmin',
+  'kshatriya',
+  'vaishya',
+  'shudra',
+  'untouchable',
+  'casteist',
+  'anti-caste',
+  'the hell',
+  'what the hell',
+  'why the hell',
+  'how the hell',
+  'who the hell',
+  'hell yeah',
+  'hell no',
+  'damn',
+  'dammit',
+  'god damn',
+  'goddamn',
+  'hellish',
+  'bloody',
+  'bugger',
+  'sod',
+  'arsewipe',
+  'arsewipe',
+  'dickhead',
+  'dick head',
+  'prickish',
+  'coward',
+  'loser',
+  'pathetic',
+  'worthless',
+  'disgusting',
+  'vile',
+  'repulsive',
+  'scum',
+  'trash',
+  'garbage',
+  'wtf',
+  'what the f',
+  'what the fuck',
+  'what the heck',
+  'heck',
+  'jeez',
+  'jeezus',
+  'lame',
+  'pathetic',
+  'idiotic',
+  'moronic',
+  'brainless',
+  'mindless',
+  'witless',
+  'harrassment',
+  'harass',
+  'threaten',
+  'threat',
+  'intimidate',
+  'intimidation',
+  'disgrace',
+  'shameful',
+  'shame',
+  'disgraceful',
+  'horrendous',
+  'awful',
+  'terrible',
+  'horrible',
+  'disgusting',
 ];
 
 const BAD_WORD_PATTERNS = BAD_WORDS.map(word => {
@@ -53,7 +251,6 @@ const BAD_WORD_PATTERNS = BAD_WORDS.map(word => {
   return new RegExp(`\\b${word}\\b`, 'gi');
 });
 
-// AI Content Moderation Rules
 const MEDICAL_PRESCRIPTION_PATTERNS = [
   /give\s+\d+\s*(mg|ml|tablets?|drops?|pills?|spoons?|tsp|tbsp)/gi,
   /take\s+\d+\s*(mg|ml|tablets?|drops?|pills?|spoons?|tsp|tbsp)/gi,
@@ -142,10 +339,7 @@ const PHOTO_CONSENT_PATTERNS = [
   /posted\s+picture\s+without/gi,
 ];
 
-const SPAM_PATTERNS = [
-  /(\w+\s+){5,}(?:http|www)/gi,
-  /(?:http|www)[\w./?=&-]{50,}/gi,
-];
+const SPAM_PATTERNS = [/(\w+\s+){5,}(?:http|www)/gi, /(?:http|www)[\w./?=&-]{50,}/gi];
 
 const MISINFORMATION_PATTERNS = [
   /vaccines?\s+cause\s+autism/gi,
@@ -156,7 +350,6 @@ const MISINFORMATION_PATTERNS = [
   /avoid\s+vaccines/gi,
 ];
 
-// Grey area detection (Section 6 — allow with care, not auto-remove)
 const RELIGIOUS_CULTURAL_PATTERNS = [
   /namaz|puja|fasting|ramadan|ekadashi|jain\s+food|halal|kosher|caste|gotra|mundan|thread\s+ceremony|mundan|havan/gi,
   /religious|cultural\s+practice|tradition\s+in\s+our\s+family|in-laws\s+insist/gi,
@@ -187,16 +380,16 @@ export function detectHinglish(text: string): boolean {
 
 export function detectGreyAreas(content: string): GreyAreaFlag[] {
   const flags: GreyAreaFlag[] = [];
-  if (RELIGIOUS_CULTURAL_PATTERNS.some((p) => p.test(content))) {
+  if (RELIGIOUS_CULTURAL_PATTERNS.some(p => p.test(content))) {
     flags.push('religious_cultural');
   }
-  if (MENTAL_HEALTH_PATTERNS.some((p) => p.test(content))) {
+  if (MENTAL_HEALTH_PATTERNS.some(p => p.test(content))) {
     flags.push('mental_health');
   }
   if (detectHinglish(content)) {
     flags.push('hinglish');
   }
-  if (NEGATIVE_TUCO_PATTERNS.some((p) => p.test(content))) {
+  if (NEGATIVE_TUCO_PATTERNS.some(p => p.test(content))) {
     flags.push('negative_tuco_review');
   }
   return flags;
@@ -206,7 +399,7 @@ export function getGreyAreaReminder(flags: GreyAreaFlag[]): string | undefined {
   const reminders: string[] = [];
   if (flags.includes('religious_cultural')) {
     reminders.push(
-      'Religious and cultural parenting choices vary widely — please share respectfully and avoid judging other families\' practices.'
+      "Religious and cultural parenting choices vary widely — please share respectfully and avoid judging other families' practices."
     );
   }
   if (flags.includes('mental_health')) {
@@ -235,11 +428,9 @@ export function analyzeContent(postContent: string, category: string): Moderatio
   const greyAreaFlags = detectGreyAreas(postContent);
   const lowerContent = postContent.toLowerCase();
 
-  // Catch any form of "fuck" or "shit" - joined or spaced
   if (lowerContent.includes('fuck') || lowerContent.includes('shit')) {
     return { outcome: 'CLEAR_VIOLATION', greyAreaFlags };
   }
-  // Catch any form of "hell" with question words (why, what, how, who)
   if (lowerContent.includes('why') && lowerContent.includes('hell')) {
     return { outcome: 'CLEAR_VIOLATION', greyAreaFlags };
   }
@@ -252,42 +443,49 @@ export function analyzeContent(postContent: string, category: string): Moderatio
   if (lowerContent.includes('who') && lowerContent.includes('hell')) {
     return { outcome: 'CLEAR_VIOLATION', greyAreaFlags };
   }
-  if (BAD_WORD_PATTERNS.some((p) => p.test(postContent))) {
+  if (BAD_WORD_PATTERNS.some(p => p.test(postContent))) {
     return { outcome: 'CLEAR_VIOLATION', greyAreaFlags };
   }
-  if (MEDICAL_PRESCRIPTION_PATTERNS.some((p) => p.test(postContent))) {
+  if (MEDICAL_PRESCRIPTION_PATTERNS.some(p => p.test(postContent))) {
     return { outcome: 'CLEAR_VIOLATION', greyAreaFlags };
   }
-  if (DIAGNOSIS_PATTERNS.some((p) => p.test(postContent))) {
+  if (DIAGNOSIS_PATTERNS.some(p => p.test(postContent))) {
     return { outcome: 'CLEAR_VIOLATION', greyAreaFlags };
   }
-  if (PERSONAL_INFO_PATTERNS.some((p) => p.test(postContent))) {
+  if (PERSONAL_INFO_PATTERNS.some(p => p.test(postContent))) {
     return { outcome: 'CLEAR_VIOLATION', greyAreaFlags };
   }
-  if (BRAND_PROMOTION_PATTERNS.some((p) => p.test(postContent))) {
+  if (BRAND_PROMOTION_PATTERNS.some(p => p.test(postContent))) {
     return { outcome: 'CLEAR_VIOLATION', greyAreaFlags };
   }
-  if (PERSONAL_ATTACK_PATTERNS.some((p) => p.test(postContent))) {
+  if (PERSONAL_ATTACK_PATTERNS.some(p => p.test(postContent))) {
     return { outcome: 'CLEAR_VIOLATION', greyAreaFlags };
   }
-  if (DELIVERY_COMPLAINT_PATTERNS.some((p) => p.test(postContent))) {
+  if (DELIVERY_COMPLAINT_PATTERNS.some(p => p.test(postContent))) {
     return { outcome: 'CLEAR_VIOLATION', greyAreaFlags };
   }
-  if (PHOTO_CONSENT_PATTERNS.some((p) => p.test(postContent))) {
+  if (PHOTO_CONSENT_PATTERNS.some(p => p.test(postContent))) {
     return { outcome: 'CLEAR_VIOLATION', greyAreaFlags };
   }
-  if (MISINFORMATION_PATTERNS.some((p) => p.test(postContent))) {
+  if (MISINFORMATION_PATTERNS.some(p => p.test(postContent))) {
     return { outcome: 'CLEAR_VIOLATION', greyAreaFlags };
   }
 
-  if (SPAM_PATTERNS.some((p) => p.test(postContent))) {
-    return { outcome: 'UNCERTAIN', greyAreaFlags, civilityReminder: getGreyAreaReminder(greyAreaFlags) };
+  if (SPAM_PATTERNS.some(p => p.test(postContent))) {
+    return {
+      outcome: 'UNCERTAIN',
+      greyAreaFlags,
+      civilityReminder: getGreyAreaReminder(greyAreaFlags),
+    };
   }
   if (postContent.trim().length < 20) {
-    return { outcome: 'UNCERTAIN', greyAreaFlags, civilityReminder: getGreyAreaReminder(greyAreaFlags) };
+    return {
+      outcome: 'UNCERTAIN',
+      greyAreaFlags,
+      civilityReminder: getGreyAreaReminder(greyAreaFlags),
+    };
   }
 
-  // Grey areas with Hinglish: allow, attach reminder only
   if (greyAreaFlags.length > 0) {
     return {
       outcome: 'CLEAN',
@@ -317,7 +515,6 @@ export function shouldTriggerHumanReview(
   return true;
 }
 
-/** Lower number = reviewed sooner. Trusted members deprioritized (higher = back of queue). */
 export function getReviewPriority(
   userRole: UserRole | undefined,
   trustScore: number,
@@ -332,7 +529,11 @@ export function getReviewPriority(
   return priority;
 }
 
-export function canTucoTeamPost(category: string, title: string, text: string): { allowed: boolean; reason?: string } {
+export function canTucoTeamPost(
+  category: string,
+  title: string,
+  text: string
+): { allowed: boolean; reason?: string } {
   const combined = `${title} ${text}`.toLowerCase();
   const productRelevant =
     /tuco|sunscreen|moistur|bodywash|shampoo|spf|skincare|product|ingredient|formula|spf|kids\s+care/i.test(

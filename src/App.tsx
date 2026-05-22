@@ -17,7 +17,14 @@ import { WarningModal } from './components/WarningModal';
 import { NotificationsPage } from './components/NotificationsPage';
 import { ReportModal } from './components/ReportModal';
 import { INITIAL_CONVERSATIONS } from './data/conversations';
-import { Conversation, Reply, User, ModerationStatus, DateFilter, PendingReviewSession } from './types';
+import {
+  Conversation,
+  Reply,
+  User,
+  ModerationStatus,
+  DateFilter,
+  PendingReviewSession,
+} from './types';
 import {
   analyzeContent,
   canTucoTeamPost,
@@ -31,20 +38,22 @@ import {
   getRelatedThreads,
   getFeaturedThreads,
 } from './utils/helpers';
-import { sendThreadApprovalEmail, shouldSendWeeklyEmail, sendWeeklyEngagementToAllUsers } from './utils/emailService';
+import {
+  sendThreadApprovalEmail,
+  shouldSendWeeklyEmail,
+  sendWeeklyEngagementToAllUsers,
+} from './utils/emailService';
 import { mergeSeedWithExisting } from './utils/seedContent';
 import tucoLogo from './assets/tuco-logo.webp';
-
 function enrichConversations(threads: Conversation[]): Conversation[] {
   return threads.map((c, i) => ({
     ...c,
     createdAt: c.createdAt || new Date(Date.now() - (i + 1) * 86400000).toISOString(),
     moderationStatus: c.moderationStatus || 'approved',
-    isFeatured: c.isFeatured ?? (c.id === 2),
+    isFeatured: c.isFeatured ?? c.id === 2,
     featuredLabel: c.featuredLabel ?? (c.id === 2 ? 'Circle Mom of the Month' : undefined),
   }));
 }
-
 const DEMO_MODERATOR: User = {
   id: 'mod_demo',
   username: 'CircleMod',
@@ -60,7 +69,6 @@ const DEMO_MODERATOR: User = {
   trustScore: 1,
   emailNotifications: true,
 };
-
 export default function App() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeCategory, setActiveCategory] = useState<string>('all');
@@ -75,9 +83,10 @@ export default function App() {
   const [isAdminOpen, setIsAdminOpen] = useState<boolean>(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState<boolean>(false);
   const [isReportOpen, setIsReportOpen] = useState<boolean>(false);
-  const [reportTarget, setReportTarget] = useState<{ type: 'thread' | 'reply'; id: number } | null>(null);
+  const [reportTarget, setReportTarget] = useState<{ type: 'thread' | 'reply'; id: number } | null>(
+    null
+  );
   const [pendingReview, setPendingReview] = useState<PendingReviewSession | null>(null);
-
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [users, setUsers] = useState<Record<string, User>>({});
   const [votedThreads, setVotedThreads] = useState<Record<number, 'up' | 'down' | null>>({});
@@ -94,31 +103,27 @@ export default function App() {
     title: string;
     message: string;
   }>({ isOpen: false, title: '', message: '' });
-
   useEffect(() => {
-    // Check if we need to reseed data
     const needsReseed = localStorage.getItem('tuco_seed_version') !== 'v2';
-    
     if (needsReseed) {
       localStorage.removeItem('tuco_conversations_v1');
       localStorage.removeItem('tuco_votes_v1');
       localStorage.removeItem('tuco_saved_posts_v1');
       localStorage.removeItem('tuco_current_user');
       localStorage.removeItem('tuco_users_db');
-      
       const seeded = enrichConversations(mergeSeedWithExisting(INITIAL_CONVERSATIONS, 100));
       setConversations(seeded);
       localStorage.setItem('tuco_conversations_v1', JSON.stringify(seeded));
       setUsers({ [DEMO_MODERATOR.id]: DEMO_MODERATOR });
-      localStorage.setItem('tuco_users_db', JSON.stringify({ [DEMO_MODERATOR.id]: DEMO_MODERATOR }));
-      
+      localStorage.setItem(
+        'tuco_users_db',
+        JSON.stringify({ [DEMO_MODERATOR.id]: DEMO_MODERATOR })
+      );
       setVotedThreads({});
       setSavedPosts([]);
       setCurrentUser(null);
-      
       localStorage.setItem('tuco_seed_version', 'v2');
     } else {
-      // Load existing data
       const cachedData = localStorage.getItem('tuco_conversations_v1');
       if (cachedData) {
         try {
@@ -131,34 +136,24 @@ export default function App() {
         setConversations(seeded);
         localStorage.setItem('tuco_conversations_v1', JSON.stringify(seeded));
       }
-
       const cachedVotes = localStorage.getItem('tuco_votes_v1');
       if (cachedVotes) {
         try {
           setVotedThreads(JSON.parse(cachedVotes));
-        } catch {
-          /* ignore */
-        }
+        } catch {}
       }
-
       const cachedSavedPosts = localStorage.getItem('tuco_saved_posts_v1');
       if (cachedSavedPosts) {
         try {
           setSavedPosts(JSON.parse(cachedSavedPosts));
-        } catch {
-          /* ignore */
-        }
+        } catch {}
       }
-
       const cachedUser = localStorage.getItem('tuco_current_user');
       if (cachedUser) {
         try {
           setCurrentUser(JSON.parse(cachedUser));
-        } catch {
-          /* ignore */
-        }
+        } catch {}
       }
-
       const cachedUsers = localStorage.getItem('tuco_users_db');
       if (cachedUsers) {
         try {
@@ -168,15 +163,16 @@ export default function App() {
         }
       } else {
         setUsers({ [DEMO_MODERATOR.id]: DEMO_MODERATOR });
-        localStorage.setItem('tuco_users_db', JSON.stringify({ [DEMO_MODERATOR.id]: DEMO_MODERATOR }));
+        localStorage.setItem(
+          'tuco_users_db',
+          JSON.stringify({ [DEMO_MODERATOR.id]: DEMO_MODERATOR })
+        );
       }
     }
-
     const minDisplayMs = 1200;
     const readyTimer = setTimeout(() => setIsAppReady(true), minDisplayMs);
     return () => clearTimeout(readyTimer);
   }, []);
-
   useEffect(() => {
     const cachedUsers = localStorage.getItem('tuco_users_db');
     const cachedConvs = localStorage.getItem('tuco_conversations_v1');
@@ -185,22 +181,17 @@ export default function App() {
         const u = JSON.parse(cachedUsers);
         const c = JSON.parse(cachedConvs);
         sendWeeklyEngagementToAllUsers(u, c);
-      } catch {
-        /* ignore */
-      }
+      } catch {}
     }
   }, []);
-
   const saveConversations = (updated: Conversation[]) => {
     setConversations(updated);
     localStorage.setItem('tuco_conversations_v1', JSON.stringify(updated));
   };
-
   const saveVotes = (updated: Record<number, 'up' | 'down' | null>) => {
     setVotedThreads(updated);
     localStorage.setItem('tuco_votes_v1', JSON.stringify(updated));
   };
-
   const toggleSavedPost = (threadId: number) => {
     if (!currentUser) {
       setIsAuthOpen(true);
@@ -208,7 +199,7 @@ export default function App() {
     }
     let newSaved: number[];
     if (savedPosts.includes(threadId)) {
-      newSaved = savedPosts.filter((id) => id !== threadId);
+      newSaved = savedPosts.filter(id => id !== threadId);
     } else {
       newSaved = [...savedPosts, threadId];
     }
@@ -230,7 +221,6 @@ export default function App() {
       });
     }
   };
-
   const saveUser = (user: User | null) => {
     setCurrentUser(user);
     if (user) {
@@ -250,11 +240,10 @@ export default function App() {
       localStorage.removeItem('tuco_current_user');
     }
   };
-
   const checkAndAwardBadges = (user: User) => {
     const eligibleBadges = checkEligibleBadges(user);
     if (eligibleBadges.length > 0) {
-      const newBadges = eligibleBadges.map((badgeType) => ({
+      const newBadges = eligibleBadges.map(badgeType => ({
         type: badgeType,
         earnedAt: new Date().toISOString(),
         discountCode: generateDiscountCode(user.id, badgeType),
@@ -263,7 +252,7 @@ export default function App() {
       const updatedUser = { ...user, badges: [...user.badges, ...newBadges] };
       saveUser(updatedUser);
       const badgeNames = eligibleBadges
-        .map((b) => `${BADGE_DISPLAY[b].icon} ${BADGE_DISPLAY[b].name}`)
+        .map(b => `${BADGE_DISPLAY[b].icon} ${BADGE_DISPLAY[b].name}`)
         .join(', ');
       setWarningModal({
         isOpen: true,
@@ -273,7 +262,6 @@ export default function App() {
       });
     }
   };
-
   const handleSignup = (email: string, username: string, city: string, childAge: string) => {
     const newUser: User = {
       id: `user_${Date.now()}`,
@@ -298,20 +286,15 @@ export default function App() {
     saveUser(newUser);
     setIsAuthOpen(false);
   };
-
   const handleLogin = (email: string, password: string) => {
     const normalizedEmail = email.trim().toLowerCase();
     if (!normalizedEmail) return;
-
     setSessionCredentials({ email: email.trim(), password });
-
-    let user = Object.values(users).find((u) => u.email.toLowerCase() === normalizedEmail);
-
+    let user = Object.values(users).find(u => u.email.toLowerCase() === normalizedEmail);
     if (normalizedEmail === DEMO_MODERATOR.email.toLowerCase()) {
       user = DEMO_MODERATOR;
     } else if (!user) {
-      const username =
-        normalizedEmail.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '_') || 'Parent';
+      const username = normalizedEmail.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '_') || 'Parent';
       user = {
         id: `user_${Date.now()}`,
         username,
@@ -331,53 +314,42 @@ export default function App() {
       setUsers(updatedUsers);
       localStorage.setItem('tuco_users_db', JSON.stringify(updatedUsers));
     }
-
     saveUser(user);
     setIsAuthOpen(false);
   };
-
   const handleLogout = () => {
     setSessionCredentials(null);
     saveUser(null);
   };
-
-  const selectedThread = conversations.find((c) => c.id === selectedThreadId) || null;
+  const selectedThread = conversations.find(c => c.id === selectedThreadId) || null;
   const isSearchMode = searchTerm.trim().length > 0;
-
   const searchResults = useMemo(() => {
     const ranked = searchThreadsWithRanking(conversations, searchTerm, 50);
     return filterThreads(ranked, '', searchCategoryFilter, searchDateFilter);
   }, [conversations, searchTerm, searchCategoryFilter, searchDateFilter]);
-
   const filteredConversations = useMemo(() => {
     if (activeCategory === 'saved') {
-      return conversations.filter((c) => savedPosts.includes(c.id));
+      return conversations.filter(c => savedPosts.includes(c.id));
     }
     if (activeCategory === 'sidebar-open') {
       return conversations;
     }
     return conversations;
   }, [conversations, activeCategory, savedPosts]);
-
   const featuredThreads = useMemo(() => getFeaturedThreads(conversations), [conversations]);
-
   const pendingThreads = useMemo(
     () =>
-      [...conversations.filter((c) => c.moderationStatus === 'pending')].sort(
+      [...conversations.filter(c => c.moderationStatus === 'pending')].sort(
         (a, b) => (a.reviewPriority ?? 50) - (b.reviewPriority ?? 50)
       ),
     [conversations]
   );
-
   const handleThreadOpen = (threadId: number) => {
-    const updated = conversations.map((c) =>
-      c.id === threadId ? { ...c, views: c.views + 1 } : c
-    );
+    const updated = conversations.map(c => (c.id === threadId ? { ...c, views: c.views + 1 } : c));
     saveConversations(updated);
     setSelectedThreadId(threadId);
     setIsModalOpen(true);
   };
-
   const handleVote = (threadId: number, type: 'up' | 'down') => {
     if (!currentUser) {
       setIsAuthOpen(true);
@@ -386,7 +358,6 @@ export default function App() {
     const previousState = votedThreads[threadId] || null;
     let voteDiff = 0;
     let upvoteDiff = 0;
-
     if (previousState === type) {
       voteDiff = type === 'up' ? -1 : 1;
       upvoteDiff = type === 'up' ? -1 : 0;
@@ -403,19 +374,16 @@ export default function App() {
       }
       saveVotes({ ...votedThreads, [threadId]: type });
     }
-
-    const updated = conversations.map((c) =>
+    const updated = conversations.map(c =>
       c.id === threadId ? { ...c, votes: c.votes + voteDiff } : c
     );
     saveConversations(updated);
-
     if (upvoteDiff !== 0 && currentUser) {
       const updatedUser = { ...currentUser, totalUpvotes: currentUser.totalUpvotes + upvoteDiff };
       saveUser(updatedUser);
       checkAndAwardBadges(updatedUser);
     }
   };
-
   const detectProductRecommendation = (text: string): string | undefined => {
     const raw = text.toLowerCase();
     if (/sunscreen|sunblock|spf|cricket|tan|outdoor/.test(raw)) return 'sunscreen';
@@ -424,26 +392,23 @@ export default function App() {
     if (/shampoo|hair|scalp|lice|conditioning/.test(raw)) return 'shampoo';
     return undefined;
   };
-
   const handleAddReply = (threadId: number, name: string, city: string, text: string) => {
     if (!currentUser) {
       setIsAuthOpen(true);
       return;
     }
-
-    const thread = conversations.find((c) => c.id === threadId);
+    const thread = conversations.find(c => c.id === threadId);
     const analysis = analyzeContent(text, thread?.category || 'general');
-
     if (analysis.outcome === 'CLEAR_VIOLATION') {
       setWarningModal({
         isOpen: true,
         type: 'error',
         title: 'Reply Rejected',
-        message: 'Your reply was rejected due to community guidelines violation. Please review the Moderation Rules.',
+        message:
+          'Your reply was rejected due to community guidelines violation. Please review the Moderation Rules.',
       });
       return;
     }
-
     const newReply: Reply = {
       id: Date.now(),
       author: name,
@@ -453,9 +418,9 @@ export default function App() {
       tucoRec: detectProductRecommendation(text),
       likes: 0,
       authorRole: currentUser.role,
-      authorBadges: currentUser.badges.map((b) => b.type),
+      authorBadges: currentUser.badges.map(b => b.type),
     };
-    const updated = conversations.map((c) =>
+    const updated = conversations.map(c =>
       c.id === threadId ? { ...c, replies: [...c.replies, newReply] } : c
     );
     const updatedUser = { ...currentUser, replyCount: currentUser.replyCount + 1 };
@@ -463,7 +428,6 @@ export default function App() {
     checkAndAwardBadges(updatedUser);
     saveConversations(updated);
   };
-
   const handleReportReply = (threadId: number, replyId: number) => {
     if (!currentUser) {
       setIsAuthOpen(true);
@@ -472,7 +436,6 @@ export default function App() {
     setReportTarget({ type: 'reply', id: replyId });
     setIsReportOpen(true);
   };
-
   const handleSubmitReport = (reason: string, details: string) => {
     setWarningModal({
       isOpen: true,
@@ -482,15 +445,14 @@ export default function App() {
     });
     setReportTarget(null);
   };
-
   const handleEditReply = (threadId: number, replyId: number, newText: string) => {
     if (!currentUser) {
       setIsAuthOpen(true);
       return;
     }
-    const updated = conversations.map((c) => {
+    const updated = conversations.map(c => {
       if (c.id === threadId) {
-        const updatedReplies = c.replies.map((r) => {
+        const updatedReplies = c.replies.map(r => {
           if (r.id === replyId) {
             return { ...r, text: newText };
           }
@@ -509,15 +471,14 @@ export default function App() {
       message: 'Your reply has been successfully updated!',
     });
   };
-
   const handleDeleteReply = (threadId: number, replyId: number) => {
     if (!currentUser) {
       setIsAuthOpen(true);
       return;
     }
-    const updated = conversations.map((c) => {
+    const updated = conversations.map(c => {
       if (c.id === threadId) {
-        return { ...c, replies: c.replies.filter((r) => r.id !== replyId) };
+        return { ...c, replies: c.replies.filter(r => r.id !== replyId) };
       }
       return c;
     });
@@ -530,26 +491,22 @@ export default function App() {
       message: 'Your reply has been deleted.',
     });
   };
-
   const handleLikeReply = (threadId: number, replyId: number) => {
     if (!currentUser) {
       setIsAuthOpen(true);
       return;
     }
-    const updated = conversations.map((c) => {
+    const updated = conversations.map(c => {
       if (c.id === threadId) {
         return {
           ...c,
-          replies: c.replies.map((r) =>
-            r.id === replyId ? { ...r, likes: (r.likes || 0) + 1 } : r
-          ),
+          replies: c.replies.map(r => (r.id === replyId ? { ...r, likes: (r.likes || 0) + 1 } : r)),
         };
       }
       return c;
     });
     saveConversations(updated);
   };
-
   const handleCreateNewThread = (
     title: string,
     category: string,
@@ -561,7 +518,6 @@ export default function App() {
       setIsAuthOpen(true);
       return;
     }
-
     if (currentUser.role === 'tuco_team') {
       const teamCheck = canTucoTeamPost(category, title, text);
       if (!teamCheck.allowed) {
@@ -574,7 +530,6 @@ export default function App() {
         return;
       }
     }
-
     const accountAgeDays =
       (Date.now() - new Date(currentUser.createdAt).getTime()) / (1000 * 60 * 60 * 24);
     if (currentUser.role === 'member' && accountAgeDays < 1) {
@@ -587,15 +542,11 @@ export default function App() {
       });
       return;
     }
-
     const analysis = analyzeContent(text + ' ' + title, category);
     let moderationStatus: ModerationStatus = 'pending';
-
     if (analysis.outcome === 'CLEAR_VIOLATION') {
       moderationStatus = 'rejected';
     }
-    // All new threads go to human review, no auto-approval
-
     const newThread: Conversation = {
       id: Date.now(),
       title,
@@ -608,7 +559,7 @@ export default function App() {
         time: 'Just now',
         text: analysis.civilityReminder ? `${text}\n\n---\n💛 ${analysis.civilityReminder}` : text,
         authorRole: currentUser.role,
-        authorBadges: currentUser.badges.map((b) => b.type),
+        authorBadges: currentUser.badges.map(b => b.type),
       },
       replies: [],
       moderationStatus,
@@ -621,24 +572,21 @@ export default function App() {
         analysis.greyAreaFlags
       ),
     };
-
     if (moderationStatus === 'rejected') {
       setWarningModal({
         isOpen: true,
         type: 'error',
         title: 'Post Rejected',
-        message: 'Your post was rejected due to community guidelines violation. Please review the Moderation Rules.',
+        message:
+          'Your post was rejected due to community guidelines violation. Please review the Moderation Rules.',
       });
       return;
     }
-
     const updatedUser = { ...currentUser, postCount: currentUser.postCount + 1 };
     saveUser(updatedUser);
     checkAndAwardBadges(updatedUser);
-
     saveConversations([newThread, ...conversations]);
     setIsNewPostOpen(false);
-
     if (moderationStatus === 'pending') {
       setPendingReview({
         threadId: newThread.id,
@@ -655,16 +603,14 @@ export default function App() {
       });
     }
   };
-
   const handleApproveThread = (threadId: number) => {
-    const thread = conversations.find((c) => c.id === threadId);
-    const updated = conversations.map((c) =>
+    const thread = conversations.find(c => c.id === threadId);
+    const updated = conversations.map(c =>
       c.id === threadId
         ? { ...c, moderationStatus: 'approved' as ModerationStatus, moderatedBy: currentUser?.id }
         : c
     );
     saveConversations(updated);
-
     if (thread?.authorId) {
       const author = users[thread.authorId];
       if (author?.email) {
@@ -678,9 +624,8 @@ export default function App() {
       message: 'Thread approved and is now live! Approval email sent.',
     });
   };
-
   const handleRejectThread = (threadId: number, reason: string) => {
-    const updated = conversations.map((c) =>
+    const updated = conversations.map(c =>
       c.id === threadId
         ? {
             ...c,
@@ -698,16 +643,12 @@ export default function App() {
       message: `Thread rejected. Reason: ${reason}`,
     });
   };
-
   const handlePinThread = (threadId: number, pinned: boolean) => {
-    saveConversations(
-      conversations.map((c) => (c.id === threadId ? { ...c, isPinned: pinned } : c))
-    );
+    saveConversations(conversations.map(c => (c.id === threadId ? { ...c, isPinned: pinned } : c)));
   };
-
   const handleFeatureThread = (threadId: number, featured: boolean) => {
     saveConversations(
-      conversations.map((c) =>
+      conversations.map(c =>
         c.id === threadId
           ? {
               ...c,
@@ -718,7 +659,6 @@ export default function App() {
       )
     );
   };
-
   const handleResetToDefault = () => {
     localStorage.removeItem('tuco_conversations_v1');
     localStorage.removeItem('tuco_votes_v1');
@@ -736,20 +676,16 @@ export default function App() {
     setCurrentUser(null);
     setUsers({ [DEMO_MODERATOR.id]: DEMO_MODERATOR });
   };
-
   const openNewPost = () => {
     if (!currentUser) setIsAuthOpen(true);
     else setIsNewPostOpen(true);
   };
-
   const relatedForReview = pendingReview
     ? getRelatedThreads(conversations, pendingReview.category, pendingReview.threadId)
     : [];
-
   if (!isAppReady) {
     return <LoadingScreen />;
   }
-
   return (
     <div className="min-h-screen bg-[#FAF8F4] flex flex-col font-sans text-neutral-800">
       <Header
@@ -764,14 +700,15 @@ export default function App() {
         onAdminClick={() => setIsAdminOpen(true)}
         onProfileClick={() => setIsProfileOpen(true)}
         onNotificationsClick={() => setIsNotificationsOpen(true)}
-        onOpenCategories={() => setActiveCategory(activeCategory === 'sidebar-open' ? 'all' : 'sidebar-open')}
-        onSuggestionSelect={(id) => {
-          const thread = conversations.find((c) => c.id === id);
+        onOpenCategories={() =>
+          setActiveCategory(activeCategory === 'sidebar-open' ? 'all' : 'sidebar-open')
+        }
+        onSuggestionSelect={id => {
+          const thread = conversations.find(c => c.id === id);
           if (thread) setSearchTerm(thread.title.split(' ').slice(0, 3).join(' '));
           handleThreadOpen(id);
         }}
       />
-
       <div className="layout flex-1 w-full mx-auto px-3 sm:px-4 md:px-8 py-4 sm:py-8">
         {activeCategory === 'sidebar-open' ? (
           <div className="lg:hidden space-y-4 mb-6">
@@ -792,7 +729,6 @@ export default function App() {
                 savedPosts={savedPosts}
               />
             </div>
-
             <div className="min-w-0">
               {isSearchMode ? (
                 <SearchResults
@@ -824,7 +760,6 @@ export default function App() {
                 />
               )}
             </div>
-
             <div className="hidden lg:block">
               <RightSidebar
                 onTrendingClick={handleThreadOpen}
@@ -835,7 +770,6 @@ export default function App() {
           </div>
         )}
       </div>
-
       <footer className="bg-white border-t border-neutral-200/90 py-10 px-4 mt-12 text-center text-xs text-neutral-400 font-bold font-sans">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
@@ -849,11 +783,9 @@ export default function App() {
           </p>
         </div>
       </footer>
-
       {!currentUser && (
         <GuestPromptBanner onSignIn={() => setIsAuthOpen(true)} onNewPost={openNewPost} />
       )}
-
       <Modal
         thread={selectedThread}
         isOpen={isModalOpen}
@@ -869,21 +801,18 @@ export default function App() {
         currentUser={currentUser}
         users={users}
       />
-
       <NewPostModal
         isOpen={isNewPostOpen}
         onClose={() => setIsNewPostOpen(false)}
         onSubmit={handleCreateNewThread}
         isTucoTeam={currentUser?.role === 'tuco_team'}
       />
-
       <AuthModal
         isOpen={isAuthOpen}
         onClose={() => setIsAuthOpen(false)}
         onSignup={handleSignup}
         onLogin={handleLogin}
       />
-
       {currentUser && (
         <ProfileModal
           isOpen={isProfileOpen}
@@ -895,19 +824,17 @@ export default function App() {
           onClose={() => setIsProfileOpen(false)}
         />
       )}
-
       {pendingReview && (
         <ThreadReviewConfirmation
           threadTitle={pendingReview.title}
           relatedThreads={relatedForReview}
-          onBrowseRelated={(id) => {
+          onBrowseRelated={id => {
             setPendingReview(null);
             handleThreadOpen(id);
           }}
           onClose={() => setPendingReview(null)}
         />
       )}
-
       {isModerationOpen && (
         <div className="fixed inset-0 bg-neutral-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 overflow-y-auto">
           <div className="bg-white border border-neutral-200 rounded-3xl w-full max-w-3xl overflow-hidden shadow-xl relative">
@@ -925,14 +852,13 @@ export default function App() {
           </div>
         </div>
       )}
-
       {isAdminOpen && (
         <div className="fixed inset-0 bg-neutral-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 overflow-y-auto">
           <div className="w-full max-w-lg relative">
             <AdminToolsPanel
               conversations={conversations}
               users={users}
-              onSeedContent={(threads) => saveConversations(enrichConversations(threads))}
+              onSeedContent={threads => saveConversations(enrichConversations(threads))}
               onPinThread={handlePinThread}
               onFeatureThread={handleFeatureThread}
               onClose={() => setIsAdminOpen(false)}
@@ -940,7 +866,6 @@ export default function App() {
           </div>
         </div>
       )}
-
       <WarningModal
         isOpen={warningModal.isOpen}
         type={warningModal.type}
@@ -948,12 +873,10 @@ export default function App() {
         message={warningModal.message}
         onClose={() => setWarningModal({ ...warningModal, isOpen: false })}
       />
-
       <NotificationsPage
         isOpen={isNotificationsOpen}
         onClose={() => setIsNotificationsOpen(false)}
       />
-
       <ReportModal
         isOpen={isReportOpen}
         onClose={() => {

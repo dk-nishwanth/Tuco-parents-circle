@@ -3,7 +3,6 @@ import { ThreadCard } from './ThreadCard';
 import { CATEGORIES } from '../data/categories';
 import { Search } from 'lucide-react';
 import { User } from '../types';
-
 interface SearchResultsProps {
   results: Conversation[];
   query: string;
@@ -18,7 +17,6 @@ interface SearchResultsProps {
   users: Record<string, User>;
   isLoading?: boolean;
 }
-
 const DATE_OPTIONS: { value: DateFilter; label: string }[] = [
   { value: 'all', label: 'Any time' },
   { value: 'today', label: 'Today' },
@@ -26,7 +24,6 @@ const DATE_OPTIONS: { value: DateFilter; label: string }[] = [
   { value: 'month', label: 'This month' },
   { value: 'year', label: 'This year' },
 ];
-
 export function SearchResults({
   results,
   query,
@@ -62,15 +59,14 @@ export function SearchResults({
             </>
           )}
         </p>
-
         <div className="flex flex-wrap gap-2">
           <select
             value={categoryFilter}
-            onChange={(e) => onCategoryFilterChange(e.target.value)}
+            onChange={e => onCategoryFilterChange(e.target.value)}
             className="text-xs font-display font-bold border border-neutral-200 rounded-lg px-3 py-2 bg-white text-neutral-700"
           >
             <option value="all">All categories</option>
-            {Object.values(CATEGORIES).map((cat) => (
+            {Object.values(CATEGORIES).map(cat => (
               <option key={cat.id} value={cat.id}>
                 {cat.icon} {cat.label}
               </option>
@@ -78,10 +74,10 @@ export function SearchResults({
           </select>
           <select
             value={dateFilter}
-            onChange={(e) => onDateFilterChange(e.target.value as DateFilter)}
+            onChange={e => onDateFilterChange(e.target.value as DateFilter)}
             className="text-xs font-display font-bold border border-neutral-200 rounded-lg px-3 py-2 bg-white text-neutral-700"
           >
-            {DATE_OPTIONS.map((opt) => (
+            {DATE_OPTIONS.map(opt => (
               <option key={opt.value} value={opt.value}>
                 {opt.label}
               </option>
@@ -89,10 +85,9 @@ export function SearchResults({
           </select>
         </div>
       </div>
-
       {results.length > 0 ? (
         <div className="flex flex-col gap-4">
-          {results.map((thread) => (
+          {results.map(thread => (
             <ThreadCard
               key={thread.id}
               thread={thread}

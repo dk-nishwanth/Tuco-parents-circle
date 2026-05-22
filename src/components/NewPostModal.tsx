@@ -1,14 +1,12 @@
 import React, { useState, ChangeEvent, FormEvent } from 'react';
 import { CATEGORIES } from '../data/categories';
 import { Send, X } from 'lucide-react';
-
 interface NewPostModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (title: string, category: string, author: string, city: string, text: string) => void;
   isTucoTeam?: boolean;
 }
-
 export function NewPostModal({ isOpen, onClose, onSubmit, isTucoTeam }: NewPostModalProps) {
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('skincare');
@@ -16,9 +14,7 @@ export function NewPostModal({ isOpen, onClose, onSubmit, isTucoTeam }: NewPostM
   const [city, setCity] = useState('');
   const [text, setText] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
-
   if (!isOpen) return null;
-
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!title.trim()) {
@@ -37,10 +33,7 @@ export function NewPostModal({ isOpen, onClose, onSubmit, isTucoTeam }: NewPostM
       setErrorMsg('Please write an explanation / story text.');
       return;
     }
-
     onSubmit(title.trim(), category, author.trim(), city.trim(), text.trim());
-
-    // Reset fields
     setTitle('');
     setCategory('skincare');
     setAuthor('');
@@ -48,15 +41,14 @@ export function NewPostModal({ isOpen, onClose, onSubmit, isTucoTeam }: NewPostM
     setText('');
     setErrorMsg('');
   };
-
   return (
     <div
       className="fixed inset-0 bg-neutral-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 z-50 overflow-y-auto"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      {/* Modal Container */}
+      {}
       <div className="bg-white border border-neutral-200 rounded-3xl w-full max-w-xl overflow-hidden shadow-xl animate-in fade-in-50 zoom-in-95 duration-200 text-left my-auto flex flex-col">
-        {/* Header */}
+        {}
         <div className="bg-neutral-50 px-5 py-4 border-b border-neutral-150 flex items-center justify-between">
           <h3 className="font-display font-black text-lg text-neutral-800 flex items-center gap-2">
             ✏️ start a parenting discussion
@@ -68,8 +60,7 @@ export function NewPostModal({ isOpen, onClose, onSubmit, isTucoTeam }: NewPostM
             <X className="w-4 h-4" />
           </button>
         </div>
-
-        {/* Input fields */}
+        {}
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
           {isTucoTeam && (
             <div className="text-xs bg-orange-50 border border-orange-200 text-orange-800 rounded-xl p-3 font-medium">
@@ -97,7 +88,6 @@ export function NewPostModal({ isOpen, onClose, onSubmit, isTucoTeam }: NewPostM
               ))}
             </select>
           </div>
-
           <div>
             <label className="block text-xs font-bold text-neutral-700 mb-1.5 text-left">
               Your Discussion Question or Title
@@ -111,7 +101,6 @@ export function NewPostModal({ isOpen, onClose, onSubmit, isTucoTeam }: NewPostM
               onChange={(e: ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
             />
           </div>
-
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-bold text-neutral-700 mb-1.5 text-left">
@@ -140,7 +129,6 @@ export function NewPostModal({ isOpen, onClose, onSubmit, isTucoTeam }: NewPostM
               />
             </div>
           </div>
-
           <div>
             <label className="block text-xs font-bold text-neutral-700 mb-1.5 text-left">
               Explain Your Dilemma / Experience
@@ -154,13 +142,11 @@ export function NewPostModal({ isOpen, onClose, onSubmit, isTucoTeam }: NewPostM
               onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setText(e.target.value)}
             />
           </div>
-
           {errorMsg && (
             <div className="text-red-600 font-bold text-xs bg-red-50 p-2.5 rounded-lg border border-red-200">
               ⚠️ {errorMsg}
             </div>
           )}
-
           <div className="flex gap-3 pt-2">
             <button
               type="button"

@@ -3,13 +3,11 @@ import { Conversation } from '../types';
 import { MODERATION_RULES } from '../utils/moderation';
 import { getGreyAreaReminder } from '../utils/moderation';
 import { Flag, Check, AlertCircle, CheckCircle, Shield } from 'lucide-react';
-
 interface ModerationDashboardProps {
   pendingThreads: Conversation[];
   onApprove: (threadId: number) => void;
   onReject: (threadId: number, reason: string) => void;
 }
-
 export function ModerationDashboard({
   pendingThreads,
   onApprove,
@@ -18,7 +16,6 @@ export function ModerationDashboard({
   const sortedPending = [...pendingThreads].sort(
     (a, b) => (a.reviewPriority ?? 50) - (b.reviewPriority ?? 50)
   );
-
   const REJECTION_REASONS = [
     'Medical prescription language',
     'Diagnosis statement',
@@ -29,7 +26,6 @@ export function ModerationDashboard({
     'Duplicate post',
     'Other - needs human review',
   ];
-
   return (
     <div className="bg-white border border-neutral-200 rounded-3xl overflow-hidden">
       <div className="bg-gradient-to-r from-orange-50 to-amber-50 px-6 py-5 border-b border-neutral-200">
@@ -50,7 +46,6 @@ export function ModerationDashboard({
           </p>
         </div>
       </div>
-
       <details className="px-6 py-3 border-b border-neutral-100 bg-neutral-50/50">
         <summary className="text-xs font-display font-black text-neutral-600 cursor-pointer">
           Grey area guidelines
@@ -63,7 +58,6 @@ export function ModerationDashboard({
           ))}
         </ul>
       </details>
-
       <div className="divide-y divide-neutral-150 max-h-[50vh] overflow-y-auto">
         {sortedPending.length === 0 ? (
           <div className="p-8 text-center">
@@ -72,13 +66,12 @@ export function ModerationDashboard({
             <p className="text-sm text-neutral-500">No pending threads to review.</p>
           </div>
         ) : (
-          sortedPending.map((thread) => {
+          sortedPending.map(thread => {
             const reminder =
               thread.greyAreaFlags && thread.greyAreaFlags.length > 0
                 ? getGreyAreaReminder(thread.greyAreaFlags)
                 : undefined;
             const isTrusted = (thread.reviewPriority ?? 50) >= 65;
-
             return (
               <div key={thread.id} className="p-5 hover:bg-neutral-50 transition-colors">
                 <div className="mb-4">
@@ -91,7 +84,7 @@ export function ModerationDashboard({
                         Trusted — lower priority
                       </span>
                     )}
-                    {thread.greyAreaFlags?.map((flag) => (
+                    {thread.greyAreaFlags?.map(flag => (
                       <span
                         key={flag}
                         className="text-xs font-bold text-amber-700 bg-amber-50 px-2 py-1 rounded flex items-center gap-1"
@@ -130,7 +123,6 @@ export function ModerationDashboard({
                     </div>
                   </div>
                 </div>
-
                 <div className="flex gap-3 pt-3 border-t border-neutral-150">
                   <button
                     onClick={() => onApprove(thread.id)}
@@ -140,14 +132,14 @@ export function ModerationDashboard({
                     Approve
                   </button>
                   <select
-                    onChange={(e) => {
+                    onChange={e => {
                       if (e.target.value) onReject(thread.id, e.target.value);
                     }}
                     className="flex-1 py-2 px-3 bg-red-50 hover:bg-red-100 text-red-700 font-display font-bold text-xs rounded-lg border border-red-200 cursor-pointer"
                     defaultValue=""
                   >
                     <option value="">Reject...</option>
-                    {REJECTION_REASONS.map((reason) => (
+                    {REJECTION_REASONS.map(reason => (
                       <option key={reason} value={reason}>
                         {reason}
                       </option>

@@ -8,7 +8,6 @@ import {
 import { mergeSeedWithExisting } from '../utils/seedContent';
 import { Conversation, User } from '../types';
 import { Copy, Database, Mail, Megaphone, Pin, X } from 'lucide-react';
-
 interface AdminToolsPanelProps {
   conversations: Conversation[];
   users: Record<string, User>;
@@ -17,7 +16,6 @@ interface AdminToolsPanelProps {
   onFeatureThread: (threadId: number, featured: boolean) => void;
   onClose: () => void;
 }
-
 export function AdminToolsPanel({
   conversations,
   users,
@@ -30,17 +28,14 @@ export function AdminToolsPanel({
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const emailLog = getEmailLog();
   const lastWeekly = getLastWeeklyEmailSent();
-
   const handleCopy = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
   };
-
   const approvedThreads = conversations.filter(
-    (c) => !c.moderationStatus || c.moderationStatus === 'approved'
+    c => !c.moderationStatus || c.moderationStatus === 'approved'
   );
-
   return (
     <div className="bg-white border border-neutral-200 rounded-3xl overflow-hidden max-h-[85vh] flex flex-col">
       <div className="bg-neutral-50 px-6 py-4 border-b border-neutral-200 flex items-center justify-between shrink-0">
@@ -49,7 +44,6 @@ export function AdminToolsPanel({
           <X className="w-4 h-4" />
         </button>
       </div>
-
       <div className="flex gap-1 px-4 pt-3 border-b border-neutral-100 shrink-0 overflow-x-auto">
         {[
           { key: 'seed' as const, label: 'Seed', icon: Database },
@@ -71,7 +65,6 @@ export function AdminToolsPanel({
           </button>
         ))}
       </div>
-
       <div className="p-5 overflow-y-auto flex-1">
         {activeTab === 'seed' && (
           <div className="space-y-4">
@@ -90,7 +83,6 @@ export function AdminToolsPanel({
             </p>
           </div>
         )}
-
         {activeTab === 'email' && (
           <div className="space-y-4">
             <p className="text-sm text-neutral-600">
@@ -105,7 +97,9 @@ export function AdminToolsPanel({
             <button
               onClick={() => {
                 const sent = sendWeeklyEngagementToAllUsers(users, conversations);
-                alert(`📬 Weekly digest sent to ${sent.length} users (simulated). Check email log.`);
+                alert(
+                  `📬 Weekly digest sent to ${sent.length} users (simulated). Check email log.`
+                );
               }}
               className="w-full py-3 bg-emerald-600 text-white font-display font-black text-sm rounded-xl hover:bg-emerald-700 transition-all"
             >
@@ -115,7 +109,7 @@ export function AdminToolsPanel({
               {emailLog.length === 0 ? (
                 <p className="p-3 text-xs text-neutral-400">No emails sent yet.</p>
               ) : (
-                emailLog.slice(0, 8).map((e) => (
+                emailLog.slice(0, 8).map(e => (
                   <div key={e.id} className="p-2 text-xs">
                     <span className="font-bold text-neutral-700">{e.type}</span> → {e.to}
                     <p className="text-neutral-400 truncate">{e.subject}</p>
@@ -125,29 +119,26 @@ export function AdminToolsPanel({
             </div>
           </div>
         )}
-
         {activeTab === 'launch' && (
           <div className="space-y-4">
             <p className="text-sm text-neutral-600">
               Email & WhatsApp announcement templates for launch.
             </p>
-            {LAUNCH_ANNOUNCEMENT_TEMPLATES.map((t) => (
+            {LAUNCH_ANNOUNCEMENT_TEMPLATES.map(t => (
               <div key={t.id} className="border border-neutral-200 rounded-xl p-4">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-black uppercase text-tuco-orange">
-                    {t.channel}
-                  </span>
+                  <span className="text-xs font-black uppercase text-tuco-orange">{t.channel}</span>
                   <button
-                    onClick={() => handleCopy(t.subject ? `${t.subject}\n\n${t.body}` : t.body, t.id)}
+                    onClick={() =>
+                      handleCopy(t.subject ? `${t.subject}\n\n${t.body}` : t.body, t.id)
+                    }
                     className="flex items-center gap-1 text-xs font-bold text-tuco-cyan hover:underline"
                   >
                     <Copy className="w-3 h-3" />
                     {copiedId === t.id ? 'Copied!' : 'Copy'}
                   </button>
                 </div>
-                <h4 className="font-display font-black text-sm text-neutral-800 mb-1">
-                  {t.title}
-                </h4>
+                <h4 className="font-display font-black text-sm text-neutral-800 mb-1">{t.title}</h4>
                 <pre className="text-[10px] text-neutral-500 whitespace-pre-wrap font-sans leading-relaxed max-h-32 overflow-y-auto">
                   {t.body}
                 </pre>
@@ -155,13 +146,12 @@ export function AdminToolsPanel({
             ))}
           </div>
         )}
-
         {activeTab === 'pin' && (
           <div className="space-y-2 max-h-64 overflow-y-auto">
             <p className="text-sm text-neutral-600 mb-3">
               Pin threads for safety alerts. Feature for Circle Mom of the Month (Instagram).
             </p>
-            {approvedThreads.slice(0, 15).map((t) => (
+            {approvedThreads.slice(0, 15).map(t => (
               <div
                 key={t.id}
                 className="flex items-center gap-2 py-2 border-b border-neutral-100 text-xs"
@@ -178,7 +168,9 @@ export function AdminToolsPanel({
                 <button
                   onClick={() => onFeatureThread(t.id, !t.isFeatured)}
                   className={`px-2 py-1 rounded font-black ${
-                    t.isFeatured ? 'bg-purple-100 text-purple-700' : 'bg-neutral-100 text-neutral-600'
+                    t.isFeatured
+                      ? 'bg-purple-100 text-purple-700'
+                      : 'bg-neutral-100 text-neutral-600'
                   }`}
                 >
                   ⭐
