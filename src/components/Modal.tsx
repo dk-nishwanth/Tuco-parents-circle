@@ -12,15 +12,20 @@ interface ModalProps {
   onClose: () => void;
   onAddReply: (threadId: number, name: string, city: string, text: string) => void;
   onLikeReply?: (threadId: number, replyId: number) => void;
+  onReportReply?: (threadId: number, replyId: number) => void;
+  onEditReply?: (threadId: number, replyId: number, newText: string) => void;
+  onDeleteReply?: (threadId: number, replyId: number) => void;
   currentUser?: User | null;
   users?: Record<string, User>;
 }
 
-export function Modal({ thread, isOpen, onClose, onAddReply, onLikeReply, currentUser, users = {} }: ModalProps) {
+export function Modal({ thread, isOpen, onClose, onAddReply, onLikeReply, onReportReply, onEditReply, onDeleteReply, currentUser, users = {} }: ModalProps) {
   const [replyName, setReplyName] = useState(currentUser?.username || '');
   const [replyCity, setReplyCity] = useState(currentUser?.city || '');
   const [replyText, setReplyText] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [editingReplyId, setEditingReplyId] = useState<number | null>(null);
+  const [editReplyText, setEditReplyText] = useState('');
 
   if (!isOpen || !thread) return null;
 
@@ -211,20 +216,135 @@ export function Modal({ thread, isOpen, onClose, onAddReply, onLikeReply, curren
                     );
                   })()}
 
+                  {editingReplyId === reply.id ? (
+                    <div className="mt-3">
+                      <textarea
+                        value={editReplyText}
+                        onChange={(e) => setEditReplyText(e.target.value)}
+                        className="w-full p-3 border border-neutral-300 rounded-xl text-xs sm:text-sm font-sans focus:outline-none focus:ring-2 focus:ring-tuco-cyan focus:border-tuco-cyan"
+                        rows={4}
+                      />
+                      <div className="flex items-center gap-2 mt-2">
+                        <button
+                          onClick={() => {
+                            if (editReplyText.trim() && onEditReply && thread) {
+                              onEditReply(thread.id, reply.id, editReplyText.trim());
+                            }
+                            setEditingReplyId(null);
+                            setEditReplyText('');
+                          }}
+                          className="text-xs bg-tuco-cyan hover:bg-tuco-cyan-hover text-white font-display font-black py-1.5 px-3 rounded-full cursor-pointer transition-all"
+                        >
+                          Save
+                        </button>
+                        <button
+                          onClick={() => {
+                            setEditingReplyId(null);
+                            setEditReplyText('');
+                          }}
+                          className="text-xs bg-neutral-200 hover:bg-neutral-300 text-neutral-700 font-display font-black py-1.5 px-3 rounded-full cursor-pointer transition-all"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="font-sans text-xs sm:text-sm text-neutral-650 leading-relaxed font-semibold whitespace-pre-wrap mt-1">
+                      {reply.text}
+                    </p>
+                  )}
+
+                  {/* Tuco Rec Product block if included */}
+                  {!editingReplyId && reply.tucoRec && (() => {
+                    const product = getTucoProduct(reply.tucoRec);
+                    if (!product) return null;
+                    return (
+                      <div className="mt-3.5 bg-gradient-to-br from-neutral-50 to-white border border-dashed border-tuco-cyan/35 hover:border-tuco-cyan rounded-2xl p-3 md:p-4 flex flex-col sm:flex-row items-center gap-3 sm:gap-4 transition-colors max-w-xl">
+                        <div className="w-11 h-11 rounded-xl bg-white border border-neutral-200 flex items-center justify-center text-xl shrink-0 shadow-xs">
+                          {product.icon}
+                        </div>
+                        <div className="min-w-0 flex-1 text-center sm:text-left">
+                          <div className="flex items-center justify-center sm:justify-start gap-1 pb-1">
+                            <span className="font-display text-[8px] font-black uppercase text-tuco-orange tracking-wider bg-[#FFF5F0] border border-tuco-orange/15 px-1.5 py-0.5 rounded-sm">
+                              🌿 RECOMMENDED PICKS
+                            </span>
+                            <span className="font-mono text-[9px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 px-1.5 rounded-sm">
+                              {product.tag}
+                            </span>
+                          </div>
+                          <h5 className="font-display font-black text-xs text-neutral-800 leading-snug">
+                            {product.name}
+                          </h5>
+                          <p className="font-sans text-[10px] text-neutral-400 font-bold leading-normal">
+                            All-natural, safe defense for child’s sensitive skin.
+                          </p>
+                        </div>
+                        <div className="shrink-0 flex sm:flex-col items-center gap-2">
+                          <span className="font-mono font-black text-xs text-tuco-orange">
+                            {product.price}
+                          </span>
+                          <a
+                            href={product.linkUrl}
+                            target="_blank"
+                            rel="referrer noopener"
+                            className="text-[11px] bg-tuco-cyan hover:bg-tuco-cyan-hover text-white font-display font-black py-1 px-4 rounded-full shadow-xs transition-all flex items-center gap-1 shrink-0 cursor-pointer"
+                          >
+                            <ShoppingBag className="w-3 h-3" />
+                            <span>Shop Now</span>
+                          </a>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
                   {/* Feedback like button inside reply footer */}
-                  <div className="flex items-center gap-3 mt-3 pt-2 border-t border-neutral-100">
-                    <button
-                      onClick={() => onLikeReply && onLikeReply(thread.id, reply.id)}
-                      className="text-[10px] font-bold font-sans text-neutral-400 hover:text-tuco-cyan flex items-center gap-1 cursor-pointer transition-colors"
-                    >
-                      <Heart className="w-3.5 h-3.5 fill-rose-100" />
-                      <span>{reply.likes || 0} Helpful</span>
-                    </button>
-                    <span className="text-xs text-neutral-200">|</span>
-                    <button className="text-[10px] font-bold font-sans text-neutral-350 hover:text-rose-500 transition-colors cursor-pointer">
-                      Report
-                    </button>
-                  </div>
+                  {!editingReplyId && (
+                    <div className="flex items-center gap-3 mt-3 pt-2 border-t border-neutral-100 flex-wrap">
+                      <button
+                        onClick={() => onLikeReply && onLikeReply(thread.id, reply.id)}
+                        className="text-[10px] font-bold font-sans text-neutral-400 hover:text-tuco-cyan flex items-center gap-1 cursor-pointer transition-colors"
+                      >
+                        <Heart className="w-3.5 h-3.5 fill-rose-100" />
+                        <span>{reply.likes || 0} Helpful</span>
+                      </button>
+                      <span className="text-xs text-neutral-200">|</span>
+                      {(currentUser?.username === reply.author || currentUser?.role === 'moderator' || currentUser?.role === 'tuco_team') && (
+                        <>
+                          <button
+                            onClick={() => {
+                              setEditingReplyId(reply.id);
+                              setEditReplyText(reply.text);
+                            }}
+                            className="text-[10px] font-bold font-sans text-neutral-400 hover:text-tuco-cyan transition-colors cursor-pointer"
+                          >
+                            Edit
+                          </button>
+                          <span className="text-xs text-neutral-200">|</span>
+                          <button
+                            onClick={() => {
+                              if (onDeleteReply && thread) {
+                                onDeleteReply(thread.id, reply.id);
+                              }
+                            }}
+                            className="text-[10px] font-bold font-sans text-neutral-400 hover:text-rose-500 transition-colors cursor-pointer"
+                          >
+                            Delete
+                          </button>
+                          <span className="text-xs text-neutral-200">|</span>
+                        </>
+                      )}
+                      <button
+                        onClick={() => {
+                          if (onReportReply && thread) {
+                            onReportReply(thread.id, reply.id);
+                          }
+                        }}
+                        className="text-[10px] font-bold font-sans text-neutral-350 hover:text-rose-500 transition-colors cursor-pointer"
+                      >
+                        Report
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             );

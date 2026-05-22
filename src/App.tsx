@@ -14,6 +14,8 @@ import { AdminToolsPanel } from './components/AdminToolsPanel';
 import { LoadingScreen } from './components/LoadingScreen';
 import { ProfileModal } from './components/ProfileModal';
 import { WarningModal } from './components/WarningModal';
+import { NotificationsPage } from './components/NotificationsPage';
+import { ReportModal } from './components/ReportModal';
 import { ALL_CONVERSATIONS } from './data/conversations';
 import { Conversation, Reply, User, ModerationStatus, DateFilter, PendingReviewSession } from './types';
 import {
@@ -71,11 +73,15 @@ export default function App() {
   const [isAuthOpen, setIsAuthOpen] = useState<boolean>(false);
   const [isModerationOpen, setIsModerationOpen] = useState<boolean>(false);
   const [isAdminOpen, setIsAdminOpen] = useState<boolean>(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState<boolean>(false);
+  const [isReportOpen, setIsReportOpen] = useState<boolean>(false);
+  const [reportTarget, setReportTarget] = useState<{ type: 'thread' | 'reply'; id: number } | null>(null);
   const [pendingReview, setPendingReview] = useState<PendingReviewSession | null>(null);
 
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [users, setUsers] = useState<Record<string, User>>({});
   const [votedThreads, setVotedThreads] = useState<Record<number, 'up' | 'down' | null>>({});
+  const [savedPosts, setSavedPosts] = useState<number[]>([]);
   const [isAppReady, setIsAppReady] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [sessionCredentials, setSessionCredentials] = useState<{
@@ -107,6 +113,15 @@ export default function App() {
     if (cachedVotes) {
       try {
         setVotedThreads(JSON.parse(cachedVotes));
+      } catch {
+        /* ignore */
+      }
+    }
+
+    const cachedSavedPosts = localStorage.getItem('tuco_saved_posts_v1');
+    if (cachedSavedPosts) {
+      try {
+        setSavedPosts(JSON.parse(cachedSavedPosts));
       } catch {
         /* ignore */
       }
@@ -160,6 +175,36 @@ export default function App() {
   const saveVotes = (updated: Record<number, 'up' | 'down' | null>) => {
     setVotedThreads(updated);
     localStorage.setItem('tuco_votes_v1', JSON.stringify(updated));
+  };
+
+  const toggleSavedPost = (threadId: number) => {
+    if (!currentUser) {
+      setIsAuthOpen(true);
+      return;
+    }
+    let newSaved: number[];
+    if (savedPosts.includes(threadId)) {
+      newSaved = savedPosts.filter((id) => id !== threadId);
+    } else {
+      newSaved = [...savedPosts, threadId];
+    }
+    setSavedPosts(newSaved);
+    localStorage.setItem('tuco_saved_posts_v1', JSON.stringify(newSaved));
+    if (savedPosts.includes(threadId)) {
+      setWarningModal({
+        isOpen: true,
+        type: 'info',
+        title: 'Removed from Saved',
+        message: 'Thread removed from your saved posts.',
+      });
+    } else {
+      setWarningModal({
+        isOpen: true,
+        type: 'success',
+        title: 'Saved!',
+        message: 'Thread added to your saved posts.',
+      });
+    }
   };
 
   const saveUser = (user: User | null) => {
@@ -280,6 +325,16 @@ export default function App() {
     return filterThreads(ranked, '', searchCategoryFilter, searchDateFilter);
   }, [conversations, searchTerm, searchCategoryFilter, searchDateFilter]);
 
+  const filteredConversations = useMemo(() => {
+    if (activeCategory === 'saved') {
+      return conversations.filter((c) => savedPosts.includes(c.id));
+    }
+    if (activeCategory === 'sidebar-open') {
+      return conversations;
+    }
+    return conversations;
+  }, [conversations, activeCategory, savedPosts]);
+
   const featuredThreads = useMemo(() => getFeaturedThreads(conversations), [conversations]);
 
   const pendingThreads = useMemo(
@@ -383,6 +438,73 @@ export default function App() {
     saveUser(updatedUser);
     checkAndAwardBadges(updatedUser);
     saveConversations(updated);
+  };
+
+  const handleReportReply = (threadId: number, replyId: number) => {
+    if (!currentUser) {
+      setIsAuthOpen(true);
+      return;
+    }
+    setReportTarget({ type: 'reply', id: replyId });
+    setIsReportOpen(true);
+  };
+
+  const handleSubmitReport = (reason: string, details: string) => {
+    setWarningModal({
+      isOpen: true,
+      type: 'success',
+      title: 'Report Submitted',
+      message: 'Thank you for your report. Our moderation team will review this promptly.',
+    });
+    setReportTarget(null);
+  };
+
+  const handleEditReply = (threadId: number, replyId: number, newText: string) => {
+    if (!currentUser) {
+      setIsAuthOpen(true);
+      return;
+    }
+    const updated = conversations.map((c) => {
+      if (c.id === threadId) {
+        const updatedReplies = c.replies.map((r) => {
+          if (r.id === replyId) {
+            return { ...r, text: newText };
+          }
+          return r;
+        });
+        return { ...c, replies: updatedReplies };
+      }
+      return c;
+    });
+    setConversations(updated);
+    localStorage.setItem('tuco_conversations_v1', JSON.stringify(updated));
+    setWarningModal({
+      isOpen: true,
+      type: 'success',
+      title: 'Reply Updated',
+      message: 'Your reply has been successfully updated!',
+    });
+  };
+
+  const handleDeleteReply = (threadId: number, replyId: number) => {
+    if (!currentUser) {
+      setIsAuthOpen(true);
+      return;
+    }
+    const updated = conversations.map((c) => {
+      if (c.id === threadId) {
+        return { ...c, replies: c.replies.filter((r) => r.id !== replyId) };
+      }
+      return c;
+    });
+    setConversations(updated);
+    localStorage.setItem('tuco_conversations_v1', JSON.stringify(updated));
+    setWarningModal({
+      isOpen: true,
+      type: 'info',
+      title: 'Reply Deleted',
+      message: 'Your reply has been deleted.',
+    });
   };
 
   const handleLikeReply = (threadId: number, replyId: number) => {
@@ -611,6 +733,7 @@ export default function App() {
         onModerationClick={() => setIsModerationOpen(true)}
         onAdminClick={() => setIsAdminOpen(true)}
         onProfileClick={() => setIsProfileOpen(true)}
+        onNotificationsClick={() => setIsNotificationsOpen(true)}
         onOpenCategories={() => setActiveCategory(activeCategory === 'sidebar-open' ? 'all' : 'sidebar-open')}
         onSuggestionSelect={(id) => {
           const thread = conversations.find((c) => c.id === id);
@@ -626,6 +749,7 @@ export default function App() {
               activeCategory={activeCategory}
               onCategoryChange={setActiveCategory}
               conversations={conversations}
+              savedPosts={savedPosts}
             />
           </div>
         ) : (
@@ -635,6 +759,7 @@ export default function App() {
                 activeCategory={activeCategory}
                 onCategoryChange={setActiveCategory}
                 conversations={conversations}
+                savedPosts={savedPosts}
               />
             </div>
 
@@ -660,6 +785,8 @@ export default function App() {
                   conversations={conversations}
                   onThreadOpen={handleThreadOpen}
                   onVote={handleVote}
+                  onSavePost={toggleSavedPost}
+                  savedPosts={savedPosts}
                   votedThreads={votedThreads}
                   onResetToDefault={handleResetToDefault}
                   onStartDiscussion={openNewPost}
@@ -706,6 +833,9 @@ export default function App() {
         }}
         onAddReply={handleAddReply}
         onLikeReply={handleLikeReply}
+        onReportReply={handleReportReply}
+        onEditReply={handleEditReply}
+        onDeleteReply={handleDeleteReply}
         currentUser={currentUser}
         users={users}
       />
@@ -728,6 +858,8 @@ export default function App() {
         <ProfileModal
           isOpen={isProfileOpen}
           user={currentUser}
+          conversations={conversations}
+          onThreadOpen={handleThreadOpen}
           loginEmail={sessionCredentials?.email ?? currentUser.email}
           loginPassword={sessionCredentials?.password}
           onClose={() => setIsProfileOpen(false)}
@@ -785,6 +917,21 @@ export default function App() {
         title={warningModal.title}
         message={warningModal.message}
         onClose={() => setWarningModal({ ...warningModal, isOpen: false })}
+      />
+
+      <NotificationsPage
+        isOpen={isNotificationsOpen}
+        onClose={() => setIsNotificationsOpen(false)}
+      />
+
+      <ReportModal
+        isOpen={isReportOpen}
+        onClose={() => {
+          setIsReportOpen(false);
+          setReportTarget(null);
+        }}
+        onSubmit={handleSubmitReport}
+        type={reportTarget?.type || 'reply'}
       />
     </div>
   );

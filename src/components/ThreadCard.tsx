@@ -2,18 +2,20 @@ import { CATEGORIES, CATEGORY_COLORS } from '../data/categories';
 import { Conversation, User } from '../types';
 import { getAvatarColor, getInitials, getAuthorMeta } from '../utils/helpers';
 import { AuthorBadges } from './AuthorBadges';
-import { Eye, MessageSquare, ThumbsDown, ThumbsUp } from 'lucide-react';
+import { Eye, MessageSquare, ThumbsDown, ThumbsUp, Bookmark, BookmarkCheck } from 'lucide-react';
 import React from 'react';
 
 interface ThreadCardProps {
   thread: Conversation;
   onOpen: (id: number) => void;
   onVote: (id: number, type: 'up' | 'down') => void;
+  onSavePost?: (id: number) => void;
+  isSaved?: boolean;
   votedState?: 'up' | 'down' | null;
   users?: Record<string, User>;
 }
 
-export function ThreadCard({ thread, onOpen, onVote, votedState, users = {} }: ThreadCardProps) {
+export function ThreadCard({ thread, onOpen, onVote, onSavePost, isSaved, votedState, users = {} }: ThreadCardProps) {
   const category = CATEGORIES[thread.category] || { icon: '💬', label: 'General', id: 'general' };
   const catColor = CATEGORY_COLORS[thread.category] || { bg: '#FFF0E8', text: '#D84315', border: '#FFD8C2' };
   const authorMeta = getAuthorMeta(thread.op.author, thread.authorId, users);
@@ -21,9 +23,9 @@ export function ThreadCard({ thread, onOpen, onVote, votedState, users = {} }: T
   const opBadges = thread.op.authorBadges ?? authorMeta.badges;
 
   const handleCardClick = (e: React.MouseEvent) => {
-    // Prevent opening if clicking on vote buttons
+    // Prevent opening if clicking on vote buttons or save button
     const target = e.target as HTMLElement;
-    if (target.closest('.vote-btn')) {
+    if (target.closest('.vote-btn') || target.closest('.save-btn')) {
       return;
     }
     onOpen(thread.id);
@@ -127,6 +129,16 @@ export function ThreadCard({ thread, onOpen, onVote, votedState, users = {} }: T
           </div>
 
           <div className="flex items-center gap-2.5 ml-auto text-[11px] font-bold">
+            <button
+              className="save-btn flex items-center gap-1 hover:text-tuco-orange transition-colors p-1 rounded"
+              onClick={(e) => {
+                e.stopPropagation();
+                onSavePost?.(thread.id);
+              }}
+              title={isSaved ? 'Unsave thread' : 'Save thread'}
+            >
+              {isSaved ? <BookmarkCheck className="w-3.5 h-3.5 text-tuco-orange" /> : <Bookmark className="w-3.5 h-3.5 text-neutral-400" />}
+            </button>
             <div className="flex items-center gap-1 hover:text-tuco-cyan transition-colors">
               <MessageSquare className="w-3.5 h-3.5 text-neutral-400" />
               <span>{thread.replies.length} replies</span>

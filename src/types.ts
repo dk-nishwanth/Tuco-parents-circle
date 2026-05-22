@@ -97,6 +97,7 @@ export interface User {
   totalUpvotes: number;
   trustScore: number;
   emailNotifications?: boolean;
+  savedPosts?: number[];
 }
 
 export type BadgeType =

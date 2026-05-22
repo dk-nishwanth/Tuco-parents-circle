@@ -1,5 +1,5 @@
 import { useState, ChangeEvent, useRef, useEffect } from 'react';
-import { MessageSquarePlus, Search, LogOut, User, X, Menu } from 'lucide-react';
+import { MessageSquarePlus, Search, LogOut, User, X, Menu, Bell } from 'lucide-react';
 import tucoLogo from '../assets/tuco-logo.webp';
 import { Conversation, User as UserType } from '../types';
 import { searchThreadsWithRanking } from '../utils/helpers';
@@ -15,6 +15,7 @@ interface HeaderProps {
   onModerationClick?: () => void;
   onAdminClick?: () => void;
   onProfileClick?: () => void;
+  onNotificationsClick?: () => void;
   onSuggestionSelect?: (threadId: number) => void;
   onOpenCategories?: () => void;
 }
@@ -125,10 +126,53 @@ export function Header({
   onModerationClick,
   onAdminClick,
   onProfileClick,
+  onNotificationsClick,
   onSuggestionSelect,
   onOpenCategories,
 }: HeaderProps) {
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showNotificationsDropdown, setShowNotificationsDropdown] = useState(false);
+  
+  const [notifications] = useState([
+    {
+      id: 1,
+      user: 'Priya S.',
+      avatar: 'PS',
+      message: 'Replied to your thread: "Best sunscreen for 3yo?"',
+      time: '2h ago',
+      read: false,
+    },
+    {
+      id: 2,
+      user: 'Community',
+      avatar: '🌱',
+      message: 'You earned the "Community Insider" badge!',
+      time: '5h ago',
+      read: false,
+    },
+    {
+      id: 3,
+      user: 'Rahul K.',
+      avatar: 'RK',
+      message: 'Liked your reply about hair oil',
+      time: '1d ago',
+      read: true,
+    },
+  ]);
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+  
+  const notificationsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (notificationsRef.current && !notificationsRef.current.contains(e.target as Node)) {
+        setShowNotificationsDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const clearSearch = () => onSearch('');
 
@@ -159,6 +203,87 @@ export function Header({
           />
 
           <div className="flex items-center justify-end gap-2 shrink-0">
+            {currentUser && (
+              <div ref={notificationsRef} className="relative">
+                <button
+                  onClick={() => setShowNotificationsDropdown(!showNotificationsDropdown)}
+                  className="relative p-2 rounded-xl hover:bg-neutral-50 active:scale-95 transition-all duration-200 group"
+                  title="Notifications"
+                >
+                  <Bell className="w-5 h-5 text-neutral-600 group-hover:text-neutral-800 transition-colors" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] bg-rose-500 text-white text-[10px] font-black flex items-center justify-center rounded-full shadow-sm">
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
+                  )}
+                </button>
+                
+                {showNotificationsDropdown && (
+                  <div className="absolute right-0 top-full mt-2 w-[360px] bg-white border border-neutral-200 rounded-2xl shadow-xl z-[100] animate-in fade-in-0 zoom-in-95 duration-200">
+                    <div className="p-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50 rounded-t-2xl">
+                      <div className="flex items-center gap-2">
+                        <Bell className="w-4 h-4 text-tuco-cyan" />
+                        <h4 className="font-display font-black text-sm text-neutral-800">Notifications</h4>
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowNotificationsDropdown(false);
+                          onNotificationsClick();
+                        }}
+                        className="text-xs text-tuco-cyan font-bold hover:underline"
+                      >
+                        View all
+                      </button>
+                    </div>
+                    
+                    <div className="max-h-[380px] overflow-y-auto">
+                      {notifications.length > 0 ? (
+                        <div className="divide-y divide-neutral-100">
+                          {notifications.map((n) => (
+                            <div
+                              key={n.id}
+                              className={`p-4 hover:bg-neutral-50 cursor-pointer transition-colors ${!n.read ? 'bg-blue-50/30' : ''}`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setShowNotificationsDropdown(false);
+                              }}
+                            >
+                              <div className="flex items-start gap-3">
+                                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-neutral-100 to-neutral-200 flex items-center justify-center text-sm font-black text-neutral-700 shrink-0 border border-neutral-200">
+                                  {n.avatar}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium text-neutral-800 leading-snug">
+                                    <span className="font-black">{n.user}</span> {n.message}
+                                  </p>
+                                  <p className="text-[11px] text-neutral-400 mt-1 font-medium">
+                                    {n.time}
+                                  </p>
+                                </div>
+                                {!n.read && (
+                                  <div className="w-2 h-2 rounded-full bg-tuco-cyan shrink-0 mt-2" />
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="p-8 text-center">
+                          <Bell className="w-12 h-12 text-neutral-200 mx-auto mb-3" />
+                          <h4 className="font-display font-black text-sm text-neutral-600 mb-1">
+                            No new notifications
+                          </h4>
+                          <p className="text-xs text-neutral-400 font-medium">
+                            You're all caught up!
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
             {(currentUser?.role === 'moderator' || currentUser?.role === 'tuco_team') && (
               <button
                 onClick={onAdminClick}
@@ -223,6 +348,87 @@ export function Header({
             onSuggestionSelect={onSuggestionSelect}
             compact
           />
+          {currentUser && (
+            <div ref={notificationsRef} className="relative">
+              <button
+                onClick={() => setShowNotificationsDropdown(!showNotificationsDropdown)}
+                className="relative p-1.5 rounded-xl hover:bg-neutral-50 active:scale-95 transition-all duration-200 group"
+                title="Notifications"
+              >
+                <Bell className="w-5 h-5 text-neutral-600 group-hover:text-neutral-800 transition-colors" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] bg-rose-500 text-white text-[9px] font-black flex items-center justify-center rounded-full shadow-sm">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
+              </button>
+              
+              {showNotificationsDropdown && (
+                <div className="absolute right-0 top-full mt-2 w-[320px] bg-white border border-neutral-200 rounded-2xl shadow-xl z-[100] animate-in fade-in-0 zoom-in-95 duration-200">
+                  <div className="p-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50 rounded-t-2xl">
+                    <div className="flex items-center gap-2">
+                      <Bell className="w-4 h-4 text-tuco-cyan" />
+                      <h4 className="font-display font-black text-sm text-neutral-800">Notifications</h4>
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowNotificationsDropdown(false);
+                        onNotificationsClick();
+                      }}
+                      className="text-xs text-tuco-cyan font-bold hover:underline"
+                    >
+                      View all
+                    </button>
+                  </div>
+                  
+                  <div className="max-h-[320px] overflow-y-auto">
+                    {notifications.length > 0 ? (
+                      <div className="divide-y divide-neutral-100">
+                        {notifications.map((n) => (
+                          <div
+                            key={n.id}
+                            className={`p-3 hover:bg-neutral-50 cursor-pointer transition-colors ${!n.read ? 'bg-blue-50/30' : ''}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setShowNotificationsDropdown(false);
+                            }}
+                          >
+                            <div className="flex items-start gap-2.5">
+                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-neutral-100 to-neutral-200 flex items-center justify-center text-xs font-black text-neutral-700 shrink-0 border border-neutral-200">
+                                {n.avatar}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-medium text-neutral-800 leading-snug">
+                                  <span className="font-black">{n.user}</span> {n.message}
+                                </p>
+                                <p className="text-[10px] text-neutral-400 mt-0.5 font-medium">
+                                  {n.time}
+                                </p>
+                              </div>
+                              {!n.read && (
+                                <div className="w-1.5 h-1.5 rounded-full bg-tuco-cyan shrink-0 mt-2" />
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="p-6 text-center">
+                        <Bell className="w-10 h-10 text-neutral-200 mx-auto mb-2" />
+                        <h4 className="font-display font-black text-sm text-neutral-600 mb-1">
+                          No new notifications
+                        </h4>
+                        <p className="text-[10px] text-neutral-400 font-medium">
+                          You're all caught up!
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
           <button
             onClick={onNewPostClick}
             className="bg-tuco-cyan hover:bg-tuco-cyan-hover text-white font-display font-black text-xs py-1.5 px-2.5 rounded transition-all shrink-0"

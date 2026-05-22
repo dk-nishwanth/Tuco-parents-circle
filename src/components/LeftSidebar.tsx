@@ -1,14 +1,15 @@
 import { CATEGORIES } from '../data/categories';
 import { Conversation } from '../types';
-import { Home, ShieldCheck } from 'lucide-react';
+import { Home, ShieldCheck, Bookmark } from 'lucide-react';
 
 interface LeftSidebarProps {
   activeCategory: string;
   onCategoryChange: (category: string) => void;
   conversations: Conversation[];
+  savedPosts?: number[];
 }
 
-export function LeftSidebar({ activeCategory, onCategoryChange, conversations }: LeftSidebarProps) {
+export function LeftSidebar({ activeCategory, onCategoryChange, conversations, savedPosts = [] }: LeftSidebarProps) {
   // Compute thread count dynamically for each category
   const getThreadCount = (catId: string) => {
     return conversations.filter((c) => c.category === catId).length;
@@ -45,6 +46,26 @@ export function LeftSidebar({ activeCategory, onCategoryChange, conversations }:
               }`}
             >
               {conversations.length}
+            </span>
+          </button>
+
+          {/* Saved posts */}
+          <button
+            onClick={() => onCategoryChange('saved')}
+            className={`cat-row flex items-center gap-3 w-full text-left px-5 py-3 hover:bg-neutral-50 transition-all cursor-pointer font-display font-black text-sm border-b border-neutral-100 ${
+              activeCategory === 'saved'
+                ? 'bg-tuco-cyan text-white hover:bg-tuco-cyan-hover'
+                : 'text-tuco-cyan'
+            }`}
+          >
+            <Bookmark className="w-4 h-4 shrink-0 font-bold" />
+            <span className="flex-1">Saved</span>
+            <span
+              className={`text-[11px] px-2 py-0.5 rounded-full font-bold border ${
+                activeCategory === 'saved' ? 'bg-white border-white text-tuco-cyan' : 'bg-neutral-100 border-neutral-200 text-neutral-500'
+              }`}
+            >
+              {savedPosts.length}
             </span>
           </button>
 

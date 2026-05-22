@@ -1,21 +1,25 @@
-import { User } from '../types';
+import { User, Conversation } from '../types';
 import { MemberProfile } from './MemberProfile';
 import { X } from 'lucide-react';
 
 interface ProfileModalProps {
   isOpen: boolean;
   user: User;
+  conversations?: Conversation[];
   loginEmail?: string;
   loginPassword?: string;
   onClose: () => void;
+  onThreadOpen?: (id: number) => void;
 }
 
 export function ProfileModal({
   isOpen,
   user,
+  conversations = [],
   loginEmail,
   loginPassword,
   onClose,
+  onThreadOpen,
 }: ProfileModalProps) {
   if (!isOpen) return null;
 
@@ -38,9 +42,11 @@ export function ProfileModal({
           </h2>
           <MemberProfile
             user={user}
+            conversations={conversations}
             isCurrentUser
             loginEmail={loginEmail}
             loginPassword={loginPassword}
+            onThreadOpen={onThreadOpen}
           />
         </div>
       </div>

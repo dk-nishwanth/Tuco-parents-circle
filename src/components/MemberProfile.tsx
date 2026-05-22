@@ -1,20 +1,31 @@
-import { User } from '../types';
+import { User, Conversation } from '../types';
 import { BADGE_DISPLAY } from '../utils/badgeSystem';
-import { Mail, MapPin, Award, Lock, Baby, Shield } from 'lucide-react';
+import { Mail, MapPin, Award, Lock, Baby, Shield, MessageCircle } from 'lucide-react';
 
 interface MemberProfileProps {
   user: User;
+  conversations?: Conversation[];
   isCurrentUser?: boolean;
   loginEmail?: string;
   loginPassword?: string;
+  onThreadOpen?: (id: number) => void;
 }
 
 export function MemberProfile({
   user,
+  conversations = [],
   isCurrentUser = false,
   loginEmail,
   loginPassword,
+  onThreadOpen,
 }: MemberProfileProps) {
+  const userThreads = conversations.filter(
+    (c) => c.authorId === user.id || c.op.author === user.username
+  );
+
+  const userReplies = conversations.flatMap((c) =>
+    c.replies.filter((r) => r.author === user.username).map((r) => ({ ...r, threadId: c.id, threadTitle: c.title }))
+  );
   const trustLevelLabel =
     user.role === 'tuco_team'
       ? 'Tuco Team'
@@ -159,7 +170,66 @@ export function MemberProfile({
         </strong>
       </div>
 
-      {user.badges.length === 0 && (
+      {/* User's Threads */}
+      {userThreads.length > 0 && (
+        <div className="border-t border-neutral-150 pt-6 mt-6">
+          <div className="flex items-center gap-2 mb-4">
+            <MessageCircle className="w-4 h-4 text-tuco-orange" />
+            <h3 className="font-display font-black text-sm text-neutral-800">
+              Their Threads
+            </h3>
+          </div>
+          <div className="space-y-3">
+            {userThreads.slice(0, 10).map((thread) => (
+              <div
+                key={thread.id}
+                onClick={() => onThreadOpen?.(thread.id)}
+                className="bg-neutral-50 rounded-xl p-3 border border-neutral-200 hover:border-tuco-cyan hover:bg-white transition-all cursor-pointer"
+              >
+                <h4 className="font-display font-black text-xs text-neutral-800 line-clamp-2">
+                  {thread.title}
+                </h4>
+                <p className="text-[10px] text-neutral-400 mt-1 font-medium">
+                  {thread.replies.length} replies · {thread.votes} upvotes
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* User's Replies */}
+      {userReplies.length > 0 && (
+        <div className="border-t border-neutral-150 pt-6 mt-6">
+          <div className="flex items-center gap-2 mb-4">
+            <MessageCircle className="w-4 h-4 text-tuco-cyan" />
+            <h3 className="font-display font-black text-sm text-neutral-800">
+              Their Replies
+            </h3>
+          </div>
+          <div className="space-y-3">
+            {userReplies.slice(0, 10).map((reply, idx) => (
+              <div
+                key={reply.id + '-' + idx}
+                onClick={() => onThreadOpen?.(reply.threadId)}
+                className="bg-neutral-50 rounded-xl p-3 border border-neutral-200 hover:border-tuco-orange hover:bg-white transition-all cursor-pointer"
+              >
+                <p className="text-[10px] text-neutral-400 font-medium mb-1">
+                  On: {reply.threadTitle}
+                </p>
+                <p className="font-sans text-xs text-neutral-650 line-clamp-3">
+                  {reply.text}
+                </p>
+                <p className="text-[10px] text-neutral-400 mt-1 font-medium">
+                  {reply.likes} helpful
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {user.badges.length === 0 && userThreads.length === 0 && userReplies.length === 0 && (
         <p className="text-xs text-neutral-400 text-center py-2 border-t border-neutral-150">
           Post and engage to earn your first badge 🌱
         </p>

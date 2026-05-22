@@ -11,6 +11,8 @@ interface MainContentProps {
   conversations: Conversation[];
   onThreadOpen: (id: number) => void;
   onVote: (id: number, type: 'up' | 'down') => void;
+  onSavePost?: (id: number) => void;
+  savedPosts?: number[];
   votedThreads: Record<number, 'up' | 'down' | null>;
   onResetToDefault: () => void;
   onStartDiscussion?: () => void;
@@ -23,6 +25,8 @@ export function MainContent({
   conversations,
   onThreadOpen,
   onVote,
+  onSavePost,
+  savedPosts = [],
   votedThreads,
   onResetToDefault,
   onStartDiscussion,
@@ -34,9 +38,14 @@ export function MainContent({
 
   // Compute filtered & sorted lists dynamically
   const processedThreads = useMemo(() => {
-    const filtered = filterThreads(conversations, searchTerm, activeCategory);
+    let filtered: Conversation[];
+    if (activeCategory === 'saved') {
+      filtered = conversations.filter((c) => savedPosts.includes(c.id));
+    } else {
+      filtered = filterThreads(conversations, searchTerm, activeCategory);
+    }
     return sortThreads(filtered, sortType);
-  }, [conversations, searchTerm, activeCategory, sortType]);
+  }, [conversations, searchTerm, activeCategory, sortType, savedPosts]);
 
   // Calculate pagination
   const totalPages = Math.ceil(processedThreads.length / THREADS_PER_PAGE);
@@ -51,8 +60,8 @@ export function MainContent({
   };
 
   const categoryItem = CATEGORIES[activeCategory];
-  const selectTitle = categoryItem ? categoryItem.label : 'All Parenting Discussions';
-  const selectIcon = categoryItem ? categoryItem.icon : '🏠';
+  const selectTitle = activeCategory === 'saved' ? 'Saved Discussions' : categoryItem ? categoryItem.label : 'All Parenting Discussions';
+  const selectIcon = activeCategory === 'saved' ? '📌' : categoryItem ? categoryItem.icon : '🏠';
 
   return (
     <main className="main min-w-0 flex flex-col gap-3 md:gap-5">
@@ -75,10 +84,10 @@ export function MainContent({
       {/* Sorting Navigation Bar */}
       <div className="sort-row flex flex-wrap gap-1.5 md:gap-2">
         {[
-          { key: 'hot', label: '🔥 Hot', desc: 'Highest Votes', mobileLabel: '🔥' },
-          { key: 'new', label: '✨ New', desc: 'Recent Posts', mobileLabel: '✨' },
-          { key: 'top', label: '💬 Top', desc: 'Most Replies', mobileLabel: '💬' },
-          { key: 'unanswered', label: '❓ Unanswered', desc: 'Needs Support', mobileLabel: '❓' },
+          { key: 'hot', label: '🔥 Hot', desc: 'Highest Votes', mobileLabel: 'Hot' },
+          { key: 'new', label: '✨ New', desc: 'Recent Posts', mobileLabel: 'New' },
+          { key: 'top', label: '💬 Top', desc: 'Most Replies', mobileLabel: 'Top' },
+          { key: 'unanswered', label: '❓ Unanswered', desc: 'Needs Support', mobileLabel: 'Unanswered' },
         ].map((tab) => {
           const isSelected = sortType === tab.key;
           return (
@@ -102,16 +111,18 @@ export function MainContent({
       {/* Discussion Thread Feed */}
       <div className="thread-list flex flex-col gap-2.5 md:gap-4">
         {paginatedThreads.length > 0 ? (
-          paginatedThreads.map((thread) => (
-            <ThreadCard
-              key={thread.id}
-              thread={thread}
-              onOpen={onThreadOpen}
-              onVote={onVote}
-              votedState={votedThreads[thread.id] || null}
-              users={users}
-            />
-          ))
+            paginatedThreads.map((thread) => (
+              <ThreadCard
+                key={thread.id}
+                thread={thread}
+                onOpen={onThreadOpen}
+                onVote={onVote}
+                onSavePost={onSavePost}
+                isSaved={savedPosts.includes(thread.id)}
+                votedState={votedThreads[thread.id] || null}
+                users={users}
+              />
+            ))
         ) : (
           /* Empty State Illustration */
           <div className="no-results bg-white border border-neutral-200 rounded-2xl md:rounded-3xl p-6 md:p-14 text-center flex flex-col items-center justify-center shadow-xs max-w-xl mx-auto w-full mt-2">
