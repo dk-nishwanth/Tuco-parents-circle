@@ -96,56 +96,80 @@ export default function App() {
   }>({ isOpen: false, title: '', message: '' });
 
   useEffect(() => {
-    const cachedData = localStorage.getItem('tuco_conversations_v1');
-    if (cachedData) {
-      try {
-        setConversations(enrichConversations(JSON.parse(cachedData)));
-      } catch {
-        setConversations(enrichConversations(INITIAL_CONVERSATIONS));
-      }
-    } else {
+    // Check if we need to reseed data
+    const needsReseed = localStorage.getItem('tuco_seed_version') !== 'v2';
+    
+    if (needsReseed) {
+      localStorage.removeItem('tuco_conversations_v1');
+      localStorage.removeItem('tuco_votes_v1');
+      localStorage.removeItem('tuco_saved_posts_v1');
+      localStorage.removeItem('tuco_current_user');
+      localStorage.removeItem('tuco_users_db');
+      
       const seeded = enrichConversations(mergeSeedWithExisting(INITIAL_CONVERSATIONS, 100));
       setConversations(seeded);
       localStorage.setItem('tuco_conversations_v1', JSON.stringify(seeded));
-    }
-
-    const cachedVotes = localStorage.getItem('tuco_votes_v1');
-    if (cachedVotes) {
-      try {
-        setVotedThreads(JSON.parse(cachedVotes));
-      } catch {
-        /* ignore */
-      }
-    }
-
-    const cachedSavedPosts = localStorage.getItem('tuco_saved_posts_v1');
-    if (cachedSavedPosts) {
-      try {
-        setSavedPosts(JSON.parse(cachedSavedPosts));
-      } catch {
-        /* ignore */
-      }
-    }
-
-    const cachedUser = localStorage.getItem('tuco_current_user');
-    if (cachedUser) {
-      try {
-        setCurrentUser(JSON.parse(cachedUser));
-      } catch {
-        /* ignore */
-      }
-    }
-
-    const cachedUsers = localStorage.getItem('tuco_users_db');
-    if (cachedUsers) {
-      try {
-        setUsers(JSON.parse(cachedUsers));
-      } catch {
-        setUsers({ [DEMO_MODERATOR.id]: DEMO_MODERATOR });
-      }
-    } else {
       setUsers({ [DEMO_MODERATOR.id]: DEMO_MODERATOR });
       localStorage.setItem('tuco_users_db', JSON.stringify({ [DEMO_MODERATOR.id]: DEMO_MODERATOR }));
+      
+      setVotedThreads({});
+      setSavedPosts([]);
+      setCurrentUser(null);
+      
+      localStorage.setItem('tuco_seed_version', 'v2');
+    } else {
+      // Load existing data
+      const cachedData = localStorage.getItem('tuco_conversations_v1');
+      if (cachedData) {
+        try {
+          setConversations(enrichConversations(JSON.parse(cachedData)));
+        } catch {
+          setConversations(enrichConversations(INITIAL_CONVERSATIONS));
+        }
+      } else {
+        const seeded = enrichConversations(mergeSeedWithExisting(INITIAL_CONVERSATIONS, 100));
+        setConversations(seeded);
+        localStorage.setItem('tuco_conversations_v1', JSON.stringify(seeded));
+      }
+
+      const cachedVotes = localStorage.getItem('tuco_votes_v1');
+      if (cachedVotes) {
+        try {
+          setVotedThreads(JSON.parse(cachedVotes));
+        } catch {
+          /* ignore */
+        }
+      }
+
+      const cachedSavedPosts = localStorage.getItem('tuco_saved_posts_v1');
+      if (cachedSavedPosts) {
+        try {
+          setSavedPosts(JSON.parse(cachedSavedPosts));
+        } catch {
+          /* ignore */
+        }
+      }
+
+      const cachedUser = localStorage.getItem('tuco_current_user');
+      if (cachedUser) {
+        try {
+          setCurrentUser(JSON.parse(cachedUser));
+        } catch {
+          /* ignore */
+        }
+      }
+
+      const cachedUsers = localStorage.getItem('tuco_users_db');
+      if (cachedUsers) {
+        try {
+          setUsers(JSON.parse(cachedUsers));
+        } catch {
+          setUsers({ [DEMO_MODERATOR.id]: DEMO_MODERATOR });
+        }
+      } else {
+        setUsers({ [DEMO_MODERATOR.id]: DEMO_MODERATOR });
+        localStorage.setItem('tuco_users_db', JSON.stringify({ [DEMO_MODERATOR.id]: DEMO_MODERATOR }));
+      }
     }
 
     const minDisplayMs = 1200;
@@ -698,13 +722,19 @@ export default function App() {
   const handleResetToDefault = () => {
     localStorage.removeItem('tuco_conversations_v1');
     localStorage.removeItem('tuco_votes_v1');
+    localStorage.removeItem('tuco_saved_posts_v1');
+    localStorage.removeItem('tuco_current_user');
+    localStorage.removeItem('tuco_users_db');
     const seeded = enrichConversations(mergeSeedWithExisting(INITIAL_CONVERSATIONS, 100));
     setConversations(seeded);
     setVotedThreads({});
+    setSavedPosts([]);
     setActiveCategory('all');
     setSearchTerm('');
     setSelectedThreadId(null);
     setIsModalOpen(false);
+    setCurrentUser(null);
+    setUsers({ [DEMO_MODERATOR.id]: DEMO_MODERATOR });
   };
 
   const openNewPost = () => {
