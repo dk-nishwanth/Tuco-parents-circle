@@ -2,7 +2,7 @@ import { CATEGORIES, CATEGORY_COLORS } from '../data/categories';
 import { Conversation, User } from '../types';
 import { getAvatarColor, getInitials, getAuthorMeta } from '../utils/helpers';
 import { AuthorBadges } from './AuthorBadges';
-import { Eye, MessageSquare, ThumbsDown, ThumbsUp, Bookmark, BookmarkCheck } from 'lucide-react';
+import { Eye, MessageSquare, ThumbsDown, ThumbsUp, Bookmark, BookmarkCheck, Image as ImageIcon } from 'lucide-react';
 import React from 'react';
 interface ThreadCardProps {
   thread: Conversation;
@@ -162,6 +162,12 @@ export function ThreadCard({
               <MessageSquare className="w-3.5 h-3.5 text-neutral-400" />
               <span>{thread.replies.length} replies</span>
             </div>
+            {thread.op.image && (
+              <div className="flex items-center gap-1 text-tuco-cyan">
+                <ImageIcon className="w-3.5 h-3.5" />
+                <span>Image</span>
+              </div>
+            )}
             <div className="flex items-center gap-1">
               <Eye className="w-3.5 h-3.5 text-neutral-400" />
               <span>{thread.views} views</span>

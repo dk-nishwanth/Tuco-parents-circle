@@ -1,7 +1,7 @@
 import { useState, ChangeEvent, useRef, useEffect } from 'react';
 import { MessageSquarePlus, Search, LogOut, User, X, Menu, Bell } from 'lucide-react';
 import tucoLogo from '../assets/tuco-logo.webp';
-import { Conversation, User as UserType } from '../types';
+import { Conversation, User as UserType, Notification } from '../types';
 import { searchThreadsWithRanking } from '../utils/helpers';
 interface HeaderProps {
   searchTerm: string;
@@ -17,7 +17,11 @@ interface HeaderProps {
   onNotificationsClick?: () => void;
   onSuggestionSelect?: (threadId: number) => void;
   onOpenCategories?: () => void;
+  notifications?: Notification[];
+  onMarkAsRead?: (id: number) => void;
+  onThreadOpen?: (id: number) => void;
 }
+
 function SearchInput({
   searchTerm,
   onSearch,
@@ -121,37 +125,29 @@ export function Header({
   onNotificationsClick,
   onSuggestionSelect,
   onOpenCategories,
+  notifications = [],
+  onMarkAsRead,
+  onThreadOpen,
 }: HeaderProps) {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotificationsDropdown, setShowNotificationsDropdown] = useState(false);
-  const [notifications] = useState([
-    {
-      id: 1,
-      user: 'Priya S.',
-      avatar: 'PS',
-      message: 'Replied to your thread: "Best sunscreen for 3yo?"',
-      time: '2h ago',
-      read: false,
-    },
-    {
-      id: 2,
-      user: 'Community',
-      avatar: '🌱',
-      message: 'You earned the "Community Insider" badge!',
-      time: '5h ago',
-      read: false,
-    },
-    {
-      id: 3,
-      user: 'Rahul K.',
-      avatar: 'RK',
-      message: 'Liked your reply about hair oil',
-      time: '1d ago',
-      read: true,
-    },
-  ]);
   const unreadCount = notifications.filter(n => !n.read).length;
   const notificationsRef = useRef<HTMLDivElement>(null);
+
+
+  const getIcon = (type: Notification['type']) => {
+    switch (type) {
+      case 'reply':
+        return '💬';
+      case 'like':
+        return '👍';
+      case 'badge':
+        return '🏆';
+      default:
+        return '🔔';
+    }
+  };
+
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (notificationsRef.current && !notificationsRef.current.contains(e.target as Node)) {
@@ -161,6 +157,7 @@ export function Header({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
   const clearSearch = () => onSearch('');
   return (
     <header className="header bg-white border-b border-neutral-200 sticky top-0 z-50">
@@ -230,16 +227,20 @@ export function Header({
                               className={`p-4 hover:bg-neutral-50 cursor-pointer transition-colors ${!n.read ? 'bg-blue-50/30' : ''}`}
                               onClick={e => {
                                 e.stopPropagation();
+                                if (!n.read && onMarkAsRead) onMarkAsRead(n.id);
+                                if (n.threadId && onThreadOpen) {
+                                  onThreadOpen(n.threadId);
+                                }
                                 setShowNotificationsDropdown(false);
                               }}
                             >
                               <div className="flex items-start gap-3">
                                 <div className="w-9 h-9 rounded-full bg-gradient-to-br from-neutral-100 to-neutral-200 flex items-center justify-center text-sm font-black text-neutral-700 shrink-0 border border-neutral-200">
-                                  {n.avatar}
+                                  {getIcon(n.type)}
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <p className="text-sm font-medium text-neutral-800 leading-snug">
-                                    <span className="font-black">{n.user}</span> {n.message}
+                                    <span className="font-black">{n.title}</span> {n.description}
                                   </p>
                                   <p className="text-[11px] text-neutral-400 mt-1 font-medium">
                                     {n.time}
@@ -375,16 +376,20 @@ export function Header({
                             className={`p-3 hover:bg-neutral-50 cursor-pointer transition-colors ${!n.read ? 'bg-blue-50/30' : ''}`}
                             onClick={e => {
                               e.stopPropagation();
+                              if (!n.read && onMarkAsRead) onMarkAsRead(n.id);
+                              if (n.threadId && onThreadOpen) {
+                                onThreadOpen(n.threadId);
+                              }
                               setShowNotificationsDropdown(false);
                             }}
                           >
                             <div className="flex items-start gap-2.5">
                               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-neutral-100 to-neutral-200 flex items-center justify-center text-xs font-black text-neutral-700 shrink-0 border border-neutral-200">
-                                {n.avatar}
+                                {getIcon(n.type)}
                               </div>
                               <div className="flex-1 min-w-0">
                                 <p className="text-xs font-medium text-neutral-800 leading-snug">
-                                  <span className="font-black">{n.user}</span> {n.message}
+                                  <span className="font-black">{n.title}</span> {n.description}
                                 </p>
                                 <p className="text-[10px] text-neutral-400 mt-0.5 font-medium">
                                   {n.time}

@@ -3,15 +3,18 @@ export interface Op {
   city: string;
   time: string;
   text: string;
+  image?: string;
   authorRole?: UserRole;
   authorBadges?: BadgeType[];
 }
+
 export interface Reply {
   id: number;
   author: string;
   city: string;
   time: string;
   text: string;
+  image?: string;
   tucoRec?: string;
   likes?: number;
   authorRole?: UserRole;
@@ -123,3 +126,14 @@ export interface EmailLogEntry {
   sentAt: string;
   preview: string;
 }
+
+export interface Notification {
+  id: number;
+  type: 'reply' | 'like' | 'badge' | 'system';
+  title: string;
+  description: string;
+  time: string;
+  read: boolean;
+  threadId?: number;
+}
+

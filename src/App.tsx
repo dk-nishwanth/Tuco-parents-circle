@@ -17,6 +17,7 @@ import { WarningModal } from './components/WarningModal';
 import { NotificationsPage } from './components/NotificationsPage';
 import { ReportModal } from './components/ReportModal';
 import { INITIAL_CONVERSATIONS } from './data/conversations';
+import { CATEGORIES } from './data/categories';
 import {
   Conversation,
   Reply,
@@ -24,6 +25,7 @@ import {
   ModerationStatus,
   DateFilter,
   PendingReviewSession,
+  Notification,
 } from './types';
 import {
   analyzeContent,
@@ -44,6 +46,7 @@ import {
   sendWeeklyEngagementToAllUsers,
 } from './utils/emailService';
 import { mergeSeedWithExisting } from './utils/seedContent';
+import { api } from './utils/api';
 import tucoLogo from './assets/tuco-logo.webp';
 function enrichConversations(threads: Conversation[]): Conversation[] {
   return threads.map((c, i) => ({
@@ -90,6 +93,8 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [users, setUsers] = useState<Record<string, User>>({});
   const [votedThreads, setVotedThreads] = useState<Record<number, 'up' | 'down' | null>>({});
+  const [likedReplies, setLikedReplies] = useState<Record<number, boolean>>({});
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [savedPosts, setSavedPosts] = useState<number[]>([]);
   const [isAppReady, setIsAppReady] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -104,42 +109,57 @@ export default function App() {
     message: string;
   }>({ isOpen: false, title: '', message: '' });
   useEffect(() => {
-    const needsReseed = localStorage.getItem('tuco_seed_version') !== 'v2';
-    if (needsReseed) {
-      localStorage.removeItem('tuco_conversations_v1');
-      localStorage.removeItem('tuco_votes_v1');
-      localStorage.removeItem('tuco_saved_posts_v1');
-      localStorage.removeItem('tuco_current_user');
-      localStorage.removeItem('tuco_users_db');
-      const seeded = enrichConversations(mergeSeedWithExisting(INITIAL_CONVERSATIONS, 100));
-      setConversations(seeded);
-      localStorage.setItem('tuco_conversations_v1', JSON.stringify(seeded));
-      setUsers({ [DEMO_MODERATOR.id]: DEMO_MODERATOR });
-      localStorage.setItem(
-        'tuco_users_db',
-        JSON.stringify({ [DEMO_MODERATOR.id]: DEMO_MODERATOR })
-      );
-      setVotedThreads({});
-      setSavedPosts([]);
-      setCurrentUser(null);
-      localStorage.setItem('tuco_seed_version', 'v2');
-    } else {
-      const cachedData = localStorage.getItem('tuco_conversations_v1');
-      if (cachedData) {
-        try {
-          setConversations(enrichConversations(JSON.parse(cachedData)));
-        } catch {
-          setConversations(enrichConversations(INITIAL_CONVERSATIONS));
+    async function initData() {
+      try {
+        // Fetch from API
+        const [apiConversations, apiUsers] = await Promise.all([
+          api.getConversations(),
+          api.getUsers(),
+        ]);
+
+        const categoryIds = Object.keys(CATEGORIES);
+        const hasAllCategories = categoryIds.every(catId => 
+          apiConversations.some(c => c.category === catId)
+        );
+        if (apiConversations.length < 100 || !hasAllCategories) {
+          const seeded = enrichConversations(mergeSeedWithExisting(apiConversations, 100));
+          await api.saveConversations(seeded);
+          setConversations(seeded);
+        } else {
+          setConversations(apiConversations);
         }
-      } else {
-        const seeded = enrichConversations(mergeSeedWithExisting(INITIAL_CONVERSATIONS, 100));
-        setConversations(seeded);
-        localStorage.setItem('tuco_conversations_v1', JSON.stringify(seeded));
+
+        if (Object.keys(apiUsers).length === 0) {
+          // Seed users if empty
+          await api.saveUser(DEMO_MODERATOR);
+          setUsers({ [DEMO_MODERATOR.id]: DEMO_MODERATOR });
+        } else {
+          setUsers(apiUsers);
+        }
+      } catch (error) {
+        console.error('Failed to initialize data from API:', error);
+        // Fallback to local seed if API fails
+        setConversations(enrichConversations(INITIAL_CONVERSATIONS));
+        setUsers({ [DEMO_MODERATOR.id]: DEMO_MODERATOR });
       }
+
+      // Local storage still used for session-specific or personal data
       const cachedVotes = localStorage.getItem('tuco_votes_v1');
       if (cachedVotes) {
         try {
           setVotedThreads(JSON.parse(cachedVotes));
+        } catch {}
+      }
+      const cachedLikes = localStorage.getItem('tuco_reply_likes_v1');
+      if (cachedLikes) {
+        try {
+          setLikedReplies(JSON.parse(cachedLikes));
+        } catch {}
+      }
+      const cachedNotifications = localStorage.getItem('tuco_notifications_v1');
+      if (cachedNotifications) {
+        try {
+          setNotifications(JSON.parse(cachedNotifications));
         } catch {}
       }
       const cachedSavedPosts = localStorage.getItem('tuco_saved_posts_v1');
@@ -154,44 +174,56 @@ export default function App() {
           setCurrentUser(JSON.parse(cachedUser));
         } catch {}
       }
-      const cachedUsers = localStorage.getItem('tuco_users_db');
-      if (cachedUsers) {
-        try {
-          setUsers(JSON.parse(cachedUsers));
-        } catch {
-          setUsers({ [DEMO_MODERATOR.id]: DEMO_MODERATOR });
-        }
-      } else {
-        setUsers({ [DEMO_MODERATOR.id]: DEMO_MODERATOR });
-        localStorage.setItem(
-          'tuco_users_db',
-          JSON.stringify({ [DEMO_MODERATOR.id]: DEMO_MODERATOR })
-        );
-      }
+
+      const minDisplayMs = 1200;
+      setTimeout(() => setIsAppReady(true), minDisplayMs);
     }
-    const minDisplayMs = 1200;
-    const readyTimer = setTimeout(() => setIsAppReady(true), minDisplayMs);
-    return () => clearTimeout(readyTimer);
+
+    initData();
   }, []);
-  useEffect(() => {
-    const cachedUsers = localStorage.getItem('tuco_users_db');
-    const cachedConvs = localStorage.getItem('tuco_conversations_v1');
-    if (cachedUsers && cachedConvs && shouldSendWeeklyEmail()) {
-      try {
-        const u = JSON.parse(cachedUsers);
-        const c = JSON.parse(cachedConvs);
-        sendWeeklyEngagementToAllUsers(u, c);
-      } catch {}
+
+  const saveConversations = async (updated: Conversation[]) => {
+    // Ensure no duplicate IDs in the threads and their replies
+    const uniqueThreads = updated
+      .filter((thread, index, self) =>
+        index === self.findIndex((t) => t.id === thread.id)
+      )
+      .map(thread => ({
+        ...thread,
+        replies: thread.replies.filter((reply, index, self) =>
+          index === self.findIndex((r) => r.id === reply.id)
+        )
+      }));
+    
+    setConversations(uniqueThreads);
+    try {
+      await api.saveConversations(uniqueThreads);
+    } catch (error) {
+      console.error('Failed to sync with the server:', error);
+      setWarningModal({
+        isOpen: true,
+        type: 'error',
+        title: 'Connection Error',
+        message: 'Failed to sync with the server. Your changes might not be saved permanently.',
+      });
     }
-  }, []);
-  const saveConversations = (updated: Conversation[]) => {
-    setConversations(updated);
-    localStorage.setItem('tuco_conversations_v1', JSON.stringify(updated));
   };
+
   const saveVotes = (updated: Record<number, 'up' | 'down' | null>) => {
     setVotedThreads(updated);
     localStorage.setItem('tuco_votes_v1', JSON.stringify(updated));
   };
+
+  const saveReplyLikes = (updated: Record<number, boolean>) => {
+    setLikedReplies(updated);
+    localStorage.setItem('tuco_reply_likes_v1', JSON.stringify(updated));
+  };
+
+  const saveNotifications = (updated: Notification[]) => {
+    setNotifications(updated);
+    localStorage.setItem('tuco_notifications_v1', JSON.stringify(updated));
+  };
+
   const toggleSavedPost = (threadId: number) => {
     if (!currentUser) {
       setIsAuthOpen(true);
@@ -221,20 +253,26 @@ export default function App() {
       });
     }
   };
-  const saveUser = (user: User | null) => {
+
+  const saveUser = async (user: User | null) => {
     setCurrentUser(user);
     if (user) {
       localStorage.setItem('tuco_current_user', JSON.stringify(user));
-      const updatedUsers = { ...users, [user.id]: user };
-      setUsers(updatedUsers);
-      localStorage.setItem('tuco_users_db', JSON.stringify(updatedUsers));
-      if (user.trustScore >= 0.85 && user.role === 'member') {
-        const promoted = { ...user, role: 'trusted' as const };
-        setCurrentUser(promoted);
-        localStorage.setItem('tuco_current_user', JSON.stringify(promoted));
-        const promotedUsers = { ...updatedUsers, [user.id]: promoted };
-        setUsers(promotedUsers);
-        localStorage.setItem('tuco_users_db', JSON.stringify(promotedUsers));
+      try {
+        await api.saveUser(user);
+        const updatedUsers = { ...users, [user.id]: user };
+        setUsers(updatedUsers);
+
+        // Check for promotion to trusted member
+        if (user.trustScore >= 0.85 && user.role === 'member') {
+          const promoted = { ...user, role: 'trusted' as const };
+          setCurrentUser(promoted);
+          localStorage.setItem('tuco_current_user', JSON.stringify(promoted));
+          await api.saveUser(promoted);
+          setUsers({ ...updatedUsers, [user.id]: promoted });
+        }
+      } catch (error) {
+        console.error('Failed to save user to API:', error);
       }
     } else {
       localStorage.removeItem('tuco_current_user');
@@ -251,6 +289,17 @@ export default function App() {
       }));
       const updatedUser = { ...user, badges: [...user.badges, ...newBadges] };
       saveUser(updatedUser);
+      
+      const newNotifications: Notification[] = eligibleBadges.map((badgeType, idx) => ({
+        id: Date.now() + idx,
+        type: 'badge',
+        title: 'Badge Earned!',
+        description: `Congratulations! You've earned the ${BADGE_DISPLAY[badgeType].name} badge.`,
+        time: 'Just now',
+        read: false,
+      }));
+      saveNotifications([...newNotifications, ...notifications]);
+
       const badgeNames = eligibleBadges
         .map(b => `${BADGE_DISPLAY[b].icon} ${BADGE_DISPLAY[b].name}`)
         .join(', ');
@@ -328,14 +377,20 @@ export default function App() {
     return filterThreads(ranked, '', searchCategoryFilter, searchDateFilter);
   }, [conversations, searchTerm, searchCategoryFilter, searchDateFilter]);
   const filteredConversations = useMemo(() => {
+    let filtered = conversations;
+
     if (activeCategory === 'saved') {
-      return conversations.filter(c => savedPosts.includes(c.id));
+      filtered = conversations.filter(c => savedPosts.includes(c.id));
+    } else if (activeCategory !== 'all' && activeCategory !== 'sidebar-open') {
+      filtered = conversations.filter(c => c.category === activeCategory);
     }
-    if (activeCategory === 'sidebar-open') {
-      return conversations;
-    }
-    return conversations;
-  }, [conversations, activeCategory, savedPosts]);
+
+    // Always show approved posts, or pending posts if user is a moderator
+    return filtered.filter(c => 
+      c.moderationStatus === 'approved' || 
+      (currentUser?.role === 'moderator' && c.moderationStatus === 'pending')
+    );
+  }, [conversations, activeCategory, savedPosts, currentUser]);
   const featuredThreads = useMemo(() => getFeaturedThreads(conversations), [conversations]);
   const pendingThreads = useMemo(
     () =>
@@ -345,8 +400,11 @@ export default function App() {
     [conversations]
   );
   const handleThreadOpen = (threadId: number) => {
-    const updated = conversations.map(c => (c.id === threadId ? { ...c, views: c.views + 1 } : c));
-    saveConversations(updated);
+    setConversations(prev => {
+      const updated = prev.map(c => (c.id === threadId ? { ...c, views: c.views + 1 } : c));
+      // We don't save view counts to backend every time to save bandwidth
+      return updated;
+    });
     setSelectedThreadId(threadId);
     setIsModalOpen(true);
   };
@@ -374,10 +432,15 @@ export default function App() {
       }
       saveVotes({ ...votedThreads, [threadId]: type });
     }
-    const updated = conversations.map(c =>
-      c.id === threadId ? { ...c, votes: c.votes + voteDiff } : c
-    );
-    saveConversations(updated);
+    
+    setConversations(prev => {
+      const updated = prev.map(c =>
+        c.id === threadId ? { ...c, votes: c.votes + voteDiff } : c
+      );
+      saveConversations(updated);
+      return updated;
+    });
+
     if (upvoteDiff !== 0 && currentUser) {
       const updatedUser = { ...currentUser, totalUpvotes: currentUser.totalUpvotes + upvoteDiff };
       saveUser(updatedUser);
@@ -392,13 +455,20 @@ export default function App() {
     if (/shampoo|hair|scalp|lice|conditioning/.test(raw)) return 'shampoo';
     return undefined;
   };
-  const handleAddReply = (threadId: number, name: string, city: string, text: string) => {
+  const handleAddReply = (
+    threadId: number,
+    name: string,
+    city: string,
+    text: string,
+    image?: string
+  ) => {
     if (!currentUser) {
       setIsAuthOpen(true);
       return;
     }
-    const thread = conversations.find(c => c.id === threadId);
-    const analysis = analyzeContent(text, thread?.category || 'general');
+
+    const threadForAnalysis = conversations.find(c => c.id === threadId);
+    const analysis = analyzeContent(text, threadForAnalysis?.category || 'general');
     if (analysis.outcome === 'CLEAR_VIOLATION') {
       setWarningModal({
         isOpen: true,
@@ -409,24 +479,47 @@ export default function App() {
       });
       return;
     }
+
     const newReply: Reply = {
-      id: Date.now(),
+      id: Date.now() + Math.random(),
       author: name,
       city,
       time: 'Just now',
       text: analysis.civilityReminder ? `${text}\n\n---\n💛 ${analysis.civilityReminder}` : text,
+      image,
       tucoRec: detectProductRecommendation(text),
       likes: 0,
       authorRole: currentUser.role,
       authorBadges: currentUser.badges.map(b => b.type),
     };
-    const updated = conversations.map(c =>
-      c.id === threadId ? { ...c, replies: [...c.replies, newReply] } : c
-    );
+
+    setConversations(prev => {
+      const thread = prev.find(c => c.id === threadId);
+      const updated = prev.map(c =>
+        c.id === threadId ? { ...c, replies: [...c.replies, newReply] } : c
+      );
+
+      // Add notification for the thread author
+      if (thread && thread.authorId && thread.authorId !== currentUser.id) {
+        const newNotif: Notification = {
+          id: Date.now() + Math.random(),
+          type: 'reply',
+          title: 'New reply to your thread',
+          description: `${currentUser.username} replied to "${thread.title}"`,
+          time: 'Just now',
+          read: false,
+          threadId: thread.id,
+        };
+        saveNotifications([newNotif, ...notifications]);
+      }
+
+      saveConversations(updated);
+      return updated;
+    });
+
     const updatedUser = { ...currentUser, replyCount: currentUser.replyCount + 1 };
     saveUser(updatedUser);
     checkAndAwardBadges(updatedUser);
-    saveConversations(updated);
   };
   const handleReportReply = (threadId: number, replyId: number) => {
     if (!currentUser) {
@@ -462,8 +555,7 @@ export default function App() {
       }
       return c;
     });
-    setConversations(updated);
-    localStorage.setItem('tuco_conversations_v1', JSON.stringify(updated));
+    saveConversations(updated);
     setWarningModal({
       isOpen: true,
       type: 'success',
@@ -482,8 +574,7 @@ export default function App() {
       }
       return c;
     });
-    setConversations(updated);
-    localStorage.setItem('tuco_conversations_v1', JSON.stringify(updated));
+    saveConversations(updated);
     setWarningModal({
       isOpen: true,
       type: 'info',
@@ -496,11 +587,47 @@ export default function App() {
       setIsAuthOpen(true);
       return;
     }
+
+    const isLiked = likedReplies[replyId] || false;
+    const newLikedState = !isLiked;
+    
+    // Update local tracking
+    const updatedLikes = { ...likedReplies };
+    if (newLikedState) {
+      updatedLikes[replyId] = true;
+    } else {
+      delete updatedLikes[replyId];
+    }
+    saveReplyLikes(updatedLikes);
+
+    // Add notification for the reply author
+    if (newLikedState) {
+      const thread = conversations.find(c => c.id === threadId);
+      const reply = thread?.replies.find(r => r.id === replyId);
+      if (reply && reply.author !== currentUser.username) {
+        const newNotif: Notification = {
+          id: Date.now(),
+          type: 'like',
+          title: 'Your reply was liked',
+          description: `${currentUser.username} liked your helpful advice in "${thread?.title}"`,
+          time: 'Just now',
+          read: false,
+          threadId: thread?.id,
+        };
+        saveNotifications([newNotif, ...notifications]);
+      }
+    }
+
+    // Update conversation data
     const updated = conversations.map(c => {
       if (c.id === threadId) {
         return {
           ...c,
-          replies: c.replies.map(r => (r.id === replyId ? { ...r, likes: (r.likes || 0) + 1 } : r)),
+          replies: c.replies.map(r => 
+            r.id === replyId 
+              ? { ...r, likes: (r.likes || 0) + (newLikedState ? 1 : -1) } 
+              : r
+          ),
         };
       }
       return c;
@@ -512,7 +639,8 @@ export default function App() {
     category: string,
     author: string,
     city: string,
-    text: string
+    text: string,
+    image?: string
   ) => {
     if (!currentUser) {
       setIsAuthOpen(true);
@@ -548,7 +676,7 @@ export default function App() {
       moderationStatus = 'rejected';
     }
     const newThread: Conversation = {
-      id: Date.now(),
+      id: Date.now() + Math.random(),
       title,
       category,
       votes: 1,
@@ -558,6 +686,7 @@ export default function App() {
         city,
         time: 'Just now',
         text: analysis.civilityReminder ? `${text}\n\n---\n💛 ${analysis.civilityReminder}` : text,
+        image,
         authorRole: currentUser.role,
         authorBadges: currentUser.badges.map(b => b.type),
       },
@@ -582,10 +711,16 @@ export default function App() {
       });
       return;
     }
+
+    setConversations(prev => {
+      const updated = [newThread, ...prev];
+      saveConversations(updated);
+      return updated;
+    });
+
     const updatedUser = { ...currentUser, postCount: currentUser.postCount + 1 };
     saveUser(updatedUser);
     checkAndAwardBadges(updatedUser);
-    saveConversations([newThread, ...conversations]);
     setIsNewPostOpen(false);
     if (moderationStatus === 'pending') {
       setPendingReview({
@@ -595,12 +730,7 @@ export default function App() {
         submittedAt: new Date().toISOString(),
       });
     } else {
-      setWarningModal({
-        isOpen: true,
-        type: 'success',
-        title: 'Discussion Live!',
-        message: 'Your discussion is now live!',
-      });
+      handleThreadOpen(newThread.id);
     }
   };
   const handleApproveThread = (threadId: number) => {
@@ -662,12 +792,14 @@ export default function App() {
   const handleResetToDefault = () => {
     localStorage.removeItem('tuco_conversations_v1');
     localStorage.removeItem('tuco_votes_v1');
+    localStorage.removeItem('tuco_reply_likes_v1');
     localStorage.removeItem('tuco_saved_posts_v1');
     localStorage.removeItem('tuco_current_user');
     localStorage.removeItem('tuco_users_db');
     const seeded = enrichConversations(mergeSeedWithExisting(INITIAL_CONVERSATIONS, 100));
     setConversations(seeded);
     setVotedThreads({});
+    setLikedReplies({});
     setSavedPosts([]);
     setActiveCategory('all');
     setSearchTerm('');
@@ -708,6 +840,12 @@ export default function App() {
           if (thread) setSearchTerm(thread.title.split(' ').slice(0, 3).join(' '));
           handleThreadOpen(id);
         }}
+        notifications={notifications}
+        onMarkAsRead={id => {
+          const updated = notifications.map(n => (n.id === id ? { ...n, read: true } : n));
+          saveNotifications(updated);
+        }}
+        onThreadOpen={handleThreadOpen}
       />
       <div className="layout flex-1 w-full mx-auto px-3 sm:px-4 md:px-8 py-4 sm:py-8">
         {activeCategory === 'sidebar-open' ? (
@@ -799,6 +937,7 @@ export default function App() {
         onEditReply={handleEditReply}
         onDeleteReply={handleDeleteReply}
         currentUser={currentUser}
+        likedReplies={likedReplies}
         users={users}
       />
       <NewPostModal
@@ -875,8 +1014,15 @@ export default function App() {
       />
       <NotificationsPage
         isOpen={isNotificationsOpen}
-        onClose={() => setIsNotificationsOpen(false)}
-      />
+        notifications={notifications}
+        onMarkAsRead={id => {
+          const updated = notifications.map(n => (n.id === id ? { ...n, read: true } : n));
+          saveNotifications(updated);
+        }}
+        onClearAll={() => saveNotifications([])}
+          onClose={() => setIsNotificationsOpen(false)}
+          onThreadOpen={handleThreadOpen}
+        />
       <ReportModal
         isOpen={isReportOpen}
         onClose={() => {

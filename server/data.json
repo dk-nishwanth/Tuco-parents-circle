@@ -1,0 +1,4925 @@
+{
+  "conversations": [
+    {
+      "id": 1,
+      "title": "Best sunscreen for outdoor cricket this summer?",
+      "category": "skincare",
+      "isPinned": true,
+      "isHot": true,
+      "votes": 142,
+      "views": 1871,
+      "op": {
+        "author": "Priya_Rao",
+        "city": "Mumbai",
+        "time": "2 days ago",
+        "text": "My 8-year-old son plays cricket outdoors every single evening and on weekends it's 4+ hours of direct sun. I've been using a random adult sunscreen on him but I'm not confident it's safe. Which sunscreen actually works for Indian kids in this heat? He sweats a lot so worried it wipes off too quickly. SPF 30 or 50? Mineral or chemical?"
+      },
+      "replies": [
+        {
+          "id": 1,
+          "author": "AnanyaK",
+          "city": "Bangalore",
+          "time": "2 days ago",
+          "text": "Same exact situation with my 9-year-old! We've been through 5–6 sunscreens. The key for sporty kids is water/sweat resistance. We now use Tuco's Daily Shield SPF 50 — it's specifically made for Indian kids, non-greasy, and actually stays on through a full practice session. Mineral-based so no chemicals to worry about.",
+          "tucoRec": "sunscreen",
+          "likes": 12
+        },
+        {
+          "id": 2,
+          "author": "MeeraSingh",
+          "city": "Pune",
+          "time": "2 days ago",
+          "text": "SPF 50 is definitely better for sustained outdoor play. SPF 30 filters about 97% UVB, SPF 50 filters 98%+ — sounds small but for 4 hours of sun it matters. Also reapplication every 2 hours is non-negotiable regardless of which brand you use.",
+          "likes": 8
+        },
+        {
+          "id": 3,
+          "author": "RohiniM",
+          "city": "Delhi",
+          "time": "1 day ago",
+          "text": "Delhi parent here — the sun is absolutely brutal in summers. I apply sunscreen 20 mins before going out (so it has time to bind to skin), and keep a small tube in his cricket bag for mid-session reapplication. Lightweight gel formulas work better for kids who sweat.",
+          "likes": 5
+        },
+        {
+          "id": 4,
+          "author": "KavyaT",
+          "city": "Chennai",
+          "time": "1 day ago",
+          "text": "One thing most parents miss — ears, back of neck and back of hands! Kids get badly tanned there during sport. Also don't forget UPF-rated clothing for extra protection. Chennai sun is unforgiving!",
+          "likes": 4
+        },
+        {
+          "id": 5,
+          "author": "Priya_Rao",
+          "city": "Mumbai",
+          "time": "22 hours ago",
+          "text": "Thank you all! Ordered the Tuco one and will definitely do the 20-min pre-application trick. Going to reapply at halftime too. ☀️",
+          "likes": 3
+        },
+        {
+          "id": 1779692172237.2273,
+          "author": "dknishwanth1718",
+          "city": "India",
+          "time": "Just now",
+          "text": "hello",
+          "likes": 0,
+          "authorRole": "member",
+          "authorBadges": []
+        },
+        {
+          "id": 1779694557109.4858,
+          "author": "dknishwanth",
+          "city": "India",
+          "time": "Just now",
+          "text": "helloo",
+          "likes": 0,
+          "authorRole": "member",
+          "authorBadges": []
+        }
+      ],
+      "createdAt": "2026-05-24T06:36:27.315Z",
+      "moderationStatus": "approved",
+      "isFeatured": false
+    },
+    {
+      "id": 2,
+      "title": "My 5-year-old has dry flaky patches on cheeks — mild eczema or something else?",
+      "category": "skincare",
+      "isPinned": false,
+      "isHot": true,
+      "votes": 89,
+      "views": 1200,
+      "op": {
+        "author": "SnehaVerma",
+        "city": "Delhi",
+        "time": "3 days ago",
+        "text": "My 5-year-old daughter has these dry, slightly flaky patches on her cheeks — especially after bathing. They've been there since winter and now in summer they haven't gone away. The skin isn't red or itchy but it looks rough. Our paediatrician said it's mild eczema-prone skin. What moisturiser should I be using? Should I be bathing her less frequently?"
+      },
+      "replies": [
+        {
+          "id": 1,
+          "author": "DeepikaSharma",
+          "city": "Jaipur",
+          "time": "3 days ago",
+          "text": "My son had the exact same thing! Dermat explained that bath water (especially hard water) strips natural oils from kids' skin. The key is: lukewarm water, not hot; 5–7 minute baths max; pat dry — never rub; and moisturiser within 3 minutes of bath while skin is still slightly damp. That window is crucial.",
+          "likes": 10
+        },
+        {
+          "id": 2,
+          "author": "AnanyaK",
+          "city": "Bangalore",
+          "time": "2 days ago",
+          "text": "We use Tuco's Nourish Night Moisturiser on my daughter's cheeks — it was recommended by our paediatric dermat for eczema-prone kids. Fragrance-free, no parabens. Within 2 weeks the flakiness reduced noticeably. It has ceramides which help repair the skin barrier.",
+          "tucoRec": "moisturiser",
+          "likes": 14
+        },
+        {
+          "id": 3,
+          "author": "MeeraSingh",
+          "city": "Pune",
+          "time": "2 days ago",
+          "text": "Switching from soap to a gentle body wash also helped us a lot. Regular soap has a high pH that disrupts the skin barrier. Look for pH-balanced, soap-free body washes for kids.",
+          "likes": 8
+        }
+      ],
+      "createdAt": "2026-05-23T06:36:27.315Z",
+      "moderationStatus": "approved",
+      "isFeatured": true,
+      "featuredLabel": "Circle Mom of the Month"
+    },
+    {
+      "id": 3,
+      "title": "Healthy school tiffin ideas my kids will actually eat — vegetarian",
+      "category": "kids_growth",
+      "isPinned": false,
+      "isHot": false,
+      "votes": 112,
+      "views": 1763,
+      "op": {
+        "author": "AnanyaK",
+        "city": "Bangalore",
+        "time": "4 days ago",
+        "text": "Running out of ideas by Wednesday every week. My 6yo and 8yo are getting bored of the same paratha + curd routine. Need vegetarian tiffin ideas that are not junk, are filling, and can stay good till lunch without getting soggy. Also, no nuts because of school allergy policies!",
+        "authorBadges": [
+          "community_insider"
+        ]
+      },
+      "replies": [
+        {
+          "id": 1,
+          "author": "SnehaVerma",
+          "city": "Delhi",
+          "time": "3 days ago",
+          "text": "Same problem! I started making \"mini meals\" instead of just parathas. Some hits: vegetable cheese frankie (wrap tightly in foil), colorful poha with lots of veggies, idli with tomato chutney in separate container, spinach paneer cutlet (make small ones so they can eat with hands).",
+          "likes": 21
+        },
+        {
+          "id": 2,
+          "author": "Priya_Rao",
+          "city": "Mumbai",
+          "time": "3 days ago",
+          "text": "Invest in good quality insulated tiffin boxes! The ones with separate compartments are a game changer. My kids love \"themed\" tiffins: sometimes all orange (carrot paratha, orange halwa, orange juice), sometimes all green. It's silly but they get excited.",
+          "likes": 15
+        }
+      ],
+      "createdAt": "2026-05-22T06:36:27.315Z",
+      "moderationStatus": "approved",
+      "isFeatured": false
+    },
+    {
+      "id": 4,
+      "title": "Family-friendly destinations for summer holidays in India",
+      "category": "active_kids",
+      "isPinned": false,
+      "isHot": true,
+      "isFeatured": true,
+      "featuredLabel": "hot discussion",
+      "votes": 112,
+      "views": 1790,
+      "op": {
+        "author": "DeepikaSharma",
+        "city": "Jaipur",
+        "time": "5 days ago",
+        "text": "Planning our first family trip with kids 3 and 6. Looking for places in India that are not too crowded, not too hot (or have good indoor options), and have kid-friendly activities. Beach or hill station? Would prefer places where we don't have to worry too much about food safety."
+      },
+      "replies": [
+        {
+          "id": 1,
+          "author": "MeeraSingh",
+          "city": "Pune",
+          "time": "4 days ago",
+          "text": "We did Goa last summer with a 4yo and it was great! We stayed in South Goa, not North — much quieter, cleaner beaches. We rented a villa with a small pool so kid had somewhere safe to play when the sun was too strong. Lots of good cafes with kid menus.",
+          "likes": 9
+        },
+        {
+          "id": 2,
+          "author": "KavyaT",
+          "city": "Chennai",
+          "time": "4 days ago",
+          "text": "If you want hills, Coorg is amazing with kids! Not too cold in summer, lots of plantations to walk through, coffee tastings (for adults), chocolate factories, and some great resorts with play areas. The weather is pleasant most of the day.",
+          "likes": 12
+        }
+      ],
+      "createdAt": "2026-05-21T06:36:27.315Z",
+      "moderationStatus": "approved"
+    },
+    {
+      "id": 5,
+      "title": "Best way to teach multiplication tables to 7yo?",
+      "category": "school",
+      "isPinned": false,
+      "isHot": false,
+      "votes": 76,
+      "views": 945,
+      "op": {
+        "author": "NehaMehta",
+        "city": "Surat",
+        "time": "1 week ago",
+        "text": "My son just hates rote learning and forgets the tables within a day. Are there any fun methods or games that actually work? Especially for 2–10 tables which his school insists they learn this year. I don't want math to become a source of stress for him so early."
+      },
+      "replies": [
+        {
+          "id": 1,
+          "author": "PoojaReddy",
+          "city": "Hyderabad",
+          "time": "6 days ago",
+          "text": "We used songs and YouTube rhymes first! Once he was familiar, we played \"multiplication ping pong\" — I say a number, he says the table answer, then vice versa. We also made a big colourful chart and put it on the fridge where he sees it 10 times a day without realizing.",
+          "likes": 18
+        },
+        {
+          "id": 2,
+          "author": "RohiniM",
+          "city": "Delhi",
+          "time": "5 days ago",
+          "text": "Skip counting! We do it while climbing stairs, while waiting in line, while walking to the park. \"2,4,6,8...\" becomes a game, not work. Once skip counting is solid, tables click automatically because they understand the pattern, not just memorizing random numbers.",
+          "likes": 22
+        }
+      ],
+      "createdAt": "2026-05-20T06:36:27.315Z",
+      "moderationStatus": "approved",
+      "isFeatured": false
+    },
+    {
+      "id": 6,
+      "title": "Morning routine hack that saved us 30 mins!",
+      "category": "parenting_hacks",
+      "isPinned": false,
+      "isHot": false,
+      "votes": 156,
+      "views": 2102,
+      "op": {
+        "author": "DivyaNair",
+        "city": "Kochi",
+        "time": "2 weeks ago",
+        "text": "Ok this one is a game changer. We used to be stressed every single morning trying to get two kids ready for school and ourselves ready for work. Now we do 90% of the prep THE NIGHT BEFORE. Here's our routine...",
+        "authorBadges": [
+          "trusted_member"
+        ]
+      },
+      "replies": [
+        {
+          "id": 1,
+          "author": "AnanyaK",
+          "city": "Bangalore",
+          "time": "13 days ago",
+          "text": "We do this too! Also, we lay out our own clothes the night before — not just the kids. One less thing to think about at 7 AM.",
+          "likes": 11
+        }
+      ],
+      "createdAt": "2026-05-19T06:36:27.315Z",
+      "moderationStatus": "approved",
+      "isFeatured": false
+    },
+    {
+      "id": 7,
+      "title": "Best sunscreen for outdoor cricket this summer?",
+      "category": "skincare",
+      "isPinned": true,
+      "isHot": true,
+      "isFeatured": true,
+      "featuredLabel": "Circle Mom of the Month",
+      "votes": 15,
+      "views": 200,
+      "createdAt": "2026-05-24T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "Priya_Rao",
+        "city": "Mumbai",
+        "time": "1 day ago",
+        "text": "Looking for advice from other Indian parents on \"Best sunscreen for outdoor cricket this summer?\". My child is 3 years old. Would love to hear what worked in your family — especially practical tips from Mumbai.",
+        "authorBadges": [
+          "community_insider"
+        ]
+      },
+      "replies": [
+        {
+          "id": 700,
+          "author": "AnanyaK",
+          "city": "Bangalore",
+          "time": "1 day ago",
+          "text": "We went through the same — what helped us was consistency and patience.",
+          "likes": 10
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Homework battles — how do you cope?",
+      "category": "school",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 16,
+      "views": 245,
+      "createdAt": "2026-05-23T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "AnanyaK",
+        "city": "Bangalore",
+        "time": "2 days ago",
+        "text": "Looking for advice from other Indian parents on \"Homework battles — how do you cope?\". My child is 4 years old. Would love to hear what worked in your family — especially practical tips from Bangalore."
+      },
+      "replies": [
+        {
+          "id": 710,
+          "author": "SnehaVerma",
+          "city": "Delhi",
+          "time": "2 days ago",
+          "text": "Our paediatrician suggested we track symptoms for 3 days before worrying.",
+          "likes": 11
+        },
+        {
+          "id": 711,
+          "author": "MeeraSingh",
+          "city": "Pune",
+          "time": "1 day ago",
+          "text": "Mumbai parent here — humidity makes a big difference to skin care choices.",
+          "likes": 8
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Weight gain for underweight 4yo?",
+      "category": "kids_growth",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 17,
+      "views": 290,
+      "createdAt": "2026-05-22T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "SnehaVerma",
+        "city": "Delhi",
+        "time": "3 days ago",
+        "text": "Looking for advice from other Indian parents on \"Weight gain for underweight 4yo?\". My child is 5 years old. Would love to hear what worked in your family — especially practical tips from Delhi."
+      },
+      "replies": [
+        {
+          "id": 720,
+          "author": "MeeraSingh",
+          "city": "Pune",
+          "time": "3 days ago",
+          "text": "Mumbai parent here — humidity makes a big difference to skin care choices.",
+          "likes": 10
+        },
+        {
+          "id": 721,
+          "author": "DeepikaSharma",
+          "city": "Jaipur",
+          "time": "2 days ago",
+          "text": "Try the 5-minute warning before transitions — game changer for us.",
+          "likes": 5
+        },
+        {
+          "id": 722,
+          "author": "KavyaT",
+          "city": "Chennai",
+          "time": "1 day ago",
+          "text": "Hinglish mein bolo toh bhi theek hai — yahan sab parents samajhte hain.",
+          "likes": 9
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "title": "Football gear for young kids?",
+      "category": "active_kids",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 18,
+      "views": 335,
+      "createdAt": "2026-05-21T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "MeeraSingh",
+        "city": "Pune",
+        "time": "4 days ago",
+        "text": "Looking for advice from other Indian parents on \"Football gear for young kids?\". My child is 6 years old. Would love to hear what worked in your family — especially practical tips from Pune.",
+        "authorBadges": [
+          "community_member"
+        ]
+      },
+      "replies": [
+        {
+          "id": 730,
+          "author": "DeepikaSharma",
+          "city": "Jaipur",
+          "time": "4 days ago",
+          "text": "Try the 5-minute warning before transitions — game changer for us.",
+          "likes": 10
+        },
+        {
+          "id": 731,
+          "author": "KavyaT",
+          "city": "Chennai",
+          "time": "3 days ago",
+          "text": "Hinglish mein bolo toh bhi theek hai — yahan sab parents samajhte hain.",
+          "likes": 7
+        },
+        {
+          "id": 732,
+          "author": "RohiniM",
+          "city": "Delhi",
+          "time": "2 days ago",
+          "text": "Please be kind in replies — mental health topics need gentle support.",
+          "likes": 7
+        },
+        {
+          "id": 733,
+          "author": "NehaMehta",
+          "city": "Surat",
+          "time": "1 day ago",
+          "text": "Every family's cultural practice is different — respect goes both ways.",
+          "likes": 5
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "title": "Medicine reminder system parents use",
+      "category": "parenting_hacks",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 19,
+      "views": 380,
+      "createdAt": "2026-05-20T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "DeepikaSharma",
+        "city": "Jaipur",
+        "time": "5 days ago",
+        "text": "Looking for advice from other Indian parents on \"Medicine reminder system parents use\". My child is 7 years old. Would love to hear what worked in your family — especially practical tips from Jaipur."
+      },
+      "replies": [
+        {
+          "id": 740,
+          "author": "KavyaT",
+          "city": "Chennai",
+          "time": "5 days ago",
+          "text": "Hinglish mein bolo toh bhi theek hai — yahan sab parents samajhte hain.",
+          "likes": 2
+        },
+        {
+          "id": 741,
+          "author": "RohiniM",
+          "city": "Delhi",
+          "time": "4 days ago",
+          "text": "Please be kind in replies — mental health topics need gentle support.",
+          "likes": 2
+        },
+        {
+          "id": 742,
+          "author": "NehaMehta",
+          "city": "Surat",
+          "time": "3 days ago",
+          "text": "Every family's cultural practice is different — respect goes both ways.",
+          "likes": 10
+        },
+        {
+          "id": 743,
+          "author": "DivyaNair",
+          "city": "Kochi",
+          "time": "2 days ago",
+          "text": "We went through the same — what helped us was consistency and patience.",
+          "likes": 12
+        },
+        {
+          "id": 744,
+          "author": "PoojaReddy",
+          "city": "Hyderabad",
+          "time": "1 day ago",
+          "text": "Our paediatrician suggested we track symptoms for 3 days before worrying.",
+          "likes": 6
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "title": "Best sunscreen for outdoor cricket this summer?",
+      "category": "skincare",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 20,
+      "views": 425,
+      "createdAt": "2026-05-19T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "KavyaT",
+        "city": "Chennai",
+        "time": "6 days ago",
+        "text": "Looking for advice from other Indian parents on \"Best sunscreen for outdoor cricket this summer?\". My child is 8 years old. Would love to hear what worked in your family — especially practical tips from Chennai.",
+        "authorBadges": [
+          "community_insider"
+        ]
+      },
+      "replies": [
+        {
+          "id": 750,
+          "author": "RohiniM",
+          "city": "Delhi",
+          "time": "6 days ago",
+          "text": "Please be kind in replies — mental health topics need gentle support.",
+          "likes": 8
+        },
+        {
+          "id": 751,
+          "author": "NehaMehta",
+          "city": "Surat",
+          "time": "5 days ago",
+          "text": "Every family's cultural practice is different — respect goes both ways.",
+          "likes": 1
+        },
+        {
+          "id": 752,
+          "author": "DivyaNair",
+          "city": "Kochi",
+          "time": "4 days ago",
+          "text": "We went through the same — what helped us was consistency and patience.",
+          "likes": 2
+        },
+        {
+          "id": 753,
+          "author": "PoojaReddy",
+          "city": "Hyderabad",
+          "time": "3 days ago",
+          "text": "Our paediatrician suggested we track symptoms for 3 days before worrying.",
+          "likes": 11
+        },
+        {
+          "id": 754,
+          "author": "Priya_Rao",
+          "city": "Mumbai",
+          "time": "2 days ago",
+          "text": "Mumbai parent here — humidity makes a big difference to skin care choices.",
+          "likes": 10
+        },
+        {
+          "id": 755,
+          "author": "AnanyaK",
+          "city": "Bangalore",
+          "time": "1 day ago",
+          "text": "Try the 5-minute warning before transitions — game changer for us.",
+          "likes": 10
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "title": "Homework battles — how do you cope?",
+      "category": "school",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 21,
+      "views": 470,
+      "createdAt": "2026-05-18T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "RohiniM",
+        "city": "Delhi",
+        "time": "1 week ago",
+        "text": "Looking for advice from other Indian parents on \"Homework battles — how do you cope?\". My child is 9 years old. Would love to hear what worked in your family — especially practical tips from Delhi.",
+        "authorBadges": [
+          "community_member"
+        ]
+      },
+      "replies": [
+        {
+          "id": 760,
+          "author": "NehaMehta",
+          "city": "Surat",
+          "time": "1 week ago",
+          "text": "Every family's cultural practice is different — respect goes both ways.",
+          "likes": 7
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "title": "Weight gain for underweight 4yo?",
+      "category": "kids_growth",
+      "isPinned": false,
+      "isHot": true,
+      "isFeatured": false,
+      "votes": 22,
+      "views": 515,
+      "createdAt": "2026-05-17T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "NehaMehta",
+        "city": "Surat",
+        "time": "1 week ago",
+        "text": "Looking for advice from other Indian parents on \"Weight gain for underweight 4yo?\". My child is 10 years old. Would love to hear what worked in your family — especially practical tips from Surat."
+      },
+      "replies": [
+        {
+          "id": 770,
+          "author": "DivyaNair",
+          "city": "Kochi",
+          "time": "1 week ago",
+          "text": "We went through the same — what helped us was consistency and patience.",
+          "likes": 5
+        },
+        {
+          "id": 771,
+          "author": "PoojaReddy",
+          "city": "Hyderabad",
+          "time": "1 week ago",
+          "text": "Our paediatrician suggested we track symptoms for 3 days before worrying.",
+          "likes": 5
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "title": "Football gear for young kids?",
+      "category": "active_kids",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 23,
+      "views": 560,
+      "createdAt": "2026-05-16T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "DivyaNair",
+        "city": "Kochi",
+        "time": "1 week ago",
+        "text": "Looking for advice from other Indian parents on \"Football gear for young kids?\". My child is 3 years old. Would love to hear what worked in your family — especially practical tips from Kochi."
+      },
+      "replies": [
+        {
+          "id": 780,
+          "author": "PoojaReddy",
+          "city": "Hyderabad",
+          "time": "1 week ago",
+          "text": "Our paediatrician suggested we track symptoms for 3 days before worrying.",
+          "likes": 6
+        },
+        {
+          "id": 781,
+          "author": "Priya_Rao",
+          "city": "Mumbai",
+          "time": "1 week ago",
+          "text": "Mumbai parent here — humidity makes a big difference to skin care choices.",
+          "likes": 4
+        },
+        {
+          "id": 782,
+          "author": "AnanyaK",
+          "city": "Bangalore",
+          "time": "1 week ago",
+          "text": "Try the 5-minute warning before transitions — game changer for us.",
+          "likes": 7
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "title": "Medicine reminder system parents use",
+      "category": "parenting_hacks",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 24,
+      "views": 605,
+      "createdAt": "2026-05-15T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "PoojaReddy",
+        "city": "Hyderabad",
+        "time": "1 week ago",
+        "text": "Looking for advice from other Indian parents on \"Medicine reminder system parents use\". My child is 4 years old. Would love to hear what worked in your family — especially practical tips from Hyderabad.",
+        "authorBadges": [
+          "community_member"
+        ]
+      },
+      "replies": [
+        {
+          "id": 790,
+          "author": "Priya_Rao",
+          "city": "Mumbai",
+          "time": "1 week ago",
+          "text": "Mumbai parent here — humidity makes a big difference to skin care choices.",
+          "likes": 11
+        },
+        {
+          "id": 791,
+          "author": "AnanyaK",
+          "city": "Bangalore",
+          "time": "1 week ago",
+          "text": "Try the 5-minute warning before transitions — game changer for us.",
+          "likes": 9
+        },
+        {
+          "id": 792,
+          "author": "SnehaVerma",
+          "city": "Delhi",
+          "time": "1 week ago",
+          "text": "Hinglish mein bolo toh bhi theek hai — yahan sab parents samajhte hain.",
+          "likes": 4
+        },
+        {
+          "id": 793,
+          "author": "MeeraSingh",
+          "city": "Pune",
+          "time": "1 week ago",
+          "text": "Please be kind in replies — mental health topics need gentle support.",
+          "likes": 3
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "title": "Best sunscreen for outdoor cricket this summer?",
+      "category": "skincare",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 25,
+      "views": 650,
+      "createdAt": "2026-05-14T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "Priya_Rao",
+        "city": "Mumbai",
+        "time": "1 week ago",
+        "text": "Looking for advice from other Indian parents on \"Best sunscreen for outdoor cricket this summer?\". My child is 5 years old. Would love to hear what worked in your family — especially practical tips from Mumbai.",
+        "authorBadges": [
+          "community_insider"
+        ]
+      },
+      "replies": [
+        {
+          "id": 800,
+          "author": "AnanyaK",
+          "city": "Bangalore",
+          "time": "1 week ago",
+          "text": "Try the 5-minute warning before transitions — game changer for us.",
+          "likes": 11
+        },
+        {
+          "id": 801,
+          "author": "SnehaVerma",
+          "city": "Delhi",
+          "time": "1 week ago",
+          "text": "Hinglish mein bolo toh bhi theek hai — yahan sab parents samajhte hain.",
+          "likes": 7
+        },
+        {
+          "id": 802,
+          "author": "MeeraSingh",
+          "city": "Pune",
+          "time": "1 week ago",
+          "text": "Please be kind in replies — mental health topics need gentle support.",
+          "likes": 9
+        },
+        {
+          "id": 803,
+          "author": "DeepikaSharma",
+          "city": "Jaipur",
+          "time": "1 week ago",
+          "text": "Every family's cultural practice is different — respect goes both ways.",
+          "likes": 2
+        },
+        {
+          "id": 804,
+          "author": "KavyaT",
+          "city": "Chennai",
+          "time": "1 week ago",
+          "text": "We went through the same — what helped us was consistency and patience.",
+          "likes": 10
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "title": "Homework battles — how do you cope?",
+      "category": "school",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 26,
+      "views": 695,
+      "createdAt": "2026-05-13T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "AnanyaK",
+        "city": "Bangalore",
+        "time": "1 week ago",
+        "text": "Looking for advice from other Indian parents on \"Homework battles — how do you cope?\". My child is 6 years old. Would love to hear what worked in your family — especially practical tips from Bangalore."
+      },
+      "replies": [
+        {
+          "id": 810,
+          "author": "SnehaVerma",
+          "city": "Delhi",
+          "time": "1 week ago",
+          "text": "Hinglish mein bolo toh bhi theek hai — yahan sab parents samajhte hain.",
+          "likes": 2
+        },
+        {
+          "id": 811,
+          "author": "MeeraSingh",
+          "city": "Pune",
+          "time": "1 week ago",
+          "text": "Please be kind in replies — mental health topics need gentle support.",
+          "likes": 11
+        },
+        {
+          "id": 812,
+          "author": "DeepikaSharma",
+          "city": "Jaipur",
+          "time": "1 week ago",
+          "text": "Every family's cultural practice is different — respect goes both ways.",
+          "likes": 12
+        },
+        {
+          "id": 813,
+          "author": "KavyaT",
+          "city": "Chennai",
+          "time": "1 week ago",
+          "text": "We went through the same — what helped us was consistency and patience.",
+          "likes": 6
+        },
+        {
+          "id": 814,
+          "author": "RohiniM",
+          "city": "Delhi",
+          "time": "1 week ago",
+          "text": "Our paediatrician suggested we track symptoms for 3 days before worrying.",
+          "likes": 12
+        },
+        {
+          "id": 815,
+          "author": "NehaMehta",
+          "city": "Surat",
+          "time": "1 week ago",
+          "text": "Mumbai parent here — humidity makes a big difference to skin care choices.",
+          "likes": 5
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "title": "Weight gain for underweight 4yo?",
+      "category": "kids_growth",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 27,
+      "views": 740,
+      "createdAt": "2026-05-12T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "SnehaVerma",
+        "city": "Delhi",
+        "time": "1 week ago",
+        "text": "Looking for advice from other Indian parents on \"Weight gain for underweight 4yo?\". My child is 7 years old. Would love to hear what worked in your family — especially practical tips from Delhi.",
+        "authorBadges": [
+          "community_member"
+        ]
+      },
+      "replies": [
+        {
+          "id": 820,
+          "author": "MeeraSingh",
+          "city": "Pune",
+          "time": "1 week ago",
+          "text": "Please be kind in replies — mental health topics need gentle support.",
+          "likes": 4
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "title": "Football gear for young kids?",
+      "category": "active_kids",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 28,
+      "views": 785,
+      "createdAt": "2026-05-11T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "MeeraSingh",
+        "city": "Pune",
+        "time": "2 weeks ago",
+        "text": "Looking for advice from other Indian parents on \"Football gear for young kids?\". My child is 8 years old. Would love to hear what worked in your family — especially practical tips from Pune."
+      },
+      "replies": [
+        {
+          "id": 830,
+          "author": "DeepikaSharma",
+          "city": "Jaipur",
+          "time": "2 weeks ago",
+          "text": "Every family's cultural practice is different — respect goes both ways.",
+          "likes": 7
+        },
+        {
+          "id": 831,
+          "author": "KavyaT",
+          "city": "Chennai",
+          "time": "1 week ago",
+          "text": "We went through the same — what helped us was consistency and patience.",
+          "likes": 4
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "title": "Medicine reminder system parents use",
+      "category": "parenting_hacks",
+      "isPinned": false,
+      "isHot": true,
+      "isFeatured": false,
+      "votes": 29,
+      "views": 830,
+      "createdAt": "2026-05-10T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "DeepikaSharma",
+        "city": "Jaipur",
+        "time": "2 weeks ago",
+        "text": "Looking for advice from other Indian parents on \"Medicine reminder system parents use\". My child is 9 years old. Would love to hear what worked in your family — especially practical tips from Jaipur."
+      },
+      "replies": [
+        {
+          "id": 840,
+          "author": "KavyaT",
+          "city": "Chennai",
+          "time": "2 weeks ago",
+          "text": "We went through the same — what helped us was consistency and patience.",
+          "likes": 12
+        },
+        {
+          "id": 841,
+          "author": "RohiniM",
+          "city": "Delhi",
+          "time": "2 weeks ago",
+          "text": "Our paediatrician suggested we track symptoms for 3 days before worrying.",
+          "likes": 12
+        },
+        {
+          "id": 842,
+          "author": "NehaMehta",
+          "city": "Surat",
+          "time": "1 week ago",
+          "text": "Mumbai parent here — humidity makes a big difference to skin care choices.",
+          "likes": 1
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "title": "Best sunscreen for outdoor cricket this summer?",
+      "category": "skincare",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": true,
+      "featuredLabel": "Circle Mom of the Month",
+      "votes": 30,
+      "views": 875,
+      "createdAt": "2026-05-09T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "KavyaT",
+        "city": "Chennai",
+        "time": "2 weeks ago",
+        "text": "Looking for advice from other Indian parents on \"Best sunscreen for outdoor cricket this summer?\". My child is 10 years old. Would love to hear what worked in your family — especially practical tips from Chennai.",
+        "authorBadges": [
+          "community_insider"
+        ]
+      },
+      "replies": [
+        {
+          "id": 850,
+          "author": "RohiniM",
+          "city": "Delhi",
+          "time": "2 weeks ago",
+          "text": "Our paediatrician suggested we track symptoms for 3 days before worrying.",
+          "likes": 11
+        },
+        {
+          "id": 851,
+          "author": "NehaMehta",
+          "city": "Surat",
+          "time": "2 weeks ago",
+          "text": "Mumbai parent here — humidity makes a big difference to skin care choices.",
+          "likes": 2
+        },
+        {
+          "id": 852,
+          "author": "DivyaNair",
+          "city": "Kochi",
+          "time": "2 weeks ago",
+          "text": "Try the 5-minute warning before transitions — game changer for us.",
+          "likes": 9
+        },
+        {
+          "id": 853,
+          "author": "PoojaReddy",
+          "city": "Hyderabad",
+          "time": "1 week ago",
+          "text": "Hinglish mein bolo toh bhi theek hai — yahan sab parents samajhte hain.",
+          "likes": 4
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "title": "Homework battles — how do you cope?",
+      "category": "school",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 31,
+      "views": 920,
+      "createdAt": "2026-05-08T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "RohiniM",
+        "city": "Delhi",
+        "time": "2 weeks ago",
+        "text": "Looking for advice from other Indian parents on \"Homework battles — how do you cope?\". My child is 3 years old. Would love to hear what worked in your family — especially practical tips from Delhi."
+      },
+      "replies": [
+        {
+          "id": 860,
+          "author": "NehaMehta",
+          "city": "Surat",
+          "time": "2 weeks ago",
+          "text": "Mumbai parent here — humidity makes a big difference to skin care choices.",
+          "likes": 10
+        },
+        {
+          "id": 861,
+          "author": "DivyaNair",
+          "city": "Kochi",
+          "time": "2 weeks ago",
+          "text": "Try the 5-minute warning before transitions — game changer for us.",
+          "likes": 2
+        },
+        {
+          "id": 862,
+          "author": "PoojaReddy",
+          "city": "Hyderabad",
+          "time": "2 weeks ago",
+          "text": "Hinglish mein bolo toh bhi theek hai — yahan sab parents samajhte hain.",
+          "likes": 12
+        },
+        {
+          "id": 863,
+          "author": "Priya_Rao",
+          "city": "Mumbai",
+          "time": "2 weeks ago",
+          "text": "Please be kind in replies — mental health topics need gentle support.",
+          "likes": 5
+        },
+        {
+          "id": 864,
+          "author": "AnanyaK",
+          "city": "Bangalore",
+          "time": "1 week ago",
+          "text": "Every family's cultural practice is different — respect goes both ways.",
+          "likes": 12
+        }
+      ]
+    },
+    {
+      "id": 24,
+      "title": "Weight gain for underweight 4yo?",
+      "category": "kids_growth",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 32,
+      "views": 965,
+      "createdAt": "2026-05-07T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "NehaMehta",
+        "city": "Surat",
+        "time": "2 weeks ago",
+        "text": "Looking for advice from other Indian parents on \"Weight gain for underweight 4yo?\". My child is 4 years old. Would love to hear what worked in your family — especially practical tips from Surat."
+      },
+      "replies": [
+        {
+          "id": 870,
+          "author": "DivyaNair",
+          "city": "Kochi",
+          "time": "2 weeks ago",
+          "text": "Try the 5-minute warning before transitions — game changer for us.",
+          "likes": 12
+        },
+        {
+          "id": 871,
+          "author": "PoojaReddy",
+          "city": "Hyderabad",
+          "time": "2 weeks ago",
+          "text": "Hinglish mein bolo toh bhi theek hai — yahan sab parents samajhte hain.",
+          "likes": 10
+        },
+        {
+          "id": 872,
+          "author": "Priya_Rao",
+          "city": "Mumbai",
+          "time": "2 weeks ago",
+          "text": "Please be kind in replies — mental health topics need gentle support.",
+          "likes": 2
+        },
+        {
+          "id": 873,
+          "author": "AnanyaK",
+          "city": "Bangalore",
+          "time": "2 weeks ago",
+          "text": "Every family's cultural practice is different — respect goes both ways.",
+          "likes": 5
+        },
+        {
+          "id": 874,
+          "author": "SnehaVerma",
+          "city": "Delhi",
+          "time": "2 weeks ago",
+          "text": "We went through the same — what helped us was consistency and patience.",
+          "likes": 6
+        },
+        {
+          "id": 875,
+          "author": "MeeraSingh",
+          "city": "Pune",
+          "time": "1 week ago",
+          "text": "Our paediatrician suggested we track symptoms for 3 days before worrying.",
+          "likes": 6
+        }
+      ]
+    },
+    {
+      "id": 25,
+      "title": "Football gear for young kids?",
+      "category": "active_kids",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 33,
+      "views": 1010,
+      "createdAt": "2026-05-06T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "DivyaNair",
+        "city": "Kochi",
+        "time": "2 weeks ago",
+        "text": "Looking for advice from other Indian parents on \"Football gear for young kids?\". My child is 5 years old. Would love to hear what worked in your family — especially practical tips from Kochi.",
+        "authorBadges": [
+          "community_member"
+        ]
+      },
+      "replies": [
+        {
+          "id": 880,
+          "author": "PoojaReddy",
+          "city": "Hyderabad",
+          "time": "2 weeks ago",
+          "text": "Hinglish mein bolo toh bhi theek hai — yahan sab parents samajhte hain.",
+          "likes": 10
+        }
+      ]
+    },
+    {
+      "id": 26,
+      "title": "Medicine reminder system parents use",
+      "category": "parenting_hacks",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 34,
+      "views": 1055,
+      "createdAt": "2026-05-05T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "PoojaReddy",
+        "city": "Hyderabad",
+        "time": "2 weeks ago",
+        "text": "Looking for advice from other Indian parents on \"Medicine reminder system parents use\". My child is 6 years old. Would love to hear what worked in your family — especially practical tips from Hyderabad."
+      },
+      "replies": [
+        {
+          "id": 890,
+          "author": "Priya_Rao",
+          "city": "Mumbai",
+          "time": "2 weeks ago",
+          "text": "Please be kind in replies — mental health topics need gentle support.",
+          "likes": 8
+        },
+        {
+          "id": 891,
+          "author": "AnanyaK",
+          "city": "Bangalore",
+          "time": "2 weeks ago",
+          "text": "Every family's cultural practice is different — respect goes both ways.",
+          "likes": 6
+        }
+      ]
+    },
+    {
+      "id": 27,
+      "title": "Best sunscreen for outdoor cricket this summer?",
+      "category": "skincare",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 35,
+      "views": 1100,
+      "createdAt": "2026-05-04T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "Priya_Rao",
+        "city": "Mumbai",
+        "time": "3 weeks ago",
+        "text": "Looking for advice from other Indian parents on \"Best sunscreen for outdoor cricket this summer?\". My child is 7 years old. Would love to hear what worked in your family — especially practical tips from Mumbai.",
+        "authorBadges": [
+          "community_insider"
+        ]
+      },
+      "replies": [
+        {
+          "id": 900,
+          "author": "AnanyaK",
+          "city": "Bangalore",
+          "time": "3 weeks ago",
+          "text": "Every family's cultural practice is different — respect goes both ways.",
+          "likes": 6
+        },
+        {
+          "id": 901,
+          "author": "SnehaVerma",
+          "city": "Delhi",
+          "time": "2 weeks ago",
+          "text": "We went through the same — what helped us was consistency and patience.",
+          "likes": 6
+        },
+        {
+          "id": 902,
+          "author": "MeeraSingh",
+          "city": "Pune",
+          "time": "2 weeks ago",
+          "text": "Our paediatrician suggested we track symptoms for 3 days before worrying.",
+          "likes": 7
+        }
+      ]
+    },
+    {
+      "id": 28,
+      "title": "Homework battles — how do you cope?",
+      "category": "school",
+      "isPinned": false,
+      "isHot": true,
+      "isFeatured": false,
+      "votes": 36,
+      "views": 1145,
+      "createdAt": "2026-05-03T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "AnanyaK",
+        "city": "Bangalore",
+        "time": "3 weeks ago",
+        "text": "Looking for advice from other Indian parents on \"Homework battles — how do you cope?\". My child is 8 years old. Would love to hear what worked in your family — especially practical tips from Bangalore.",
+        "authorBadges": [
+          "community_member"
+        ]
+      },
+      "replies": [
+        {
+          "id": 910,
+          "author": "SnehaVerma",
+          "city": "Delhi",
+          "time": "3 weeks ago",
+          "text": "We went through the same — what helped us was consistency and patience.",
+          "likes": 4
+        },
+        {
+          "id": 911,
+          "author": "MeeraSingh",
+          "city": "Pune",
+          "time": "3 weeks ago",
+          "text": "Our paediatrician suggested we track symptoms for 3 days before worrying.",
+          "likes": 4
+        },
+        {
+          "id": 912,
+          "author": "DeepikaSharma",
+          "city": "Jaipur",
+          "time": "2 weeks ago",
+          "text": "Mumbai parent here — humidity makes a big difference to skin care choices.",
+          "likes": 5
+        },
+        {
+          "id": 913,
+          "author": "KavyaT",
+          "city": "Chennai",
+          "time": "2 weeks ago",
+          "text": "Try the 5-minute warning before transitions — game changer for us.",
+          "likes": 7
+        }
+      ]
+    },
+    {
+      "id": 29,
+      "title": "Weight gain for underweight 4yo?",
+      "category": "kids_growth",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 37,
+      "views": 1190,
+      "createdAt": "2026-05-02T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "SnehaVerma",
+        "city": "Delhi",
+        "time": "3 weeks ago",
+        "text": "Looking for advice from other Indian parents on \"Weight gain for underweight 4yo?\". My child is 9 years old. Would love to hear what worked in your family — especially practical tips from Delhi."
+      },
+      "replies": [
+        {
+          "id": 920,
+          "author": "MeeraSingh",
+          "city": "Pune",
+          "time": "3 weeks ago",
+          "text": "Our paediatrician suggested we track symptoms for 3 days before worrying.",
+          "likes": 1
+        },
+        {
+          "id": 921,
+          "author": "DeepikaSharma",
+          "city": "Jaipur",
+          "time": "3 weeks ago",
+          "text": "Mumbai parent here — humidity makes a big difference to skin care choices.",
+          "likes": 1
+        },
+        {
+          "id": 922,
+          "author": "KavyaT",
+          "city": "Chennai",
+          "time": "3 weeks ago",
+          "text": "Try the 5-minute warning before transitions — game changer for us.",
+          "likes": 3
+        },
+        {
+          "id": 923,
+          "author": "RohiniM",
+          "city": "Delhi",
+          "time": "2 weeks ago",
+          "text": "Hinglish mein bolo toh bhi theek hai — yahan sab parents samajhte hain.",
+          "likes": 10
+        },
+        {
+          "id": 924,
+          "author": "NehaMehta",
+          "city": "Surat",
+          "time": "2 weeks ago",
+          "text": "Please be kind in replies — mental health topics need gentle support.",
+          "likes": 3
+        }
+      ]
+    },
+    {
+      "id": 30,
+      "title": "Football gear for young kids?",
+      "category": "active_kids",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 38,
+      "views": 1235,
+      "createdAt": "2026-05-01T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "MeeraSingh",
+        "city": "Pune",
+        "time": "3 weeks ago",
+        "text": "Looking for advice from other Indian parents on \"Football gear for young kids?\". My child is 10 years old. Would love to hear what worked in your family — especially practical tips from Pune."
+      },
+      "replies": [
+        {
+          "id": 930,
+          "author": "DeepikaSharma",
+          "city": "Jaipur",
+          "time": "3 weeks ago",
+          "text": "Mumbai parent here — humidity makes a big difference to skin care choices.",
+          "likes": 2
+        },
+        {
+          "id": 931,
+          "author": "KavyaT",
+          "city": "Chennai",
+          "time": "3 weeks ago",
+          "text": "Try the 5-minute warning before transitions — game changer for us.",
+          "likes": 2
+        },
+        {
+          "id": 932,
+          "author": "RohiniM",
+          "city": "Delhi",
+          "time": "3 weeks ago",
+          "text": "Hinglish mein bolo toh bhi theek hai — yahan sab parents samajhte hain.",
+          "likes": 5
+        },
+        {
+          "id": 933,
+          "author": "NehaMehta",
+          "city": "Surat",
+          "time": "3 weeks ago",
+          "text": "Please be kind in replies — mental health topics need gentle support.",
+          "likes": 12
+        },
+        {
+          "id": 934,
+          "author": "DivyaNair",
+          "city": "Kochi",
+          "time": "2 weeks ago",
+          "text": "Every family's cultural practice is different — respect goes both ways.",
+          "likes": 5
+        },
+        {
+          "id": 935,
+          "author": "PoojaReddy",
+          "city": "Hyderabad",
+          "time": "2 weeks ago",
+          "text": "We went through the same — what helped us was consistency and patience.",
+          "likes": 2
+        }
+      ]
+    },
+    {
+      "id": 31,
+      "title": "Medicine reminder system parents use",
+      "category": "parenting_hacks",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 39,
+      "views": 1280,
+      "createdAt": "2026-04-30T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "DeepikaSharma",
+        "city": "Jaipur",
+        "time": "3 weeks ago",
+        "text": "Looking for advice from other Indian parents on \"Medicine reminder system parents use\". My child is 3 years old. Would love to hear what worked in your family — especially practical tips from Jaipur.",
+        "authorBadges": [
+          "community_member"
+        ]
+      },
+      "replies": [
+        {
+          "id": 940,
+          "author": "KavyaT",
+          "city": "Chennai",
+          "time": "3 weeks ago",
+          "text": "Try the 5-minute warning before transitions — game changer for us.",
+          "likes": 4
+        }
+      ]
+    },
+    {
+      "id": 32,
+      "title": "Best sunscreen for outdoor cricket this summer?",
+      "category": "skincare",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 40,
+      "views": 1325,
+      "createdAt": "2026-04-29T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "KavyaT",
+        "city": "Chennai",
+        "time": "3 weeks ago",
+        "text": "Looking for advice from other Indian parents on \"Best sunscreen for outdoor cricket this summer?\". My child is 4 years old. Would love to hear what worked in your family — especially practical tips from Chennai.",
+        "authorBadges": [
+          "community_insider"
+        ]
+      },
+      "replies": [
+        {
+          "id": 950,
+          "author": "RohiniM",
+          "city": "Delhi",
+          "time": "3 weeks ago",
+          "text": "Hinglish mein bolo toh bhi theek hai — yahan sab parents samajhte hain.",
+          "likes": 5
+        },
+        {
+          "id": 951,
+          "author": "NehaMehta",
+          "city": "Surat",
+          "time": "3 weeks ago",
+          "text": "Please be kind in replies — mental health topics need gentle support.",
+          "likes": 6
+        }
+      ]
+    },
+    {
+      "id": 33,
+      "title": "Homework battles — how do you cope?",
+      "category": "school",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 41,
+      "views": 1370,
+      "createdAt": "2026-04-28T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "RohiniM",
+        "city": "Delhi",
+        "time": "3 weeks ago",
+        "text": "Looking for advice from other Indian parents on \"Homework battles — how do you cope?\". My child is 5 years old. Would love to hear what worked in your family — especially practical tips from Delhi."
+      },
+      "replies": [
+        {
+          "id": 960,
+          "author": "NehaMehta",
+          "city": "Surat",
+          "time": "3 weeks ago",
+          "text": "Please be kind in replies — mental health topics need gentle support.",
+          "likes": 4
+        },
+        {
+          "id": 961,
+          "author": "DivyaNair",
+          "city": "Kochi",
+          "time": "3 weeks ago",
+          "text": "Every family's cultural practice is different — respect goes both ways.",
+          "likes": 7
+        },
+        {
+          "id": 962,
+          "author": "PoojaReddy",
+          "city": "Hyderabad",
+          "time": "3 weeks ago",
+          "text": "We went through the same — what helped us was consistency and patience.",
+          "likes": 3
+        }
+      ]
+    },
+    {
+      "id": 34,
+      "title": "Weight gain for underweight 4yo?",
+      "category": "kids_growth",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 42,
+      "views": 1415,
+      "createdAt": "2026-04-27T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "NehaMehta",
+        "city": "Surat",
+        "time": "4 weeks ago",
+        "text": "Looking for advice from other Indian parents on \"Weight gain for underweight 4yo?\". My child is 6 years old. Would love to hear what worked in your family — especially practical tips from Surat.",
+        "authorBadges": [
+          "community_member"
+        ]
+      },
+      "replies": [
+        {
+          "id": 970,
+          "author": "DivyaNair",
+          "city": "Kochi",
+          "time": "4 weeks ago",
+          "text": "Every family's cultural practice is different — respect goes both ways.",
+          "likes": 2
+        },
+        {
+          "id": 971,
+          "author": "PoojaReddy",
+          "city": "Hyderabad",
+          "time": "3 weeks ago",
+          "text": "We went through the same — what helped us was consistency and patience.",
+          "likes": 11
+        },
+        {
+          "id": 972,
+          "author": "Priya_Rao",
+          "city": "Mumbai",
+          "time": "3 weeks ago",
+          "text": "Our paediatrician suggested we track symptoms for 3 days before worrying.",
+          "likes": 8
+        },
+        {
+          "id": 973,
+          "author": "AnanyaK",
+          "city": "Bangalore",
+          "time": "3 weeks ago",
+          "text": "Mumbai parent here — humidity makes a big difference to skin care choices.",
+          "likes": 1
+        }
+      ]
+    },
+    {
+      "id": 35,
+      "title": "Football gear for young kids?",
+      "category": "active_kids",
+      "isPinned": false,
+      "isHot": true,
+      "isFeatured": false,
+      "votes": 43,
+      "views": 1460,
+      "createdAt": "2026-04-26T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "DivyaNair",
+        "city": "Kochi",
+        "time": "4 weeks ago",
+        "text": "Looking for advice from other Indian parents on \"Football gear for young kids?\". My child is 7 years old. Would love to hear what worked in your family — especially practical tips from Kochi."
+      },
+      "replies": [
+        {
+          "id": 980,
+          "author": "PoojaReddy",
+          "city": "Hyderabad",
+          "time": "4 weeks ago",
+          "text": "We went through the same — what helped us was consistency and patience.",
+          "likes": 9
+        },
+        {
+          "id": 981,
+          "author": "Priya_Rao",
+          "city": "Mumbai",
+          "time": "4 weeks ago",
+          "text": "Our paediatrician suggested we track symptoms for 3 days before worrying.",
+          "likes": 8
+        },
+        {
+          "id": 982,
+          "author": "AnanyaK",
+          "city": "Bangalore",
+          "time": "3 weeks ago",
+          "text": "Mumbai parent here — humidity makes a big difference to skin care choices.",
+          "likes": 7
+        },
+        {
+          "id": 983,
+          "author": "SnehaVerma",
+          "city": "Delhi",
+          "time": "3 weeks ago",
+          "text": "Try the 5-minute warning before transitions — game changer for us.",
+          "likes": 5
+        },
+        {
+          "id": 984,
+          "author": "MeeraSingh",
+          "city": "Pune",
+          "time": "3 weeks ago",
+          "text": "Hinglish mein bolo toh bhi theek hai — yahan sab parents samajhte hain.",
+          "likes": 2
+        }
+      ]
+    },
+    {
+      "id": 36,
+      "title": "Medicine reminder system parents use",
+      "category": "parenting_hacks",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 44,
+      "views": 1505,
+      "createdAt": "2026-04-25T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "PoojaReddy",
+        "city": "Hyderabad",
+        "time": "1 month ago",
+        "text": "Looking for advice from other Indian parents on \"Medicine reminder system parents use\". My child is 8 years old. Would love to hear what worked in your family — especially practical tips from Hyderabad."
+      },
+      "replies": [
+        {
+          "id": 990,
+          "author": "Priya_Rao",
+          "city": "Mumbai",
+          "time": "1 month ago",
+          "text": "Our paediatrician suggested we track symptoms for 3 days before worrying.",
+          "likes": 9
+        },
+        {
+          "id": 991,
+          "author": "AnanyaK",
+          "city": "Bangalore",
+          "time": "4 weeks ago",
+          "text": "Mumbai parent here — humidity makes a big difference to skin care choices.",
+          "likes": 11
+        },
+        {
+          "id": 992,
+          "author": "SnehaVerma",
+          "city": "Delhi",
+          "time": "4 weeks ago",
+          "text": "Try the 5-minute warning before transitions — game changer for us.",
+          "likes": 7
+        },
+        {
+          "id": 993,
+          "author": "MeeraSingh",
+          "city": "Pune",
+          "time": "3 weeks ago",
+          "text": "Hinglish mein bolo toh bhi theek hai — yahan sab parents samajhte hain.",
+          "likes": 11
+        },
+        {
+          "id": 994,
+          "author": "DeepikaSharma",
+          "city": "Jaipur",
+          "time": "3 weeks ago",
+          "text": "Please be kind in replies — mental health topics need gentle support.",
+          "likes": 9
+        },
+        {
+          "id": 995,
+          "author": "KavyaT",
+          "city": "Chennai",
+          "time": "3 weeks ago",
+          "text": "Every family's cultural practice is different — respect goes both ways.",
+          "likes": 3
+        }
+      ]
+    },
+    {
+      "id": 37,
+      "title": "Best sunscreen for outdoor cricket this summer?",
+      "category": "skincare",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": true,
+      "featuredLabel": "Circle Mom of the Month",
+      "votes": 45,
+      "views": 1550,
+      "createdAt": "2026-04-24T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "Priya_Rao",
+        "city": "Mumbai",
+        "time": "1 month ago",
+        "text": "Looking for advice from other Indian parents on \"Best sunscreen for outdoor cricket this summer?\". My child is 9 years old. Would love to hear what worked in your family — especially practical tips from Mumbai.",
+        "authorBadges": [
+          "community_insider"
+        ]
+      },
+      "replies": [
+        {
+          "id": 1000,
+          "author": "AnanyaK",
+          "city": "Bangalore",
+          "time": "1 month ago",
+          "text": "Mumbai parent here — humidity makes a big difference to skin care choices.",
+          "likes": 5
+        }
+      ]
+    },
+    {
+      "id": 38,
+      "title": "Homework battles — how do you cope?",
+      "category": "school",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 46,
+      "views": 1595,
+      "createdAt": "2026-04-23T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "AnanyaK",
+        "city": "Bangalore",
+        "time": "1 month ago",
+        "text": "Looking for advice from other Indian parents on \"Homework battles — how do you cope?\". My child is 10 years old. Would love to hear what worked in your family — especially practical tips from Bangalore."
+      },
+      "replies": [
+        {
+          "id": 1010,
+          "author": "SnehaVerma",
+          "city": "Delhi",
+          "time": "1 month ago",
+          "text": "Try the 5-minute warning before transitions — game changer for us.",
+          "likes": 2
+        },
+        {
+          "id": 1011,
+          "author": "MeeraSingh",
+          "city": "Pune",
+          "time": "1 month ago",
+          "text": "Hinglish mein bolo toh bhi theek hai — yahan sab parents samajhte hain.",
+          "likes": 2
+        }
+      ]
+    },
+    {
+      "id": 39,
+      "title": "Weight gain for underweight 4yo?",
+      "category": "kids_growth",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 47,
+      "views": 1640,
+      "createdAt": "2026-04-22T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "SnehaVerma",
+        "city": "Delhi",
+        "time": "1 month ago",
+        "text": "Looking for advice from other Indian parents on \"Weight gain for underweight 4yo?\". My child is 3 years old. Would love to hear what worked in your family — especially practical tips from Delhi."
+      },
+      "replies": [
+        {
+          "id": 1020,
+          "author": "MeeraSingh",
+          "city": "Pune",
+          "time": "1 month ago",
+          "text": "Hinglish mein bolo toh bhi theek hai — yahan sab parents samajhte hain.",
+          "likes": 8
+        },
+        {
+          "id": 1021,
+          "author": "DeepikaSharma",
+          "city": "Jaipur",
+          "time": "1 month ago",
+          "text": "Please be kind in replies — mental health topics need gentle support.",
+          "likes": 9
+        },
+        {
+          "id": 1022,
+          "author": "KavyaT",
+          "city": "Chennai",
+          "time": "1 month ago",
+          "text": "Every family's cultural practice is different — respect goes both ways.",
+          "likes": 2
+        }
+      ]
+    },
+    {
+      "id": 40,
+      "title": "Football gear for young kids?",
+      "category": "active_kids",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 48,
+      "views": 1685,
+      "createdAt": "2026-04-21T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "MeeraSingh",
+        "city": "Pune",
+        "time": "1 month ago",
+        "text": "Looking for advice from other Indian parents on \"Football gear for young kids?\". My child is 4 years old. Would love to hear what worked in your family — especially practical tips from Pune.",
+        "authorBadges": [
+          "community_member"
+        ]
+      },
+      "replies": [
+        {
+          "id": 1030,
+          "author": "DeepikaSharma",
+          "city": "Jaipur",
+          "time": "1 month ago",
+          "text": "Please be kind in replies — mental health topics need gentle support.",
+          "likes": 4
+        },
+        {
+          "id": 1031,
+          "author": "KavyaT",
+          "city": "Chennai",
+          "time": "1 month ago",
+          "text": "Every family's cultural practice is different — respect goes both ways.",
+          "likes": 9
+        },
+        {
+          "id": 1032,
+          "author": "RohiniM",
+          "city": "Delhi",
+          "time": "1 month ago",
+          "text": "We went through the same — what helped us was consistency and patience.",
+          "likes": 2
+        },
+        {
+          "id": 1033,
+          "author": "NehaMehta",
+          "city": "Surat",
+          "time": "1 month ago",
+          "text": "Our paediatrician suggested we track symptoms for 3 days before worrying.",
+          "likes": 11
+        }
+      ]
+    },
+    {
+      "id": 41,
+      "title": "Medicine reminder system parents use",
+      "category": "parenting_hacks",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 49,
+      "views": 1730,
+      "createdAt": "2026-04-20T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "DeepikaSharma",
+        "city": "Jaipur",
+        "time": "1 month ago",
+        "text": "Looking for advice from other Indian parents on \"Medicine reminder system parents use\". My child is 5 years old. Would love to hear what worked in your family — especially practical tips from Jaipur."
+      },
+      "replies": [
+        {
+          "id": 1040,
+          "author": "KavyaT",
+          "city": "Chennai",
+          "time": "1 month ago",
+          "text": "Every family's cultural practice is different — respect goes both ways.",
+          "likes": 6
+        },
+        {
+          "id": 1041,
+          "author": "RohiniM",
+          "city": "Delhi",
+          "time": "1 month ago",
+          "text": "We went through the same — what helped us was consistency and patience.",
+          "likes": 9
+        },
+        {
+          "id": 1042,
+          "author": "NehaMehta",
+          "city": "Surat",
+          "time": "1 month ago",
+          "text": "Our paediatrician suggested we track symptoms for 3 days before worrying.",
+          "likes": 1
+        },
+        {
+          "id": 1043,
+          "author": "DivyaNair",
+          "city": "Kochi",
+          "time": "1 month ago",
+          "text": "Mumbai parent here — humidity makes a big difference to skin care choices.",
+          "likes": 2
+        },
+        {
+          "id": 1044,
+          "author": "PoojaReddy",
+          "city": "Hyderabad",
+          "time": "1 month ago",
+          "text": "Try the 5-minute warning before transitions — game changer for us.",
+          "likes": 7
+        }
+      ]
+    },
+    {
+      "id": 42,
+      "title": "Best sunscreen for outdoor cricket this summer?",
+      "category": "skincare",
+      "isPinned": false,
+      "isHot": true,
+      "isFeatured": false,
+      "votes": 50,
+      "views": 1775,
+      "createdAt": "2026-04-19T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "KavyaT",
+        "city": "Chennai",
+        "time": "1 month ago",
+        "text": "Looking for advice from other Indian parents on \"Best sunscreen for outdoor cricket this summer?\". My child is 6 years old. Would love to hear what worked in your family — especially practical tips from Chennai.",
+        "authorBadges": [
+          "community_insider"
+        ]
+      },
+      "replies": [
+        {
+          "id": 1050,
+          "author": "RohiniM",
+          "city": "Delhi",
+          "time": "1 month ago",
+          "text": "We went through the same — what helped us was consistency and patience.",
+          "likes": 11
+        },
+        {
+          "id": 1051,
+          "author": "NehaMehta",
+          "city": "Surat",
+          "time": "1 month ago",
+          "text": "Our paediatrician suggested we track symptoms for 3 days before worrying.",
+          "likes": 11
+        },
+        {
+          "id": 1052,
+          "author": "DivyaNair",
+          "city": "Kochi",
+          "time": "1 month ago",
+          "text": "Mumbai parent here — humidity makes a big difference to skin care choices.",
+          "likes": 9
+        },
+        {
+          "id": 1053,
+          "author": "PoojaReddy",
+          "city": "Hyderabad",
+          "time": "1 month ago",
+          "text": "Try the 5-minute warning before transitions — game changer for us.",
+          "likes": 2
+        },
+        {
+          "id": 1054,
+          "author": "Priya_Rao",
+          "city": "Mumbai",
+          "time": "1 month ago",
+          "text": "Hinglish mein bolo toh bhi theek hai — yahan sab parents samajhte hain.",
+          "likes": 3
+        },
+        {
+          "id": 1055,
+          "author": "AnanyaK",
+          "city": "Bangalore",
+          "time": "1 month ago",
+          "text": "Please be kind in replies — mental health topics need gentle support.",
+          "likes": 1
+        }
+      ]
+    },
+    {
+      "id": 43,
+      "title": "Homework battles — how do you cope?",
+      "category": "school",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 51,
+      "views": 1820,
+      "createdAt": "2026-04-18T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "RohiniM",
+        "city": "Delhi",
+        "time": "1 month ago",
+        "text": "Looking for advice from other Indian parents on \"Homework battles — how do you cope?\". My child is 7 years old. Would love to hear what worked in your family — especially practical tips from Delhi.",
+        "authorBadges": [
+          "community_member"
+        ]
+      },
+      "replies": [
+        {
+          "id": 1060,
+          "author": "NehaMehta",
+          "city": "Surat",
+          "time": "1 month ago",
+          "text": "Our paediatrician suggested we track symptoms for 3 days before worrying.",
+          "likes": 4
+        }
+      ]
+    },
+    {
+      "id": 44,
+      "title": "Weight gain for underweight 4yo?",
+      "category": "kids_growth",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 52,
+      "views": 1865,
+      "createdAt": "2026-04-17T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "NehaMehta",
+        "city": "Surat",
+        "time": "1 month ago",
+        "text": "Looking for advice from other Indian parents on \"Weight gain for underweight 4yo?\". My child is 8 years old. Would love to hear what worked in your family — especially practical tips from Surat."
+      },
+      "replies": [
+        {
+          "id": 1070,
+          "author": "DivyaNair",
+          "city": "Kochi",
+          "time": "1 month ago",
+          "text": "Mumbai parent here — humidity makes a big difference to skin care choices.",
+          "likes": 4
+        },
+        {
+          "id": 1071,
+          "author": "PoojaReddy",
+          "city": "Hyderabad",
+          "time": "1 month ago",
+          "text": "Try the 5-minute warning before transitions — game changer for us.",
+          "likes": 12
+        }
+      ]
+    },
+    {
+      "id": 45,
+      "title": "Football gear for young kids?",
+      "category": "active_kids",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 53,
+      "views": 1910,
+      "createdAt": "2026-04-16T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "DivyaNair",
+        "city": "Kochi",
+        "time": "1 month ago",
+        "text": "Looking for advice from other Indian parents on \"Football gear for young kids?\". My child is 9 years old. Would love to hear what worked in your family — especially practical tips from Kochi."
+      },
+      "replies": [
+        {
+          "id": 1080,
+          "author": "PoojaReddy",
+          "city": "Hyderabad",
+          "time": "1 month ago",
+          "text": "Try the 5-minute warning before transitions — game changer for us.",
+          "likes": 8
+        },
+        {
+          "id": 1081,
+          "author": "Priya_Rao",
+          "city": "Mumbai",
+          "time": "1 month ago",
+          "text": "Hinglish mein bolo toh bhi theek hai — yahan sab parents samajhte hain.",
+          "likes": 11
+        },
+        {
+          "id": 1082,
+          "author": "AnanyaK",
+          "city": "Bangalore",
+          "time": "1 month ago",
+          "text": "Please be kind in replies — mental health topics need gentle support.",
+          "likes": 3
+        }
+      ]
+    },
+    {
+      "id": 46,
+      "title": "Medicine reminder system parents use",
+      "category": "parenting_hacks",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 54,
+      "views": 1955,
+      "createdAt": "2026-04-15T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "PoojaReddy",
+        "city": "Hyderabad",
+        "time": "1 month ago",
+        "text": "Looking for advice from other Indian parents on \"Medicine reminder system parents use\". My child is 10 years old. Would love to hear what worked in your family — especially practical tips from Hyderabad.",
+        "authorBadges": [
+          "community_member"
+        ]
+      },
+      "replies": [
+        {
+          "id": 1090,
+          "author": "Priya_Rao",
+          "city": "Mumbai",
+          "time": "1 month ago",
+          "text": "Hinglish mein bolo toh bhi theek hai — yahan sab parents samajhte hain.",
+          "likes": 1
+        },
+        {
+          "id": 1091,
+          "author": "AnanyaK",
+          "city": "Bangalore",
+          "time": "1 month ago",
+          "text": "Please be kind in replies — mental health topics need gentle support.",
+          "likes": 6
+        },
+        {
+          "id": 1092,
+          "author": "SnehaVerma",
+          "city": "Delhi",
+          "time": "1 month ago",
+          "text": "Every family's cultural practice is different — respect goes both ways.",
+          "likes": 12
+        },
+        {
+          "id": 1093,
+          "author": "MeeraSingh",
+          "city": "Pune",
+          "time": "1 month ago",
+          "text": "We went through the same — what helped us was consistency and patience.",
+          "likes": 7
+        }
+      ]
+    },
+    {
+      "id": 47,
+      "title": "Best sunscreen for outdoor cricket this summer?",
+      "category": "skincare",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 55,
+      "views": 2000,
+      "createdAt": "2026-04-14T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "Priya_Rao",
+        "city": "Mumbai",
+        "time": "1 month ago",
+        "text": "Looking for advice from other Indian parents on \"Best sunscreen for outdoor cricket this summer?\". My child is 3 years old. Would love to hear what worked in your family — especially practical tips from Mumbai.",
+        "authorBadges": [
+          "community_insider"
+        ]
+      },
+      "replies": [
+        {
+          "id": 1100,
+          "author": "AnanyaK",
+          "city": "Bangalore",
+          "time": "1 month ago",
+          "text": "Please be kind in replies — mental health topics need gentle support.",
+          "likes": 10
+        },
+        {
+          "id": 1101,
+          "author": "SnehaVerma",
+          "city": "Delhi",
+          "time": "1 month ago",
+          "text": "Every family's cultural practice is different — respect goes both ways.",
+          "likes": 2
+        },
+        {
+          "id": 1102,
+          "author": "MeeraSingh",
+          "city": "Pune",
+          "time": "1 month ago",
+          "text": "We went through the same — what helped us was consistency and patience.",
+          "likes": 9
+        },
+        {
+          "id": 1103,
+          "author": "DeepikaSharma",
+          "city": "Jaipur",
+          "time": "1 month ago",
+          "text": "Our paediatrician suggested we track symptoms for 3 days before worrying.",
+          "likes": 11
+        },
+        {
+          "id": 1104,
+          "author": "KavyaT",
+          "city": "Chennai",
+          "time": "1 month ago",
+          "text": "Mumbai parent here — humidity makes a big difference to skin care choices.",
+          "likes": 2
+        }
+      ]
+    },
+    {
+      "id": 48,
+      "title": "Homework battles — how do you cope?",
+      "category": "school",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 56,
+      "views": 2045,
+      "createdAt": "2026-04-13T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "AnanyaK",
+        "city": "Bangalore",
+        "time": "1 month ago",
+        "text": "Looking for advice from other Indian parents on \"Homework battles — how do you cope?\". My child is 4 years old. Would love to hear what worked in your family — especially practical tips from Bangalore."
+      },
+      "replies": [
+        {
+          "id": 1110,
+          "author": "SnehaVerma",
+          "city": "Delhi",
+          "time": "1 month ago",
+          "text": "Every family's cultural practice is different — respect goes both ways.",
+          "likes": 7
+        },
+        {
+          "id": 1111,
+          "author": "MeeraSingh",
+          "city": "Pune",
+          "time": "1 month ago",
+          "text": "We went through the same — what helped us was consistency and patience.",
+          "likes": 10
+        },
+        {
+          "id": 1112,
+          "author": "DeepikaSharma",
+          "city": "Jaipur",
+          "time": "1 month ago",
+          "text": "Our paediatrician suggested we track symptoms for 3 days before worrying.",
+          "likes": 5
+        },
+        {
+          "id": 1113,
+          "author": "KavyaT",
+          "city": "Chennai",
+          "time": "1 month ago",
+          "text": "Mumbai parent here — humidity makes a big difference to skin care choices.",
+          "likes": 2
+        },
+        {
+          "id": 1114,
+          "author": "RohiniM",
+          "city": "Delhi",
+          "time": "1 month ago",
+          "text": "Try the 5-minute warning before transitions — game changer for us.",
+          "likes": 5
+        },
+        {
+          "id": 1115,
+          "author": "NehaMehta",
+          "city": "Surat",
+          "time": "1 month ago",
+          "text": "Hinglish mein bolo toh bhi theek hai — yahan sab parents samajhte hain.",
+          "likes": 1
+        }
+      ]
+    },
+    {
+      "id": 49,
+      "title": "Weight gain for underweight 4yo?",
+      "category": "kids_growth",
+      "isPinned": false,
+      "isHot": true,
+      "isFeatured": false,
+      "votes": 57,
+      "views": 2090,
+      "createdAt": "2026-04-12T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "SnehaVerma",
+        "city": "Delhi",
+        "time": "1 month ago",
+        "text": "Looking for advice from other Indian parents on \"Weight gain for underweight 4yo?\". My child is 5 years old. Would love to hear what worked in your family — especially practical tips from Delhi.",
+        "authorBadges": [
+          "community_member"
+        ]
+      },
+      "replies": [
+        {
+          "id": 1120,
+          "author": "MeeraSingh",
+          "city": "Pune",
+          "time": "1 month ago",
+          "text": "We went through the same — what helped us was consistency and patience.",
+          "likes": 1
+        }
+      ]
+    },
+    {
+      "id": 50,
+      "title": "Football gear for young kids?",
+      "category": "active_kids",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 58,
+      "views": 2135,
+      "createdAt": "2026-04-11T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "MeeraSingh",
+        "city": "Pune",
+        "time": "1 month ago",
+        "text": "Looking for advice from other Indian parents on \"Football gear for young kids?\". My child is 6 years old. Would love to hear what worked in your family — especially practical tips from Pune."
+      },
+      "replies": [
+        {
+          "id": 1130,
+          "author": "DeepikaSharma",
+          "city": "Jaipur",
+          "time": "1 month ago",
+          "text": "Our paediatrician suggested we track symptoms for 3 days before worrying.",
+          "likes": 4
+        },
+        {
+          "id": 1131,
+          "author": "KavyaT",
+          "city": "Chennai",
+          "time": "1 month ago",
+          "text": "Mumbai parent here — humidity makes a big difference to skin care choices.",
+          "likes": 10
+        }
+      ]
+    },
+    {
+      "id": 51,
+      "title": "Medicine reminder system parents use",
+      "category": "parenting_hacks",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 59,
+      "views": 2180,
+      "createdAt": "2026-04-10T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "DeepikaSharma",
+        "city": "Jaipur",
+        "time": "1 month ago",
+        "text": "Looking for advice from other Indian parents on \"Medicine reminder system parents use\". My child is 7 years old. Would love to hear what worked in your family — especially practical tips from Jaipur."
+      },
+      "replies": [
+        {
+          "id": 1140,
+          "author": "KavyaT",
+          "city": "Chennai",
+          "time": "1 month ago",
+          "text": "Mumbai parent here — humidity makes a big difference to skin care choices.",
+          "likes": 4
+        },
+        {
+          "id": 1141,
+          "author": "RohiniM",
+          "city": "Delhi",
+          "time": "1 month ago",
+          "text": "Try the 5-minute warning before transitions — game changer for us.",
+          "likes": 12
+        },
+        {
+          "id": 1142,
+          "author": "NehaMehta",
+          "city": "Surat",
+          "time": "1 month ago",
+          "text": "Hinglish mein bolo toh bhi theek hai — yahan sab parents samajhte hain.",
+          "likes": 6
+        }
+      ]
+    },
+    {
+      "id": 52,
+      "title": "Best sunscreen for outdoor cricket this summer?",
+      "category": "skincare",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": true,
+      "featuredLabel": "Circle Mom of the Month",
+      "votes": 60,
+      "views": 2225,
+      "createdAt": "2026-04-09T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "KavyaT",
+        "city": "Chennai",
+        "time": "1 month ago",
+        "text": "Looking for advice from other Indian parents on \"Best sunscreen for outdoor cricket this summer?\". My child is 8 years old. Would love to hear what worked in your family — especially practical tips from Chennai.",
+        "authorBadges": [
+          "community_insider"
+        ]
+      },
+      "replies": [
+        {
+          "id": 1150,
+          "author": "RohiniM",
+          "city": "Delhi",
+          "time": "1 month ago",
+          "text": "Try the 5-minute warning before transitions — game changer for us.",
+          "likes": 7
+        },
+        {
+          "id": 1151,
+          "author": "NehaMehta",
+          "city": "Surat",
+          "time": "1 month ago",
+          "text": "Hinglish mein bolo toh bhi theek hai — yahan sab parents samajhte hain.",
+          "likes": 6
+        },
+        {
+          "id": 1152,
+          "author": "DivyaNair",
+          "city": "Kochi",
+          "time": "1 month ago",
+          "text": "Please be kind in replies — mental health topics need gentle support.",
+          "likes": 7
+        },
+        {
+          "id": 1153,
+          "author": "PoojaReddy",
+          "city": "Hyderabad",
+          "time": "1 month ago",
+          "text": "Every family's cultural practice is different — respect goes both ways.",
+          "likes": 1
+        }
+      ]
+    },
+    {
+      "id": 53,
+      "title": "Homework battles — how do you cope?",
+      "category": "school",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 61,
+      "views": 2270,
+      "createdAt": "2026-04-08T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "RohiniM",
+        "city": "Delhi",
+        "time": "1 month ago",
+        "text": "Looking for advice from other Indian parents on \"Homework battles — how do you cope?\". My child is 9 years old. Would love to hear what worked in your family — especially practical tips from Delhi."
+      },
+      "replies": [
+        {
+          "id": 1160,
+          "author": "NehaMehta",
+          "city": "Surat",
+          "time": "1 month ago",
+          "text": "Hinglish mein bolo toh bhi theek hai — yahan sab parents samajhte hain.",
+          "likes": 5
+        },
+        {
+          "id": 1161,
+          "author": "DivyaNair",
+          "city": "Kochi",
+          "time": "1 month ago",
+          "text": "Please be kind in replies — mental health topics need gentle support.",
+          "likes": 1
+        },
+        {
+          "id": 1162,
+          "author": "PoojaReddy",
+          "city": "Hyderabad",
+          "time": "1 month ago",
+          "text": "Every family's cultural practice is different — respect goes both ways.",
+          "likes": 9
+        },
+        {
+          "id": 1163,
+          "author": "Priya_Rao",
+          "city": "Mumbai",
+          "time": "1 month ago",
+          "text": "We went through the same — what helped us was consistency and patience.",
+          "likes": 5
+        },
+        {
+          "id": 1164,
+          "author": "AnanyaK",
+          "city": "Bangalore",
+          "time": "1 month ago",
+          "text": "Our paediatrician suggested we track symptoms for 3 days before worrying.",
+          "likes": 2
+        }
+      ]
+    },
+    {
+      "id": 54,
+      "title": "Weight gain for underweight 4yo?",
+      "category": "kids_growth",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 62,
+      "views": 2315,
+      "createdAt": "2026-04-07T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "NehaMehta",
+        "city": "Surat",
+        "time": "1 month ago",
+        "text": "Looking for advice from other Indian parents on \"Weight gain for underweight 4yo?\". My child is 10 years old. Would love to hear what worked in your family — especially practical tips from Surat."
+      },
+      "replies": [
+        {
+          "id": 1170,
+          "author": "DivyaNair",
+          "city": "Kochi",
+          "time": "1 month ago",
+          "text": "Please be kind in replies — mental health topics need gentle support.",
+          "likes": 4
+        },
+        {
+          "id": 1171,
+          "author": "PoojaReddy",
+          "city": "Hyderabad",
+          "time": "1 month ago",
+          "text": "Every family's cultural practice is different — respect goes both ways.",
+          "likes": 4
+        },
+        {
+          "id": 1172,
+          "author": "Priya_Rao",
+          "city": "Mumbai",
+          "time": "1 month ago",
+          "text": "We went through the same — what helped us was consistency and patience.",
+          "likes": 5
+        },
+        {
+          "id": 1173,
+          "author": "AnanyaK",
+          "city": "Bangalore",
+          "time": "1 month ago",
+          "text": "Our paediatrician suggested we track symptoms for 3 days before worrying.",
+          "likes": 4
+        },
+        {
+          "id": 1174,
+          "author": "SnehaVerma",
+          "city": "Delhi",
+          "time": "1 month ago",
+          "text": "Mumbai parent here — humidity makes a big difference to skin care choices.",
+          "likes": 2
+        },
+        {
+          "id": 1175,
+          "author": "MeeraSingh",
+          "city": "Pune",
+          "time": "1 month ago",
+          "text": "Try the 5-minute warning before transitions — game changer for us.",
+          "likes": 7
+        }
+      ]
+    },
+    {
+      "id": 55,
+      "title": "Football gear for young kids?",
+      "category": "active_kids",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 63,
+      "views": 2360,
+      "createdAt": "2026-04-06T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "DivyaNair",
+        "city": "Kochi",
+        "time": "1 month ago",
+        "text": "Looking for advice from other Indian parents on \"Football gear for young kids?\". My child is 3 years old. Would love to hear what worked in your family — especially practical tips from Kochi.",
+        "authorBadges": [
+          "community_member"
+        ]
+      },
+      "replies": [
+        {
+          "id": 1180,
+          "author": "PoojaReddy",
+          "city": "Hyderabad",
+          "time": "1 month ago",
+          "text": "Every family's cultural practice is different — respect goes both ways.",
+          "likes": 5
+        }
+      ]
+    },
+    {
+      "id": 56,
+      "title": "Medicine reminder system parents use",
+      "category": "parenting_hacks",
+      "isPinned": false,
+      "isHot": true,
+      "isFeatured": false,
+      "votes": 64,
+      "views": 2405,
+      "createdAt": "2026-04-05T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "PoojaReddy",
+        "city": "Hyderabad",
+        "time": "1 month ago",
+        "text": "Looking for advice from other Indian parents on \"Medicine reminder system parents use\". My child is 4 years old. Would love to hear what worked in your family — especially practical tips from Hyderabad."
+      },
+      "replies": [
+        {
+          "id": 1190,
+          "author": "Priya_Rao",
+          "city": "Mumbai",
+          "time": "1 month ago",
+          "text": "We went through the same — what helped us was consistency and patience.",
+          "likes": 3
+        },
+        {
+          "id": 1191,
+          "author": "AnanyaK",
+          "city": "Bangalore",
+          "time": "1 month ago",
+          "text": "Our paediatrician suggested we track symptoms for 3 days before worrying.",
+          "likes": 4
+        }
+      ]
+    },
+    {
+      "id": 57,
+      "title": "Best sunscreen for outdoor cricket this summer?",
+      "category": "skincare",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 65,
+      "views": 2450,
+      "createdAt": "2026-04-04T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "Priya_Rao",
+        "city": "Mumbai",
+        "time": "1 month ago",
+        "text": "Looking for advice from other Indian parents on \"Best sunscreen for outdoor cricket this summer?\". My child is 5 years old. Would love to hear what worked in your family — especially practical tips from Mumbai.",
+        "authorBadges": [
+          "community_insider"
+        ]
+      },
+      "replies": [
+        {
+          "id": 1200,
+          "author": "AnanyaK",
+          "city": "Bangalore",
+          "time": "1 month ago",
+          "text": "Our paediatrician suggested we track symptoms for 3 days before worrying.",
+          "likes": 10
+        },
+        {
+          "id": 1201,
+          "author": "SnehaVerma",
+          "city": "Delhi",
+          "time": "1 month ago",
+          "text": "Mumbai parent here — humidity makes a big difference to skin care choices.",
+          "likes": 11
+        },
+        {
+          "id": 1202,
+          "author": "MeeraSingh",
+          "city": "Pune",
+          "time": "1 month ago",
+          "text": "Try the 5-minute warning before transitions — game changer for us.",
+          "likes": 9
+        }
+      ]
+    },
+    {
+      "id": 58,
+      "title": "Homework battles — how do you cope?",
+      "category": "school",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 66,
+      "views": 2495,
+      "createdAt": "2026-04-03T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "AnanyaK",
+        "city": "Bangalore",
+        "time": "1 month ago",
+        "text": "Looking for advice from other Indian parents on \"Homework battles — how do you cope?\". My child is 6 years old. Would love to hear what worked in your family — especially practical tips from Bangalore.",
+        "authorBadges": [
+          "community_member"
+        ]
+      },
+      "replies": [
+        {
+          "id": 1210,
+          "author": "SnehaVerma",
+          "city": "Delhi",
+          "time": "1 month ago",
+          "text": "Mumbai parent here — humidity makes a big difference to skin care choices.",
+          "likes": 6
+        },
+        {
+          "id": 1211,
+          "author": "MeeraSingh",
+          "city": "Pune",
+          "time": "1 month ago",
+          "text": "Try the 5-minute warning before transitions — game changer for us.",
+          "likes": 2
+        },
+        {
+          "id": 1212,
+          "author": "DeepikaSharma",
+          "city": "Jaipur",
+          "time": "1 month ago",
+          "text": "Hinglish mein bolo toh bhi theek hai — yahan sab parents samajhte hain.",
+          "likes": 11
+        },
+        {
+          "id": 1213,
+          "author": "KavyaT",
+          "city": "Chennai",
+          "time": "1 month ago",
+          "text": "Please be kind in replies — mental health topics need gentle support.",
+          "likes": 9
+        }
+      ]
+    },
+    {
+      "id": 59,
+      "title": "Weight gain for underweight 4yo?",
+      "category": "kids_growth",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 67,
+      "views": 2540,
+      "createdAt": "2026-04-02T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "SnehaVerma",
+        "city": "Delhi",
+        "time": "1 month ago",
+        "text": "Looking for advice from other Indian parents on \"Weight gain for underweight 4yo?\". My child is 7 years old. Would love to hear what worked in your family — especially practical tips from Delhi."
+      },
+      "replies": [
+        {
+          "id": 1220,
+          "author": "MeeraSingh",
+          "city": "Pune",
+          "time": "1 month ago",
+          "text": "Try the 5-minute warning before transitions — game changer for us.",
+          "likes": 11
+        },
+        {
+          "id": 1221,
+          "author": "DeepikaSharma",
+          "city": "Jaipur",
+          "time": "1 month ago",
+          "text": "Hinglish mein bolo toh bhi theek hai — yahan sab parents samajhte hain.",
+          "likes": 12
+        },
+        {
+          "id": 1222,
+          "author": "KavyaT",
+          "city": "Chennai",
+          "time": "1 month ago",
+          "text": "Please be kind in replies — mental health topics need gentle support.",
+          "likes": 8
+        },
+        {
+          "id": 1223,
+          "author": "RohiniM",
+          "city": "Delhi",
+          "time": "1 month ago",
+          "text": "Every family's cultural practice is different — respect goes both ways.",
+          "likes": 12
+        },
+        {
+          "id": 1224,
+          "author": "NehaMehta",
+          "city": "Surat",
+          "time": "1 month ago",
+          "text": "We went through the same — what helped us was consistency and patience.",
+          "likes": 5
+        }
+      ]
+    },
+    {
+      "id": 60,
+      "title": "Football gear for young kids?",
+      "category": "active_kids",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 68,
+      "views": 2585,
+      "createdAt": "2026-04-01T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "MeeraSingh",
+        "city": "Pune",
+        "time": "1 month ago",
+        "text": "Looking for advice from other Indian parents on \"Football gear for young kids?\". My child is 8 years old. Would love to hear what worked in your family — especially practical tips from Pune."
+      },
+      "replies": [
+        {
+          "id": 1230,
+          "author": "DeepikaSharma",
+          "city": "Jaipur",
+          "time": "1 month ago",
+          "text": "Hinglish mein bolo toh bhi theek hai — yahan sab parents samajhte hain.",
+          "likes": 1
+        },
+        {
+          "id": 1231,
+          "author": "KavyaT",
+          "city": "Chennai",
+          "time": "1 month ago",
+          "text": "Please be kind in replies — mental health topics need gentle support.",
+          "likes": 12
+        },
+        {
+          "id": 1232,
+          "author": "RohiniM",
+          "city": "Delhi",
+          "time": "1 month ago",
+          "text": "Every family's cultural practice is different — respect goes both ways.",
+          "likes": 12
+        },
+        {
+          "id": 1233,
+          "author": "NehaMehta",
+          "city": "Surat",
+          "time": "1 month ago",
+          "text": "We went through the same — what helped us was consistency and patience.",
+          "likes": 1
+        },
+        {
+          "id": 1234,
+          "author": "DivyaNair",
+          "city": "Kochi",
+          "time": "1 month ago",
+          "text": "Our paediatrician suggested we track symptoms for 3 days before worrying.",
+          "likes": 6
+        },
+        {
+          "id": 1235,
+          "author": "PoojaReddy",
+          "city": "Hyderabad",
+          "time": "1 month ago",
+          "text": "Mumbai parent here — humidity makes a big difference to skin care choices.",
+          "likes": 3
+        }
+      ]
+    },
+    {
+      "id": 61,
+      "title": "Medicine reminder system parents use",
+      "category": "parenting_hacks",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 69,
+      "views": 2630,
+      "createdAt": "2026-03-31T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "DeepikaSharma",
+        "city": "Jaipur",
+        "time": "1 month ago",
+        "text": "Looking for advice from other Indian parents on \"Medicine reminder system parents use\". My child is 9 years old. Would love to hear what worked in your family — especially practical tips from Jaipur.",
+        "authorBadges": [
+          "community_member"
+        ]
+      },
+      "replies": [
+        {
+          "id": 1240,
+          "author": "KavyaT",
+          "city": "Chennai",
+          "time": "1 month ago",
+          "text": "Please be kind in replies — mental health topics need gentle support.",
+          "likes": 5
+        }
+      ]
+    },
+    {
+      "id": 62,
+      "title": "Best sunscreen for outdoor cricket this summer?",
+      "category": "skincare",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 70,
+      "views": 2675,
+      "createdAt": "2026-03-30T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "KavyaT",
+        "city": "Chennai",
+        "time": "1 month ago",
+        "text": "Looking for advice from other Indian parents on \"Best sunscreen for outdoor cricket this summer?\". My child is 10 years old. Would love to hear what worked in your family — especially practical tips from Chennai.",
+        "authorBadges": [
+          "community_insider"
+        ]
+      },
+      "replies": [
+        {
+          "id": 1250,
+          "author": "RohiniM",
+          "city": "Delhi",
+          "time": "1 month ago",
+          "text": "Every family's cultural practice is different — respect goes both ways.",
+          "likes": 11
+        },
+        {
+          "id": 1251,
+          "author": "NehaMehta",
+          "city": "Surat",
+          "time": "1 month ago",
+          "text": "We went through the same — what helped us was consistency and patience.",
+          "likes": 8
+        }
+      ]
+    },
+    {
+      "id": 63,
+      "title": "Homework battles — how do you cope?",
+      "category": "school",
+      "isPinned": false,
+      "isHot": true,
+      "isFeatured": false,
+      "votes": 71,
+      "views": 2720,
+      "createdAt": "2026-03-29T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "RohiniM",
+        "city": "Delhi",
+        "time": "1 month ago",
+        "text": "Looking for advice from other Indian parents on \"Homework battles — how do you cope?\". My child is 3 years old. Would love to hear what worked in your family — especially practical tips from Delhi."
+      },
+      "replies": [
+        {
+          "id": 1260,
+          "author": "NehaMehta",
+          "city": "Surat",
+          "time": "1 month ago",
+          "text": "We went through the same — what helped us was consistency and patience.",
+          "likes": 1
+        },
+        {
+          "id": 1261,
+          "author": "DivyaNair",
+          "city": "Kochi",
+          "time": "1 month ago",
+          "text": "Our paediatrician suggested we track symptoms for 3 days before worrying.",
+          "likes": 4
+        },
+        {
+          "id": 1262,
+          "author": "PoojaReddy",
+          "city": "Hyderabad",
+          "time": "1 month ago",
+          "text": "Mumbai parent here — humidity makes a big difference to skin care choices.",
+          "likes": 10
+        }
+      ]
+    },
+    {
+      "id": 64,
+      "title": "Weight gain for underweight 4yo?",
+      "category": "kids_growth",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 72,
+      "views": 2765,
+      "createdAt": "2026-03-28T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "NehaMehta",
+        "city": "Surat",
+        "time": "1 month ago",
+        "text": "Looking for advice from other Indian parents on \"Weight gain for underweight 4yo?\". My child is 4 years old. Would love to hear what worked in your family — especially practical tips from Surat.",
+        "authorBadges": [
+          "community_member"
+        ]
+      },
+      "replies": [
+        {
+          "id": 1270,
+          "author": "DivyaNair",
+          "city": "Kochi",
+          "time": "1 month ago",
+          "text": "Our paediatrician suggested we track symptoms for 3 days before worrying.",
+          "likes": 8
+        },
+        {
+          "id": 1271,
+          "author": "PoojaReddy",
+          "city": "Hyderabad",
+          "time": "1 month ago",
+          "text": "Mumbai parent here — humidity makes a big difference to skin care choices.",
+          "likes": 5
+        },
+        {
+          "id": 1272,
+          "author": "Priya_Rao",
+          "city": "Mumbai",
+          "time": "1 month ago",
+          "text": "Try the 5-minute warning before transitions — game changer for us.",
+          "likes": 9
+        },
+        {
+          "id": 1273,
+          "author": "AnanyaK",
+          "city": "Bangalore",
+          "time": "1 month ago",
+          "text": "Hinglish mein bolo toh bhi theek hai — yahan sab parents samajhte hain.",
+          "likes": 5
+        }
+      ]
+    },
+    {
+      "id": 65,
+      "title": "Football gear for young kids?",
+      "category": "active_kids",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 73,
+      "views": 2810,
+      "createdAt": "2026-03-27T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "DivyaNair",
+        "city": "Kochi",
+        "time": "1 month ago",
+        "text": "Looking for advice from other Indian parents on \"Football gear for young kids?\". My child is 5 years old. Would love to hear what worked in your family — especially practical tips from Kochi."
+      },
+      "replies": [
+        {
+          "id": 1280,
+          "author": "PoojaReddy",
+          "city": "Hyderabad",
+          "time": "1 month ago",
+          "text": "Mumbai parent here — humidity makes a big difference to skin care choices.",
+          "likes": 10
+        },
+        {
+          "id": 1281,
+          "author": "Priya_Rao",
+          "city": "Mumbai",
+          "time": "1 month ago",
+          "text": "Try the 5-minute warning before transitions — game changer for us.",
+          "likes": 4
+        },
+        {
+          "id": 1282,
+          "author": "AnanyaK",
+          "city": "Bangalore",
+          "time": "1 month ago",
+          "text": "Hinglish mein bolo toh bhi theek hai — yahan sab parents samajhte hain.",
+          "likes": 9
+        },
+        {
+          "id": 1283,
+          "author": "SnehaVerma",
+          "city": "Delhi",
+          "time": "1 month ago",
+          "text": "Please be kind in replies — mental health topics need gentle support.",
+          "likes": 3
+        },
+        {
+          "id": 1284,
+          "author": "MeeraSingh",
+          "city": "Pune",
+          "time": "1 month ago",
+          "text": "Every family's cultural practice is different — respect goes both ways.",
+          "likes": 1
+        }
+      ]
+    },
+    {
+      "id": 66,
+      "title": "Medicine reminder system parents use",
+      "category": "parenting_hacks",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 74,
+      "views": 2855,
+      "createdAt": "2026-03-26T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "PoojaReddy",
+        "city": "Hyderabad",
+        "time": "2 months ago",
+        "text": "Looking for advice from other Indian parents on \"Medicine reminder system parents use\". My child is 6 years old. Would love to hear what worked in your family — especially practical tips from Hyderabad."
+      },
+      "replies": [
+        {
+          "id": 1290,
+          "author": "Priya_Rao",
+          "city": "Mumbai",
+          "time": "2 months ago",
+          "text": "Try the 5-minute warning before transitions — game changer for us.",
+          "likes": 9
+        },
+        {
+          "id": 1291,
+          "author": "AnanyaK",
+          "city": "Bangalore",
+          "time": "1 month ago",
+          "text": "Hinglish mein bolo toh bhi theek hai — yahan sab parents samajhte hain.",
+          "likes": 5
+        },
+        {
+          "id": 1292,
+          "author": "SnehaVerma",
+          "city": "Delhi",
+          "time": "1 month ago",
+          "text": "Please be kind in replies — mental health topics need gentle support.",
+          "likes": 10
+        },
+        {
+          "id": 1293,
+          "author": "MeeraSingh",
+          "city": "Pune",
+          "time": "1 month ago",
+          "text": "Every family's cultural practice is different — respect goes both ways.",
+          "likes": 4
+        },
+        {
+          "id": 1294,
+          "author": "DeepikaSharma",
+          "city": "Jaipur",
+          "time": "1 month ago",
+          "text": "We went through the same — what helped us was consistency and patience.",
+          "likes": 4
+        },
+        {
+          "id": 1295,
+          "author": "KavyaT",
+          "city": "Chennai",
+          "time": "1 month ago",
+          "text": "Our paediatrician suggested we track symptoms for 3 days before worrying.",
+          "likes": 3
+        }
+      ]
+    },
+    {
+      "id": 67,
+      "title": "Best sunscreen for outdoor cricket this summer?",
+      "category": "skincare",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": true,
+      "featuredLabel": "Circle Mom of the Month",
+      "votes": 75,
+      "views": 2900,
+      "createdAt": "2026-03-25T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "Priya_Rao",
+        "city": "Mumbai",
+        "time": "2 months ago",
+        "text": "Looking for advice from other Indian parents on \"Best sunscreen for outdoor cricket this summer?\". My child is 7 years old. Would love to hear what worked in your family — especially practical tips from Mumbai.",
+        "authorBadges": [
+          "community_insider"
+        ]
+      },
+      "replies": [
+        {
+          "id": 1300,
+          "author": "AnanyaK",
+          "city": "Bangalore",
+          "time": "2 months ago",
+          "text": "Hinglish mein bolo toh bhi theek hai — yahan sab parents samajhte hain.",
+          "likes": 12
+        }
+      ]
+    },
+    {
+      "id": 68,
+      "title": "Homework battles — how do you cope?",
+      "category": "school",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 76,
+      "views": 2945,
+      "createdAt": "2026-03-24T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "AnanyaK",
+        "city": "Bangalore",
+        "time": "2 months ago",
+        "text": "Looking for advice from other Indian parents on \"Homework battles — how do you cope?\". My child is 8 years old. Would love to hear what worked in your family — especially practical tips from Bangalore."
+      },
+      "replies": [
+        {
+          "id": 1310,
+          "author": "SnehaVerma",
+          "city": "Delhi",
+          "time": "2 months ago",
+          "text": "Please be kind in replies — mental health topics need gentle support.",
+          "likes": 3
+        },
+        {
+          "id": 1311,
+          "author": "MeeraSingh",
+          "city": "Pune",
+          "time": "2 months ago",
+          "text": "Every family's cultural practice is different — respect goes both ways.",
+          "likes": 10
+        }
+      ]
+    },
+    {
+      "id": 69,
+      "title": "Weight gain for underweight 4yo?",
+      "category": "kids_growth",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 77,
+      "views": 2990,
+      "createdAt": "2026-03-23T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "SnehaVerma",
+        "city": "Delhi",
+        "time": "2 months ago",
+        "text": "Looking for advice from other Indian parents on \"Weight gain for underweight 4yo?\". My child is 9 years old. Would love to hear what worked in your family — especially practical tips from Delhi."
+      },
+      "replies": [
+        {
+          "id": 1320,
+          "author": "MeeraSingh",
+          "city": "Pune",
+          "time": "2 months ago",
+          "text": "Every family's cultural practice is different — respect goes both ways.",
+          "likes": 8
+        },
+        {
+          "id": 1321,
+          "author": "DeepikaSharma",
+          "city": "Jaipur",
+          "time": "2 months ago",
+          "text": "We went through the same — what helped us was consistency and patience.",
+          "likes": 6
+        },
+        {
+          "id": 1322,
+          "author": "KavyaT",
+          "city": "Chennai",
+          "time": "2 months ago",
+          "text": "Our paediatrician suggested we track symptoms for 3 days before worrying.",
+          "likes": 3
+        }
+      ]
+    },
+    {
+      "id": 70,
+      "title": "Football gear for young kids?",
+      "category": "active_kids",
+      "isPinned": false,
+      "isHot": true,
+      "isFeatured": false,
+      "votes": 78,
+      "views": 3035,
+      "createdAt": "2026-03-22T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "MeeraSingh",
+        "city": "Pune",
+        "time": "2 months ago",
+        "text": "Looking for advice from other Indian parents on \"Football gear for young kids?\". My child is 10 years old. Would love to hear what worked in your family — especially practical tips from Pune.",
+        "authorBadges": [
+          "community_member"
+        ]
+      },
+      "replies": [
+        {
+          "id": 1330,
+          "author": "DeepikaSharma",
+          "city": "Jaipur",
+          "time": "2 months ago",
+          "text": "We went through the same — what helped us was consistency and patience.",
+          "likes": 1
+        },
+        {
+          "id": 1331,
+          "author": "KavyaT",
+          "city": "Chennai",
+          "time": "2 months ago",
+          "text": "Our paediatrician suggested we track symptoms for 3 days before worrying.",
+          "likes": 12
+        },
+        {
+          "id": 1332,
+          "author": "RohiniM",
+          "city": "Delhi",
+          "time": "2 months ago",
+          "text": "Mumbai parent here — humidity makes a big difference to skin care choices.",
+          "likes": 5
+        },
+        {
+          "id": 1333,
+          "author": "NehaMehta",
+          "city": "Surat",
+          "time": "2 months ago",
+          "text": "Try the 5-minute warning before transitions — game changer for us.",
+          "likes": 4
+        }
+      ]
+    },
+    {
+      "id": 71,
+      "title": "Medicine reminder system parents use",
+      "category": "parenting_hacks",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 79,
+      "views": 3080,
+      "createdAt": "2026-03-21T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "DeepikaSharma",
+        "city": "Jaipur",
+        "time": "2 months ago",
+        "text": "Looking for advice from other Indian parents on \"Medicine reminder system parents use\". My child is 3 years old. Would love to hear what worked in your family — especially practical tips from Jaipur."
+      },
+      "replies": [
+        {
+          "id": 1340,
+          "author": "KavyaT",
+          "city": "Chennai",
+          "time": "2 months ago",
+          "text": "Our paediatrician suggested we track symptoms for 3 days before worrying.",
+          "likes": 1
+        },
+        {
+          "id": 1341,
+          "author": "RohiniM",
+          "city": "Delhi",
+          "time": "2 months ago",
+          "text": "Mumbai parent here — humidity makes a big difference to skin care choices.",
+          "likes": 8
+        },
+        {
+          "id": 1342,
+          "author": "NehaMehta",
+          "city": "Surat",
+          "time": "2 months ago",
+          "text": "Try the 5-minute warning before transitions — game changer for us.",
+          "likes": 5
+        },
+        {
+          "id": 1343,
+          "author": "DivyaNair",
+          "city": "Kochi",
+          "time": "2 months ago",
+          "text": "Hinglish mein bolo toh bhi theek hai — yahan sab parents samajhte hain.",
+          "likes": 5
+        },
+        {
+          "id": 1344,
+          "author": "PoojaReddy",
+          "city": "Hyderabad",
+          "time": "2 months ago",
+          "text": "Please be kind in replies — mental health topics need gentle support.",
+          "likes": 8
+        }
+      ]
+    },
+    {
+      "id": 72,
+      "title": "Best sunscreen for outdoor cricket this summer?",
+      "category": "skincare",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 80,
+      "views": 3125,
+      "createdAt": "2026-03-20T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "KavyaT",
+        "city": "Chennai",
+        "time": "2 months ago",
+        "text": "Looking for advice from other Indian parents on \"Best sunscreen for outdoor cricket this summer?\". My child is 4 years old. Would love to hear what worked in your family — especially practical tips from Chennai.",
+        "authorBadges": [
+          "community_insider"
+        ]
+      },
+      "replies": [
+        {
+          "id": 1350,
+          "author": "RohiniM",
+          "city": "Delhi",
+          "time": "2 months ago",
+          "text": "Mumbai parent here — humidity makes a big difference to skin care choices.",
+          "likes": 8
+        },
+        {
+          "id": 1351,
+          "author": "NehaMehta",
+          "city": "Surat",
+          "time": "2 months ago",
+          "text": "Try the 5-minute warning before transitions — game changer for us.",
+          "likes": 7
+        },
+        {
+          "id": 1352,
+          "author": "DivyaNair",
+          "city": "Kochi",
+          "time": "2 months ago",
+          "text": "Hinglish mein bolo toh bhi theek hai — yahan sab parents samajhte hain.",
+          "likes": 6
+        },
+        {
+          "id": 1353,
+          "author": "PoojaReddy",
+          "city": "Hyderabad",
+          "time": "2 months ago",
+          "text": "Please be kind in replies — mental health topics need gentle support.",
+          "likes": 12
+        },
+        {
+          "id": 1354,
+          "author": "Priya_Rao",
+          "city": "Mumbai",
+          "time": "2 months ago",
+          "text": "Every family's cultural practice is different — respect goes both ways.",
+          "likes": 4
+        },
+        {
+          "id": 1355,
+          "author": "AnanyaK",
+          "city": "Bangalore",
+          "time": "2 months ago",
+          "text": "We went through the same — what helped us was consistency and patience.",
+          "likes": 4
+        }
+      ]
+    },
+    {
+      "id": 73,
+      "title": "Homework battles — how do you cope?",
+      "category": "school",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 81,
+      "views": 3170,
+      "createdAt": "2026-03-19T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "RohiniM",
+        "city": "Delhi",
+        "time": "2 months ago",
+        "text": "Looking for advice from other Indian parents on \"Homework battles — how do you cope?\". My child is 5 years old. Would love to hear what worked in your family — especially practical tips from Delhi.",
+        "authorBadges": [
+          "community_member"
+        ]
+      },
+      "replies": [
+        {
+          "id": 1360,
+          "author": "NehaMehta",
+          "city": "Surat",
+          "time": "2 months ago",
+          "text": "Try the 5-minute warning before transitions — game changer for us.",
+          "likes": 11
+        }
+      ]
+    },
+    {
+      "id": 74,
+      "title": "Weight gain for underweight 4yo?",
+      "category": "kids_growth",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 82,
+      "views": 3215,
+      "createdAt": "2026-03-18T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "NehaMehta",
+        "city": "Surat",
+        "time": "2 months ago",
+        "text": "Looking for advice from other Indian parents on \"Weight gain for underweight 4yo?\". My child is 6 years old. Would love to hear what worked in your family — especially practical tips from Surat."
+      },
+      "replies": [
+        {
+          "id": 1370,
+          "author": "DivyaNair",
+          "city": "Kochi",
+          "time": "2 months ago",
+          "text": "Hinglish mein bolo toh bhi theek hai — yahan sab parents samajhte hain.",
+          "likes": 6
+        },
+        {
+          "id": 1371,
+          "author": "PoojaReddy",
+          "city": "Hyderabad",
+          "time": "2 months ago",
+          "text": "Please be kind in replies — mental health topics need gentle support.",
+          "likes": 6
+        }
+      ]
+    },
+    {
+      "id": 75,
+      "title": "Football gear for young kids?",
+      "category": "active_kids",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 83,
+      "views": 3260,
+      "createdAt": "2026-03-17T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "DivyaNair",
+        "city": "Kochi",
+        "time": "2 months ago",
+        "text": "Looking for advice from other Indian parents on \"Football gear for young kids?\". My child is 7 years old. Would love to hear what worked in your family — especially practical tips from Kochi."
+      },
+      "replies": [
+        {
+          "id": 1380,
+          "author": "PoojaReddy",
+          "city": "Hyderabad",
+          "time": "2 months ago",
+          "text": "Please be kind in replies — mental health topics need gentle support.",
+          "likes": 6
+        },
+        {
+          "id": 1381,
+          "author": "Priya_Rao",
+          "city": "Mumbai",
+          "time": "2 months ago",
+          "text": "Every family's cultural practice is different — respect goes both ways.",
+          "likes": 10
+        },
+        {
+          "id": 1382,
+          "author": "AnanyaK",
+          "city": "Bangalore",
+          "time": "2 months ago",
+          "text": "We went through the same — what helped us was consistency and patience.",
+          "likes": 3
+        }
+      ]
+    },
+    {
+      "id": 76,
+      "title": "Medicine reminder system parents use",
+      "category": "parenting_hacks",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 84,
+      "views": 3305,
+      "createdAt": "2026-03-16T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "PoojaReddy",
+        "city": "Hyderabad",
+        "time": "2 months ago",
+        "text": "Looking for advice from other Indian parents on \"Medicine reminder system parents use\". My child is 8 years old. Would love to hear what worked in your family — especially practical tips from Hyderabad.",
+        "authorBadges": [
+          "community_member"
+        ]
+      },
+      "replies": [
+        {
+          "id": 1390,
+          "author": "Priya_Rao",
+          "city": "Mumbai",
+          "time": "2 months ago",
+          "text": "Every family's cultural practice is different — respect goes both ways.",
+          "likes": 10
+        },
+        {
+          "id": 1391,
+          "author": "AnanyaK",
+          "city": "Bangalore",
+          "time": "2 months ago",
+          "text": "We went through the same — what helped us was consistency and patience.",
+          "likes": 10
+        },
+        {
+          "id": 1392,
+          "author": "SnehaVerma",
+          "city": "Delhi",
+          "time": "2 months ago",
+          "text": "Our paediatrician suggested we track symptoms for 3 days before worrying.",
+          "likes": 3
+        },
+        {
+          "id": 1393,
+          "author": "MeeraSingh",
+          "city": "Pune",
+          "time": "2 months ago",
+          "text": "Mumbai parent here — humidity makes a big difference to skin care choices.",
+          "likes": 9
+        }
+      ]
+    },
+    {
+      "id": 77,
+      "title": "Best sunscreen for outdoor cricket this summer?",
+      "category": "skincare",
+      "isPinned": false,
+      "isHot": true,
+      "isFeatured": false,
+      "votes": 85,
+      "views": 3350,
+      "createdAt": "2026-03-15T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "Priya_Rao",
+        "city": "Mumbai",
+        "time": "2 months ago",
+        "text": "Looking for advice from other Indian parents on \"Best sunscreen for outdoor cricket this summer?\". My child is 9 years old. Would love to hear what worked in your family — especially practical tips from Mumbai.",
+        "authorBadges": [
+          "community_insider"
+        ]
+      },
+      "replies": [
+        {
+          "id": 1400,
+          "author": "AnanyaK",
+          "city": "Bangalore",
+          "time": "2 months ago",
+          "text": "We went through the same — what helped us was consistency and patience.",
+          "likes": 10
+        },
+        {
+          "id": 1401,
+          "author": "SnehaVerma",
+          "city": "Delhi",
+          "time": "2 months ago",
+          "text": "Our paediatrician suggested we track symptoms for 3 days before worrying.",
+          "likes": 5
+        },
+        {
+          "id": 1402,
+          "author": "MeeraSingh",
+          "city": "Pune",
+          "time": "2 months ago",
+          "text": "Mumbai parent here — humidity makes a big difference to skin care choices.",
+          "likes": 5
+        },
+        {
+          "id": 1403,
+          "author": "DeepikaSharma",
+          "city": "Jaipur",
+          "time": "2 months ago",
+          "text": "Try the 5-minute warning before transitions — game changer for us.",
+          "likes": 6
+        },
+        {
+          "id": 1404,
+          "author": "KavyaT",
+          "city": "Chennai",
+          "time": "2 months ago",
+          "text": "Hinglish mein bolo toh bhi theek hai — yahan sab parents samajhte hain.",
+          "likes": 6
+        }
+      ]
+    },
+    {
+      "id": 78,
+      "title": "Homework battles — how do you cope?",
+      "category": "school",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 86,
+      "views": 3395,
+      "createdAt": "2026-03-14T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "AnanyaK",
+        "city": "Bangalore",
+        "time": "2 months ago",
+        "text": "Looking for advice from other Indian parents on \"Homework battles — how do you cope?\". My child is 10 years old. Would love to hear what worked in your family — especially practical tips from Bangalore."
+      },
+      "replies": [
+        {
+          "id": 1410,
+          "author": "SnehaVerma",
+          "city": "Delhi",
+          "time": "2 months ago",
+          "text": "Our paediatrician suggested we track symptoms for 3 days before worrying.",
+          "likes": 7
+        },
+        {
+          "id": 1411,
+          "author": "MeeraSingh",
+          "city": "Pune",
+          "time": "2 months ago",
+          "text": "Mumbai parent here — humidity makes a big difference to skin care choices.",
+          "likes": 12
+        },
+        {
+          "id": 1412,
+          "author": "DeepikaSharma",
+          "city": "Jaipur",
+          "time": "2 months ago",
+          "text": "Try the 5-minute warning before transitions — game changer for us.",
+          "likes": 9
+        },
+        {
+          "id": 1413,
+          "author": "KavyaT",
+          "city": "Chennai",
+          "time": "2 months ago",
+          "text": "Hinglish mein bolo toh bhi theek hai — yahan sab parents samajhte hain.",
+          "likes": 6
+        },
+        {
+          "id": 1414,
+          "author": "RohiniM",
+          "city": "Delhi",
+          "time": "2 months ago",
+          "text": "Please be kind in replies — mental health topics need gentle support.",
+          "likes": 5
+        },
+        {
+          "id": 1415,
+          "author": "NehaMehta",
+          "city": "Surat",
+          "time": "2 months ago",
+          "text": "Every family's cultural practice is different — respect goes both ways.",
+          "likes": 12
+        }
+      ]
+    },
+    {
+      "id": 79,
+      "title": "Weight gain for underweight 4yo?",
+      "category": "kids_growth",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 87,
+      "views": 3440,
+      "createdAt": "2026-03-13T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "SnehaVerma",
+        "city": "Delhi",
+        "time": "2 months ago",
+        "text": "Looking for advice from other Indian parents on \"Weight gain for underweight 4yo?\". My child is 3 years old. Would love to hear what worked in your family — especially practical tips from Delhi.",
+        "authorBadges": [
+          "community_member"
+        ]
+      },
+      "replies": [
+        {
+          "id": 1420,
+          "author": "MeeraSingh",
+          "city": "Pune",
+          "time": "2 months ago",
+          "text": "Mumbai parent here — humidity makes a big difference to skin care choices.",
+          "likes": 8
+        }
+      ]
+    },
+    {
+      "id": 80,
+      "title": "Football gear for young kids?",
+      "category": "active_kids",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 88,
+      "views": 3485,
+      "createdAt": "2026-03-12T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "MeeraSingh",
+        "city": "Pune",
+        "time": "2 months ago",
+        "text": "Looking for advice from other Indian parents on \"Football gear for young kids?\". My child is 4 years old. Would love to hear what worked in your family — especially practical tips from Pune."
+      },
+      "replies": [
+        {
+          "id": 1430,
+          "author": "DeepikaSharma",
+          "city": "Jaipur",
+          "time": "2 months ago",
+          "text": "Try the 5-minute warning before transitions — game changer for us.",
+          "likes": 12
+        },
+        {
+          "id": 1431,
+          "author": "KavyaT",
+          "city": "Chennai",
+          "time": "2 months ago",
+          "text": "Hinglish mein bolo toh bhi theek hai — yahan sab parents samajhte hain.",
+          "likes": 11
+        }
+      ]
+    },
+    {
+      "id": 81,
+      "title": "Medicine reminder system parents use",
+      "category": "parenting_hacks",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 89,
+      "views": 3530,
+      "createdAt": "2026-03-11T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "DeepikaSharma",
+        "city": "Jaipur",
+        "time": "2 months ago",
+        "text": "Looking for advice from other Indian parents on \"Medicine reminder system parents use\". My child is 5 years old. Would love to hear what worked in your family — especially practical tips from Jaipur."
+      },
+      "replies": [
+        {
+          "id": 1440,
+          "author": "KavyaT",
+          "city": "Chennai",
+          "time": "2 months ago",
+          "text": "Hinglish mein bolo toh bhi theek hai — yahan sab parents samajhte hain.",
+          "likes": 8
+        },
+        {
+          "id": 1441,
+          "author": "RohiniM",
+          "city": "Delhi",
+          "time": "2 months ago",
+          "text": "Please be kind in replies — mental health topics need gentle support.",
+          "likes": 9
+        },
+        {
+          "id": 1442,
+          "author": "NehaMehta",
+          "city": "Surat",
+          "time": "2 months ago",
+          "text": "Every family's cultural practice is different — respect goes both ways.",
+          "likes": 10
+        }
+      ]
+    },
+    {
+      "id": 82,
+      "title": "Best sunscreen for outdoor cricket this summer?",
+      "category": "skincare",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": true,
+      "featuredLabel": "Circle Mom of the Month",
+      "votes": 90,
+      "views": 3575,
+      "createdAt": "2026-03-10T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "KavyaT",
+        "city": "Chennai",
+        "time": "2 months ago",
+        "text": "Looking for advice from other Indian parents on \"Best sunscreen for outdoor cricket this summer?\". My child is 6 years old. Would love to hear what worked in your family — especially practical tips from Chennai.",
+        "authorBadges": [
+          "community_insider"
+        ]
+      },
+      "replies": [
+        {
+          "id": 1450,
+          "author": "RohiniM",
+          "city": "Delhi",
+          "time": "2 months ago",
+          "text": "Please be kind in replies — mental health topics need gentle support.",
+          "likes": 5
+        },
+        {
+          "id": 1451,
+          "author": "NehaMehta",
+          "city": "Surat",
+          "time": "2 months ago",
+          "text": "Every family's cultural practice is different — respect goes both ways.",
+          "likes": 10
+        },
+        {
+          "id": 1452,
+          "author": "DivyaNair",
+          "city": "Kochi",
+          "time": "2 months ago",
+          "text": "We went through the same — what helped us was consistency and patience.",
+          "likes": 2
+        },
+        {
+          "id": 1453,
+          "author": "PoojaReddy",
+          "city": "Hyderabad",
+          "time": "2 months ago",
+          "text": "Our paediatrician suggested we track symptoms for 3 days before worrying.",
+          "likes": 9
+        }
+      ]
+    },
+    {
+      "id": 83,
+      "title": "Homework battles — how do you cope?",
+      "category": "school",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 91,
+      "views": 3620,
+      "createdAt": "2026-03-09T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "RohiniM",
+        "city": "Delhi",
+        "time": "2 months ago",
+        "text": "Looking for advice from other Indian parents on \"Homework battles — how do you cope?\". My child is 7 years old. Would love to hear what worked in your family — especially practical tips from Delhi."
+      },
+      "replies": [
+        {
+          "id": 1460,
+          "author": "NehaMehta",
+          "city": "Surat",
+          "time": "2 months ago",
+          "text": "Every family's cultural practice is different — respect goes both ways.",
+          "likes": 4
+        },
+        {
+          "id": 1461,
+          "author": "DivyaNair",
+          "city": "Kochi",
+          "time": "2 months ago",
+          "text": "We went through the same — what helped us was consistency and patience.",
+          "likes": 3
+        },
+        {
+          "id": 1462,
+          "author": "PoojaReddy",
+          "city": "Hyderabad",
+          "time": "2 months ago",
+          "text": "Our paediatrician suggested we track symptoms for 3 days before worrying.",
+          "likes": 9
+        },
+        {
+          "id": 1463,
+          "author": "Priya_Rao",
+          "city": "Mumbai",
+          "time": "2 months ago",
+          "text": "Mumbai parent here — humidity makes a big difference to skin care choices.",
+          "likes": 1
+        },
+        {
+          "id": 1464,
+          "author": "AnanyaK",
+          "city": "Bangalore",
+          "time": "2 months ago",
+          "text": "Try the 5-minute warning before transitions — game changer for us.",
+          "likes": 2
+        }
+      ]
+    },
+    {
+      "id": 84,
+      "title": "Weight gain for underweight 4yo?",
+      "category": "kids_growth",
+      "isPinned": false,
+      "isHot": true,
+      "isFeatured": false,
+      "votes": 92,
+      "views": 3665,
+      "createdAt": "2026-03-08T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "NehaMehta",
+        "city": "Surat",
+        "time": "2 months ago",
+        "text": "Looking for advice from other Indian parents on \"Weight gain for underweight 4yo?\". My child is 8 years old. Would love to hear what worked in your family — especially practical tips from Surat."
+      },
+      "replies": [
+        {
+          "id": 1470,
+          "author": "DivyaNair",
+          "city": "Kochi",
+          "time": "2 months ago",
+          "text": "We went through the same — what helped us was consistency and patience.",
+          "likes": 4
+        },
+        {
+          "id": 1471,
+          "author": "PoojaReddy",
+          "city": "Hyderabad",
+          "time": "2 months ago",
+          "text": "Our paediatrician suggested we track symptoms for 3 days before worrying.",
+          "likes": 11
+        },
+        {
+          "id": 1472,
+          "author": "Priya_Rao",
+          "city": "Mumbai",
+          "time": "2 months ago",
+          "text": "Mumbai parent here — humidity makes a big difference to skin care choices.",
+          "likes": 6
+        },
+        {
+          "id": 1473,
+          "author": "AnanyaK",
+          "city": "Bangalore",
+          "time": "2 months ago",
+          "text": "Try the 5-minute warning before transitions — game changer for us.",
+          "likes": 9
+        },
+        {
+          "id": 1474,
+          "author": "SnehaVerma",
+          "city": "Delhi",
+          "time": "2 months ago",
+          "text": "Hinglish mein bolo toh bhi theek hai — yahan sab parents samajhte hain.",
+          "likes": 3
+        },
+        {
+          "id": 1475,
+          "author": "MeeraSingh",
+          "city": "Pune",
+          "time": "2 months ago",
+          "text": "Please be kind in replies — mental health topics need gentle support.",
+          "likes": 7
+        }
+      ]
+    },
+    {
+      "id": 85,
+      "title": "Football gear for young kids?",
+      "category": "active_kids",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 93,
+      "views": 3710,
+      "createdAt": "2026-03-07T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "DivyaNair",
+        "city": "Kochi",
+        "time": "2 months ago",
+        "text": "Looking for advice from other Indian parents on \"Football gear for young kids?\". My child is 9 years old. Would love to hear what worked in your family — especially practical tips from Kochi.",
+        "authorBadges": [
+          "community_member"
+        ]
+      },
+      "replies": [
+        {
+          "id": 1480,
+          "author": "PoojaReddy",
+          "city": "Hyderabad",
+          "time": "2 months ago",
+          "text": "Our paediatrician suggested we track symptoms for 3 days before worrying.",
+          "likes": 12
+        }
+      ]
+    },
+    {
+      "id": 86,
+      "title": "Medicine reminder system parents use",
+      "category": "parenting_hacks",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 94,
+      "views": 3755,
+      "createdAt": "2026-03-06T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "PoojaReddy",
+        "city": "Hyderabad",
+        "time": "2 months ago",
+        "text": "Looking for advice from other Indian parents on \"Medicine reminder system parents use\". My child is 10 years old. Would love to hear what worked in your family — especially practical tips from Hyderabad."
+      },
+      "replies": [
+        {
+          "id": 1490,
+          "author": "Priya_Rao",
+          "city": "Mumbai",
+          "time": "2 months ago",
+          "text": "Mumbai parent here — humidity makes a big difference to skin care choices.",
+          "likes": 9
+        },
+        {
+          "id": 1491,
+          "author": "AnanyaK",
+          "city": "Bangalore",
+          "time": "2 months ago",
+          "text": "Try the 5-minute warning before transitions — game changer for us.",
+          "likes": 10
+        }
+      ]
+    },
+    {
+      "id": 87,
+      "title": "Best sunscreen for outdoor cricket this summer?",
+      "category": "skincare",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 15,
+      "views": 3800,
+      "createdAt": "2026-03-05T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "Priya_Rao",
+        "city": "Mumbai",
+        "time": "2 months ago",
+        "text": "Looking for advice from other Indian parents on \"Best sunscreen for outdoor cricket this summer?\". My child is 3 years old. Would love to hear what worked in your family — especially practical tips from Mumbai.",
+        "authorBadges": [
+          "community_insider"
+        ]
+      },
+      "replies": [
+        {
+          "id": 1500,
+          "author": "AnanyaK",
+          "city": "Bangalore",
+          "time": "2 months ago",
+          "text": "Try the 5-minute warning before transitions — game changer for us.",
+          "likes": 8
+        },
+        {
+          "id": 1501,
+          "author": "SnehaVerma",
+          "city": "Delhi",
+          "time": "2 months ago",
+          "text": "Hinglish mein bolo toh bhi theek hai — yahan sab parents samajhte hain.",
+          "likes": 9
+        },
+        {
+          "id": 1502,
+          "author": "MeeraSingh",
+          "city": "Pune",
+          "time": "2 months ago",
+          "text": "Please be kind in replies — mental health topics need gentle support.",
+          "likes": 8
+        }
+      ]
+    },
+    {
+      "id": 88,
+      "title": "Homework battles — how do you cope?",
+      "category": "school",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 16,
+      "views": 3845,
+      "createdAt": "2026-03-04T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "AnanyaK",
+        "city": "Bangalore",
+        "time": "2 months ago",
+        "text": "Looking for advice from other Indian parents on \"Homework battles — how do you cope?\". My child is 4 years old. Would love to hear what worked in your family — especially practical tips from Bangalore.",
+        "authorBadges": [
+          "community_member"
+        ]
+      },
+      "replies": [
+        {
+          "id": 1510,
+          "author": "SnehaVerma",
+          "city": "Delhi",
+          "time": "2 months ago",
+          "text": "Hinglish mein bolo toh bhi theek hai — yahan sab parents samajhte hain.",
+          "likes": 11
+        },
+        {
+          "id": 1511,
+          "author": "MeeraSingh",
+          "city": "Pune",
+          "time": "2 months ago",
+          "text": "Please be kind in replies — mental health topics need gentle support.",
+          "likes": 11
+        },
+        {
+          "id": 1512,
+          "author": "DeepikaSharma",
+          "city": "Jaipur",
+          "time": "2 months ago",
+          "text": "Every family's cultural practice is different — respect goes both ways.",
+          "likes": 7
+        },
+        {
+          "id": 1513,
+          "author": "KavyaT",
+          "city": "Chennai",
+          "time": "2 months ago",
+          "text": "We went through the same — what helped us was consistency and patience.",
+          "likes": 11
+        }
+      ]
+    },
+    {
+      "id": 89,
+      "title": "Weight gain for underweight 4yo?",
+      "category": "kids_growth",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 17,
+      "views": 3890,
+      "createdAt": "2026-03-03T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "SnehaVerma",
+        "city": "Delhi",
+        "time": "2 months ago",
+        "text": "Looking for advice from other Indian parents on \"Weight gain for underweight 4yo?\". My child is 5 years old. Would love to hear what worked in your family — especially practical tips from Delhi."
+      },
+      "replies": [
+        {
+          "id": 1520,
+          "author": "MeeraSingh",
+          "city": "Pune",
+          "time": "2 months ago",
+          "text": "Please be kind in replies — mental health topics need gentle support.",
+          "likes": 12
+        },
+        {
+          "id": 1521,
+          "author": "DeepikaSharma",
+          "city": "Jaipur",
+          "time": "2 months ago",
+          "text": "Every family's cultural practice is different — respect goes both ways.",
+          "likes": 11
+        },
+        {
+          "id": 1522,
+          "author": "KavyaT",
+          "city": "Chennai",
+          "time": "2 months ago",
+          "text": "We went through the same — what helped us was consistency and patience.",
+          "likes": 2
+        },
+        {
+          "id": 1523,
+          "author": "RohiniM",
+          "city": "Delhi",
+          "time": "2 months ago",
+          "text": "Our paediatrician suggested we track symptoms for 3 days before worrying.",
+          "likes": 9
+        },
+        {
+          "id": 1524,
+          "author": "NehaMehta",
+          "city": "Surat",
+          "time": "2 months ago",
+          "text": "Mumbai parent here — humidity makes a big difference to skin care choices.",
+          "likes": 12
+        }
+      ]
+    },
+    {
+      "id": 90,
+      "title": "Football gear for young kids?",
+      "category": "active_kids",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 18,
+      "views": 3935,
+      "createdAt": "2026-03-02T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "MeeraSingh",
+        "city": "Pune",
+        "time": "2 months ago",
+        "text": "Looking for advice from other Indian parents on \"Football gear for young kids?\". My child is 6 years old. Would love to hear what worked in your family — especially practical tips from Pune."
+      },
+      "replies": [
+        {
+          "id": 1530,
+          "author": "DeepikaSharma",
+          "city": "Jaipur",
+          "time": "2 months ago",
+          "text": "Every family's cultural practice is different — respect goes both ways.",
+          "likes": 5
+        },
+        {
+          "id": 1531,
+          "author": "KavyaT",
+          "city": "Chennai",
+          "time": "2 months ago",
+          "text": "We went through the same — what helped us was consistency and patience.",
+          "likes": 3
+        },
+        {
+          "id": 1532,
+          "author": "RohiniM",
+          "city": "Delhi",
+          "time": "2 months ago",
+          "text": "Our paediatrician suggested we track symptoms for 3 days before worrying.",
+          "likes": 2
+        },
+        {
+          "id": 1533,
+          "author": "NehaMehta",
+          "city": "Surat",
+          "time": "2 months ago",
+          "text": "Mumbai parent here — humidity makes a big difference to skin care choices.",
+          "likes": 4
+        },
+        {
+          "id": 1534,
+          "author": "DivyaNair",
+          "city": "Kochi",
+          "time": "2 months ago",
+          "text": "Try the 5-minute warning before transitions — game changer for us.",
+          "likes": 5
+        },
+        {
+          "id": 1535,
+          "author": "PoojaReddy",
+          "city": "Hyderabad",
+          "time": "2 months ago",
+          "text": "Hinglish mein bolo toh bhi theek hai — yahan sab parents samajhte hain.",
+          "likes": 12
+        }
+      ]
+    },
+    {
+      "id": 91,
+      "title": "Medicine reminder system parents use",
+      "category": "parenting_hacks",
+      "isPinned": false,
+      "isHot": true,
+      "isFeatured": false,
+      "votes": 19,
+      "views": 3980,
+      "createdAt": "2026-03-01T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "DeepikaSharma",
+        "city": "Jaipur",
+        "time": "2 months ago",
+        "text": "Looking for advice from other Indian parents on \"Medicine reminder system parents use\". My child is 7 years old. Would love to hear what worked in your family — especially practical tips from Jaipur.",
+        "authorBadges": [
+          "community_member"
+        ]
+      },
+      "replies": [
+        {
+          "id": 1540,
+          "author": "KavyaT",
+          "city": "Chennai",
+          "time": "2 months ago",
+          "text": "We went through the same — what helped us was consistency and patience.",
+          "likes": 8
+        }
+      ]
+    },
+    {
+      "id": 92,
+      "title": "Best sunscreen for outdoor cricket this summer?",
+      "category": "skincare",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 20,
+      "views": 4025,
+      "createdAt": "2026-02-28T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "KavyaT",
+        "city": "Chennai",
+        "time": "2 months ago",
+        "text": "Looking for advice from other Indian parents on \"Best sunscreen for outdoor cricket this summer?\". My child is 8 years old. Would love to hear what worked in your family — especially practical tips from Chennai.",
+        "authorBadges": [
+          "community_insider"
+        ]
+      },
+      "replies": [
+        {
+          "id": 1550,
+          "author": "RohiniM",
+          "city": "Delhi",
+          "time": "2 months ago",
+          "text": "Our paediatrician suggested we track symptoms for 3 days before worrying.",
+          "likes": 3
+        },
+        {
+          "id": 1551,
+          "author": "NehaMehta",
+          "city": "Surat",
+          "time": "2 months ago",
+          "text": "Mumbai parent here — humidity makes a big difference to skin care choices.",
+          "likes": 7
+        }
+      ]
+    },
+    {
+      "id": 93,
+      "title": "Homework battles — how do you cope?",
+      "category": "school",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 21,
+      "views": 4070,
+      "createdAt": "2026-02-27T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "RohiniM",
+        "city": "Delhi",
+        "time": "2 months ago",
+        "text": "Looking for advice from other Indian parents on \"Homework battles — how do you cope?\". My child is 9 years old. Would love to hear what worked in your family — especially practical tips from Delhi."
+      },
+      "replies": [
+        {
+          "id": 1560,
+          "author": "NehaMehta",
+          "city": "Surat",
+          "time": "2 months ago",
+          "text": "Mumbai parent here — humidity makes a big difference to skin care choices.",
+          "likes": 1
+        },
+        {
+          "id": 1561,
+          "author": "DivyaNair",
+          "city": "Kochi",
+          "time": "2 months ago",
+          "text": "Try the 5-minute warning before transitions — game changer for us.",
+          "likes": 4
+        },
+        {
+          "id": 1562,
+          "author": "PoojaReddy",
+          "city": "Hyderabad",
+          "time": "2 months ago",
+          "text": "Hinglish mein bolo toh bhi theek hai — yahan sab parents samajhte hain.",
+          "likes": 5
+        }
+      ]
+    },
+    {
+      "id": 94,
+      "title": "Weight gain for underweight 4yo?",
+      "category": "kids_growth",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 22,
+      "views": 4115,
+      "createdAt": "2026-02-26T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "NehaMehta",
+        "city": "Surat",
+        "time": "2 months ago",
+        "text": "Looking for advice from other Indian parents on \"Weight gain for underweight 4yo?\". My child is 10 years old. Would love to hear what worked in your family — especially practical tips from Surat.",
+        "authorBadges": [
+          "community_member"
+        ]
+      },
+      "replies": [
+        {
+          "id": 1570,
+          "author": "DivyaNair",
+          "city": "Kochi",
+          "time": "2 months ago",
+          "text": "Try the 5-minute warning before transitions — game changer for us.",
+          "likes": 7
+        },
+        {
+          "id": 1571,
+          "author": "PoojaReddy",
+          "city": "Hyderabad",
+          "time": "2 months ago",
+          "text": "Hinglish mein bolo toh bhi theek hai — yahan sab parents samajhte hain.",
+          "likes": 11
+        },
+        {
+          "id": 1572,
+          "author": "Priya_Rao",
+          "city": "Mumbai",
+          "time": "2 months ago",
+          "text": "Please be kind in replies — mental health topics need gentle support.",
+          "likes": 11
+        },
+        {
+          "id": 1573,
+          "author": "AnanyaK",
+          "city": "Bangalore",
+          "time": "2 months ago",
+          "text": "Every family's cultural practice is different — respect goes both ways.",
+          "likes": 10
+        }
+      ]
+    },
+    {
+      "id": 95,
+      "title": "Football gear for young kids?",
+      "category": "active_kids",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 23,
+      "views": 4160,
+      "createdAt": "2026-02-25T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "DivyaNair",
+        "city": "Kochi",
+        "time": "2 months ago",
+        "text": "Looking for advice from other Indian parents on \"Football gear for young kids?\". My child is 3 years old. Would love to hear what worked in your family — especially practical tips from Kochi."
+      },
+      "replies": [
+        {
+          "id": 1580,
+          "author": "PoojaReddy",
+          "city": "Hyderabad",
+          "time": "2 months ago",
+          "text": "Hinglish mein bolo toh bhi theek hai — yahan sab parents samajhte hain.",
+          "likes": 5
+        },
+        {
+          "id": 1581,
+          "author": "Priya_Rao",
+          "city": "Mumbai",
+          "time": "2 months ago",
+          "text": "Please be kind in replies — mental health topics need gentle support.",
+          "likes": 2
+        },
+        {
+          "id": 1582,
+          "author": "AnanyaK",
+          "city": "Bangalore",
+          "time": "2 months ago",
+          "text": "Every family's cultural practice is different — respect goes both ways.",
+          "likes": 5
+        },
+        {
+          "id": 1583,
+          "author": "SnehaVerma",
+          "city": "Delhi",
+          "time": "2 months ago",
+          "text": "We went through the same — what helped us was consistency and patience.",
+          "likes": 7
+        },
+        {
+          "id": 1584,
+          "author": "MeeraSingh",
+          "city": "Pune",
+          "time": "2 months ago",
+          "text": "Our paediatrician suggested we track symptoms for 3 days before worrying.",
+          "likes": 2
+        }
+      ]
+    },
+    {
+      "id": 96,
+      "title": "Medicine reminder system parents use",
+      "category": "parenting_hacks",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 24,
+      "views": 4205,
+      "createdAt": "2026-02-24T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "PoojaReddy",
+        "city": "Hyderabad",
+        "time": "3 months ago",
+        "text": "Looking for advice from other Indian parents on \"Medicine reminder system parents use\". My child is 4 years old. Would love to hear what worked in your family — especially practical tips from Hyderabad."
+      },
+      "replies": [
+        {
+          "id": 1590,
+          "author": "Priya_Rao",
+          "city": "Mumbai",
+          "time": "3 months ago",
+          "text": "Please be kind in replies — mental health topics need gentle support.",
+          "likes": 1
+        },
+        {
+          "id": 1591,
+          "author": "AnanyaK",
+          "city": "Bangalore",
+          "time": "2 months ago",
+          "text": "Every family's cultural practice is different — respect goes both ways.",
+          "likes": 10
+        },
+        {
+          "id": 1592,
+          "author": "SnehaVerma",
+          "city": "Delhi",
+          "time": "2 months ago",
+          "text": "We went through the same — what helped us was consistency and patience.",
+          "likes": 12
+        },
+        {
+          "id": 1593,
+          "author": "MeeraSingh",
+          "city": "Pune",
+          "time": "2 months ago",
+          "text": "Our paediatrician suggested we track symptoms for 3 days before worrying.",
+          "likes": 7
+        },
+        {
+          "id": 1594,
+          "author": "DeepikaSharma",
+          "city": "Jaipur",
+          "time": "2 months ago",
+          "text": "Mumbai parent here — humidity makes a big difference to skin care choices.",
+          "likes": 10
+        },
+        {
+          "id": 1595,
+          "author": "KavyaT",
+          "city": "Chennai",
+          "time": "2 months ago",
+          "text": "Try the 5-minute warning before transitions — game changer for us.",
+          "likes": 2
+        }
+      ]
+    },
+    {
+      "id": 97,
+      "title": "Best sunscreen for outdoor cricket this summer?",
+      "category": "skincare",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": true,
+      "featuredLabel": "Circle Mom of the Month",
+      "votes": 25,
+      "views": 4250,
+      "createdAt": "2026-05-24T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "Priya_Rao",
+        "city": "Mumbai",
+        "time": "1 day ago",
+        "text": "Looking for advice from other Indian parents on \"Best sunscreen for outdoor cricket this summer?\". My child is 5 years old. Would love to hear what worked in your family — especially practical tips from Mumbai.",
+        "authorBadges": [
+          "community_insider"
+        ]
+      },
+      "replies": [
+        {
+          "id": 1600,
+          "author": "AnanyaK",
+          "city": "Bangalore",
+          "time": "1 day ago",
+          "text": "Every family's cultural practice is different — respect goes both ways.",
+          "likes": 9
+        }
+      ]
+    },
+    {
+      "id": 98,
+      "title": "Homework battles — how do you cope?",
+      "category": "school",
+      "isPinned": false,
+      "isHot": true,
+      "isFeatured": false,
+      "votes": 26,
+      "views": 4295,
+      "createdAt": "2026-05-23T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "AnanyaK",
+        "city": "Bangalore",
+        "time": "2 days ago",
+        "text": "Looking for advice from other Indian parents on \"Homework battles — how do you cope?\". My child is 6 years old. Would love to hear what worked in your family — especially practical tips from Bangalore."
+      },
+      "replies": [
+        {
+          "id": 1610,
+          "author": "SnehaVerma",
+          "city": "Delhi",
+          "time": "2 days ago",
+          "text": "We went through the same — what helped us was consistency and patience.",
+          "likes": 8
+        },
+        {
+          "id": 1611,
+          "author": "MeeraSingh",
+          "city": "Pune",
+          "time": "1 day ago",
+          "text": "Our paediatrician suggested we track symptoms for 3 days before worrying.",
+          "likes": 4
+        }
+      ]
+    },
+    {
+      "id": 99,
+      "title": "Weight gain for underweight 4yo?",
+      "category": "kids_growth",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 27,
+      "views": 4340,
+      "createdAt": "2026-05-22T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "SnehaVerma",
+        "city": "Delhi",
+        "time": "3 days ago",
+        "text": "Looking for advice from other Indian parents on \"Weight gain for underweight 4yo?\". My child is 7 years old. Would love to hear what worked in your family — especially practical tips from Delhi."
+      },
+      "replies": [
+        {
+          "id": 1620,
+          "author": "MeeraSingh",
+          "city": "Pune",
+          "time": "3 days ago",
+          "text": "Our paediatrician suggested we track symptoms for 3 days before worrying.",
+          "likes": 9
+        },
+        {
+          "id": 1621,
+          "author": "DeepikaSharma",
+          "city": "Jaipur",
+          "time": "2 days ago",
+          "text": "Mumbai parent here — humidity makes a big difference to skin care choices.",
+          "likes": 3
+        },
+        {
+          "id": 1622,
+          "author": "KavyaT",
+          "city": "Chennai",
+          "time": "1 day ago",
+          "text": "Try the 5-minute warning before transitions — game changer for us.",
+          "likes": 7
+        }
+      ]
+    },
+    {
+      "id": 100,
+      "title": "Football gear for young kids?",
+      "category": "active_kids",
+      "isPinned": false,
+      "isHot": false,
+      "isFeatured": false,
+      "votes": 28,
+      "views": 4385,
+      "createdAt": "2026-05-21T07:33:14.382Z",
+      "moderationStatus": "approved",
+      "op": {
+        "author": "MeeraSingh",
+        "city": "Pune",
+        "time": "4 days ago",
+        "text": "Looking for advice from other Indian parents on \"Football gear for young kids?\". My child is 8 years old. Would love to hear what worked in your family — especially practical tips from Pune.",
+        "authorBadges": [
+          "community_member"
+        ]
+      },
+      "replies": [
+        {
+          "id": 1630,
+          "author": "DeepikaSharma",
+          "city": "Jaipur",
+          "time": "4 days ago",
+          "text": "Mumbai parent here — humidity makes a big difference to skin care choices.",
+          "likes": 10
+        },
+        {
+          "id": 1631,
+          "author": "KavyaT",
+          "city": "Chennai",
+          "time": "3 days ago",
+          "text": "Try the 5-minute warning before transitions — game changer for us.",
+          "likes": 3
+        },
+        {
+          "id": 1632,
+          "author": "RohiniM",
+          "city": "Delhi",
+          "time": "2 days ago",
+          "text": "Hinglish mein bolo toh bhi theek hai — yahan sab parents samajhte hain.",
+          "likes": 7
+        },
+        {
+          "id": 1633,
+          "author": "NehaMehta",
+          "city": "Surat",
+          "time": "1 day ago",
+          "text": "Please be kind in replies — mental health topics need gentle support.",
+          "likes": 3
+        }
+      ]
+    }
+  ],
+  "users": {
+    "user_1779690886972": {
+      "id": "user_1779690886972",
+      "username": "dknishwanth1718",
+      "email": "dknishwanth1718@gmail.com",
+      "city": "India",
+      "role": "member",
+      "badges": [],
+      "createdAt": "2026-05-25T06:34:46.973Z",
+      "isVerified": true,
+      "postCount": 0,
+      "replyCount": 5,
+      "totalUpvotes": 1,
+      "trustScore": 0.5,
+      "emailNotifications": true
+    },
+    "user_1779694380894": {
+      "id": "user_1779694380894",
+      "username": "dknishwanth",
+      "email": "dknishwanth@gmail.com",
+      "city": "India",
+      "role": "member",
+      "badges": [],
+      "createdAt": "2026-05-25T07:33:00.894Z",
+      "isVerified": true,
+      "postCount": 0,
+      "replyCount": 1,
+      "totalUpvotes": 0,
+      "trustScore": 0.5,
+      "emailNotifications": true
+    }
+  }
+}

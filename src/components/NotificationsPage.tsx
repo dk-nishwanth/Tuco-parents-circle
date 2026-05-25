@@ -1,52 +1,25 @@
-import { X, Bell, ThumbsUp, MessageCircle, Award } from 'lucide-react';
-interface Notification {
-  id: number;
-  type: 'reply' | 'like' | 'badge' | 'system';
-  title: string;
-  description: string;
-  time: string;
-  read: boolean;
-}
+import { X, Bell, ThumbsUp, MessageCircle, Award, CheckCircle, Trash2 } from 'lucide-react';
+import { Notification } from '../types';
+
 interface NotificationsPageProps {
   isOpen: boolean;
+  notifications: Notification[];
+  onMarkAsRead: (id: number) => void;
+  onClearAll: () => void;
   onClose: () => void;
+  onThreadOpen: (id: number) => void;
 }
-export function NotificationsPage({ isOpen, onClose }: NotificationsPageProps) {
-  const notifications: Notification[] = [
-    {
-      id: 1,
-      type: 'reply',
-      title: 'New reply to your thread',
-      description: 'Someone replied to your thread about sunscreen for sensitive skin.',
-      time: '2 hours ago',
-      read: false,
-    },
-    {
-      id: 2,
-      type: 'like',
-      title: 'Your reply was liked',
-      description: 'Your helpful reply about haircare tips received 5 likes!',
-      time: '5 hours ago',
-      read: false,
-    },
-    {
-      id: 3,
-      type: 'badge',
-      title: 'You earned a badge!',
-      description: 'Congratulations! You earned the Community Insider badge.',
-      time: '1 day ago',
-      read: true,
-    },
-    {
-      id: 4,
-      type: 'system',
-      title: 'Welcome to Tuco Parents Circle!',
-      description: "We're glad you're here. Start engaging with the community.",
-      time: '2 days ago',
-      read: true,
-    },
-  ];
+
+export function NotificationsPage({
+  isOpen,
+  notifications,
+  onMarkAsRead,
+  onClearAll,
+  onClose,
+  onThreadOpen,
+}: NotificationsPageProps) {
   if (!isOpen) return null;
+
   const getIcon = (type: Notification['type']) => {
     switch (type) {
       case 'reply':
@@ -71,14 +44,30 @@ export function NotificationsPage({ isOpen, onClose }: NotificationsPageProps) {
             <h2 className="font-display font-black text-sm sm:text-base text-neutral-800">
               Notifications
             </h2>
+            {notifications.some(n => !n.read) && (
+              <span className="bg-rose-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-black">
+                {notifications.filter(n => !n.read).length}
+              </span>
+            )}
           </div>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-full border border-neutral-200 bg-white flex items-center justify-center text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 transition-colors shrink-0"
-            aria-label="Close notifications"
-          >
-            <X className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-2">
+            {notifications.length > 0 && (
+              <button
+                onClick={onClearAll}
+                className="text-neutral-400 hover:text-rose-500 p-1.5 transition-colors"
+                title="Clear all"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              className="w-8 h-8 rounded-full border border-neutral-200 bg-white flex items-center justify-center text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 transition-colors shrink-0"
+              aria-label="Close notifications"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
         <div className="modal-bd p-4 overflow-y-auto max-h-[70vh]">
           {notifications.length > 0 ? (
@@ -86,12 +75,24 @@ export function NotificationsPage({ isOpen, onClose }: NotificationsPageProps) {
               {notifications.map(notification => (
                 <div
                   key={notification.id}
-                  className={`p-4 rounded-xl border ${
+                  onClick={() => {
+                    if (!notification.read) onMarkAsRead(notification.id);
+                    if (notification.threadId) {
+                      onThreadOpen(notification.threadId);
+                      onClose();
+                    }
+                  }}
+                  className={`p-4 rounded-xl border cursor-pointer group ${
                     notification.read
-                      ? 'bg-white border-neutral-200'
-                      : 'bg-neutral-50 border-tuco-cyan/30'
-                  } hover:shadow-xs transition-all`}
+                      ? 'bg-white border-neutral-200 opacity-75'
+                      : 'bg-[#FFFAF7] border-tuco-cyan/30 shadow-sm'
+                  } hover:shadow-md transition-all relative`}
                 >
+                  {!notification.read && (
+                    <div className="absolute right-4 top-4">
+                      <div className="w-2 h-2 bg-tuco-cyan rounded-full animate-pulse"></div>
+                    </div>
+                  )}
                   <div className="flex items-start gap-3">
                     <div className="flex-shrink-0 mt-0.5">{getIcon(notification.type)}</div>
                     <div className="flex-1 min-w-0">
@@ -101,9 +102,16 @@ export function NotificationsPage({ isOpen, onClose }: NotificationsPageProps) {
                       <p className="font-sans text-xs text-neutral-500 mt-1 leading-relaxed">
                         {notification.description}
                       </p>
-                      <p className="font-mono text-[10px] text-neutral-400 mt-2">
-                        {notification.time}
-                      </p>
+                      <div className="flex items-center justify-between mt-2">
+                        <p className="font-mono text-[10px] text-neutral-400">
+                          {notification.time}
+                        </p>
+                        {!notification.read && (
+                          <span className="text-[10px] font-black text-tuco-cyan opacity-0 group-hover:opacity-100 transition-opacity">
+                            Mark as read
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>

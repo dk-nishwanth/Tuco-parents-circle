@@ -1,10 +1,18 @@
 import React, { useState, ChangeEvent, FormEvent } from 'react';
 import { CATEGORIES } from '../data/categories';
-import { Send, X } from 'lucide-react';
+import { Send, X, Image as ImageIcon } from 'lucide-react';
+
 interface NewPostModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (title: string, category: string, author: string, city: string, text: string) => void;
+  onSubmit: (
+    title: string,
+    category: string,
+    author: string,
+    city: string,
+    text: string,
+    image?: string
+  ) => void;
   isTucoTeam?: boolean;
 }
 export function NewPostModal({ isOpen, onClose, onSubmit, isTucoTeam }: NewPostModalProps) {
@@ -13,8 +21,29 @@ export function NewPostModal({ isOpen, onClose, onSubmit, isTucoTeam }: NewPostM
   const [author, setAuthor] = useState('');
   const [city, setCity] = useState('');
   const [text, setText] = useState('');
+  const [image, setImage] = useState<string | undefined>(undefined);
   const [errorMsg, setErrorMsg] = useState('');
+
   if (!isOpen) return null;
+
+  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        setErrorMsg('Image size should be less than 5MB');
+        setImage(undefined);
+        e.target.value = '';
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImage(reader.result as string);
+        e.target.value = '';
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!title.trim()) {
@@ -29,16 +58,17 @@ export function NewPostModal({ isOpen, onClose, onSubmit, isTucoTeam }: NewPostM
       setErrorMsg('Please write your home city.');
       return;
     }
-    if (!text.trim()) {
-      setErrorMsg('Please write an explanation / story text.');
+    if (!text.trim() && !image) {
+      setErrorMsg('Please write an explanation or upload an image.');
       return;
     }
-    onSubmit(title.trim(), category, author.trim(), city.trim(), text.trim());
+    onSubmit(title.trim(), category, author.trim(), city.trim(), text.trim(), image);
     setTitle('');
     setCategory('skincare');
     setAuthor('');
     setCity('');
     setText('');
+    setImage(undefined);
     setErrorMsg('');
   };
   return (
@@ -133,15 +163,49 @@ export function NewPostModal({ isOpen, onClose, onSubmit, isTucoTeam }: NewPostM
             <label className="block text-xs font-bold text-neutral-700 mb-1.5 text-left">
               Explain Your Dilemma / Experience
             </label>
-            <textarea
-              required
-              rows={4}
-              placeholder="Provide context. What has been your child's age, symptom, or situation? Let's help out..."
-              className="w-full bg-white border border-neutral-200 rounded-xl py-2 px-3 text-xs sm:text-sm text-neutral-700 outline-none font-sans font-medium focus:border-tuco-cyan"
-              value={text}
-              onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setText(e.target.value)}
-            />
+            <div className="relative">
+              <textarea
+                required={!image}
+                rows={4}
+                placeholder="Provide context. What has been your child's age, symptom, or situation? Let's help out..."
+                className="w-full bg-white border border-neutral-200 rounded-xl py-2 px-3 pr-10 text-xs sm:text-sm text-neutral-700 outline-none font-sans font-medium focus:border-tuco-cyan"
+                value={text}
+                onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setText(e.target.value)}
+              />
+              <div className="absolute right-2 bottom-2 flex items-center gap-2">
+                <input
+                  type="file"
+                  id="post-image-upload"
+                  className="hidden"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                />
+                <label
+                  htmlFor="post-image-upload"
+                  className="p-2 rounded-lg hover:bg-neutral-100 text-neutral-400 hover:text-tuco-cyan cursor-pointer transition-colors"
+                  title="Upload image"
+                >
+                  <ImageIcon className="w-5 h-5" />
+                </label>
+              </div>
+            </div>
           </div>
+          {image && (
+            <div className="relative inline-block mt-2">
+              <img
+                src={image}
+                alt="Preview"
+                className="max-h-40 rounded-xl border border-neutral-200"
+              />
+              <button
+                type="button"
+                onClick={() => setImage(undefined)}
+                className="absolute -top-2 -right-2 w-6 h-6 bg-white border border-neutral-200 rounded-full flex items-center justify-center text-neutral-500 hover:text-rose-500 shadow-md transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          )}
           {errorMsg && (
             <div className="text-red-600 font-bold text-xs bg-red-50 p-2.5 rounded-lg border border-red-200">
               ⚠️ {errorMsg}

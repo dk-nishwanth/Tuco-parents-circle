@@ -4,17 +4,25 @@ import { PRODUCTS } from '../data/products';
 import { Conversation, User } from '../types';
 import { getAvatarColor, getInitials, getAuthorMeta } from '../utils/helpers';
 import { AuthorBadges } from './AuthorBadges';
-import { Heart, MessageSquare, Send, ShoppingBag, X } from 'lucide-react';
+import { Heart, MessageSquare, Send, ShoppingBag, X, Image as ImageIcon } from 'lucide-react';
+
 interface ModalProps {
   thread: Conversation | null;
   isOpen: boolean;
   onClose: () => void;
-  onAddReply: (threadId: number, name: string, city: string, text: string) => void;
+  onAddReply: (
+    threadId: number,
+    name: string,
+    city: string,
+    text: string,
+    image?: string
+  ) => void;
   onLikeReply?: (threadId: number, replyId: number) => void;
   onReportReply?: (threadId: number, replyId: number) => void;
   onEditReply?: (threadId: number, replyId: number, newText: string) => void;
   onDeleteReply?: (threadId: number, replyId: number) => void;
   currentUser?: User | null;
+  likedReplies?: Record<number, boolean>;
   users?: Record<string, User>;
 }
 export function Modal({
@@ -27,11 +35,13 @@ export function Modal({
   onEditReply,
   onDeleteReply,
   currentUser,
+  likedReplies = {},
   users = {},
 }: ModalProps) {
   const [replyName, setReplyName] = useState(currentUser?.username || '');
   const [replyCity, setReplyCity] = useState(currentUser?.city || '');
   const [replyText, setReplyText] = useState('');
+  const [replyImage, setReplyImage] = useState<string | undefined>(undefined);
   const [errorMessage, setErrorMessage] = useState('');
   const [editingReplyId, setEditingReplyId] = useState<number | null>(null);
   const [editReplyText, setEditReplyText] = useState('');
@@ -48,6 +58,24 @@ export function Modal({
   const getTucoProduct = (recId: string) => {
     return PRODUCTS.find(p => p.id === recId) || null;
   };
+  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        setErrorMessage('Image size should be less than 5MB');
+        setReplyImage(undefined);
+        e.target.value = '';
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setReplyImage(reader.result as string);
+        e.target.value = '';
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleReplySubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!replyName.trim()) {
@@ -58,12 +86,19 @@ export function Modal({
       setErrorMessage('Please state your city (e.g. Pune, Delhi).');
       return;
     }
-    if (!replyText.trim()) {
-      setErrorMessage('Please write some thoughts/advice.');
+    if (!replyText.trim() && !replyImage) {
+      setErrorMessage('Please write some thoughts or upload an image.');
       return;
     }
-    onAddReply(thread.id, replyName.trim(), replyCity.trim(), replyText.trim());
+    onAddReply(
+      thread.id,
+      replyName.trim(),
+      replyCity.trim(),
+      replyText.trim(),
+      replyImage
+    );
     setReplyText('');
+    setReplyImage(undefined);
     setErrorMessage('');
   };
   return (
@@ -127,6 +162,15 @@ export function Modal({
             <p className="post-txt font-sans text-xs sm:text-sm text-neutral-600 leading-relaxed font-semibold whitespace-pre-wrap">
               {thread.op.text}
             </p>
+            {thread.op.image && (
+              <div className="mt-3">
+                <img
+                  src={thread.op.image}
+                  alt="Post attachment"
+                  className="max-h-[300px] w-auto rounded-2xl border border-neutral-200"
+                />
+              </div>
+            )}
           </div>
           {}
           <div className="flex items-center justify-between pb-2 border-b border-neutral-100">
@@ -169,52 +213,15 @@ export function Modal({
                         {reply.time}
                       </span>
                     </div>
-                    <p className="font-sans text-xs sm:text-sm text-neutral-650 leading-relaxed font-semibold whitespace-pre-wrap mt-1">
-                      {reply.text}
-                    </p>
-                    {}
-                    {reply.tucoRec &&
-                      (() => {
-                        const product = getTucoProduct(reply.tucoRec);
-                        if (!product) return null;
-                        return (
-                          <div className="mt-3.5 bg-gradient-to-br from-neutral-50 to-white border border-dashed border-tuco-cyan/35 hover:border-tuco-cyan rounded-2xl p-3 md:p-4 flex flex-col sm:flex-row items-center gap-3 sm:gap-4 transition-colors max-w-xl">
-                            <div className="w-11 h-11 rounded-xl bg-white border border-neutral-200 flex items-center justify-center text-xl shrink-0 shadow-xs">
-                              {product.icon}
-                            </div>
-                            <div className="min-w-0 flex-1 text-center sm:text-left">
-                              <div className="flex items-center justify-center sm:justify-start gap-1 pb-1">
-                                <span className="font-display text-[8px] font-black uppercase text-tuco-orange tracking-wider bg-[#FFF5F0] border border-tuco-orange/15 px-1.5 py-0.5 rounded-sm">
-                                  🌿 RECOMMENDED PICKS
-                                </span>
-                                <span className="font-mono text-[9px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 px-1.5 rounded-sm">
-                                  {product.tag}
-                                </span>
-                              </div>
-                              <h5 className="font-display font-black text-xs text-neutral-800 leading-snug">
-                                {product.name}
-                              </h5>
-                              <p className="font-sans text-[10px] text-neutral-400 font-bold leading-normal">
-                                All-natural, safe defense for child’s sensitive skin.
-                              </p>
-                            </div>
-                            <div className="shrink-0 flex sm:flex-col items-center gap-2">
-                              <span className="font-mono font-black text-xs text-tuco-orange">
-                                {product.price}
-                              </span>
-                              <a
-                                href={product.linkUrl}
-                                target="_blank"
-                                rel="referrer noopener"
-                                className="text-[11px] bg-tuco-cyan hover:bg-tuco-cyan-hover text-white font-display font-black py-1 px-4 rounded-full shadow-xs transition-all flex items-center gap-1 shrink-0 cursor-pointer"
-                              >
-                                <ShoppingBag className="w-3 h-3" />
-                                <span>Shop Now</span>
-                              </a>
-                            </div>
-                          </div>
-                        );
-                      })()}
+                    {reply.image && (
+                      <div className="mt-2.5">
+                        <img
+                          src={reply.image}
+                          alt="Reply attachment"
+                          className="max-h-[200px] w-auto rounded-xl border border-neutral-100"
+                        />
+                      </div>
+                    )}
                     {editingReplyId === reply.id ? (
                       <div className="mt-3">
                         <textarea
@@ -225,6 +232,7 @@ export function Modal({
                         />
                         <div className="flex items-center gap-2 mt-2">
                           <button
+                            type="button"
                             onClick={() => {
                               if (editReplyText.trim() && onEditReply && thread) {
                                 onEditReply(thread.id, reply.id, editReplyText.trim());
@@ -237,6 +245,7 @@ export function Modal({
                             Save
                           </button>
                           <button
+                            type="button"
                             onClick={() => {
                               setEditingReplyId(null);
                               setEditReplyText('');
@@ -301,9 +310,17 @@ export function Modal({
                       <div className="flex items-center gap-3 mt-3 pt-2 border-t border-neutral-100 flex-wrap">
                         <button
                           onClick={() => onLikeReply && onLikeReply(thread.id, reply.id)}
-                          className="text-[10px] font-bold font-sans text-neutral-400 hover:text-tuco-cyan flex items-center gap-1 cursor-pointer transition-colors"
+                          className={`text-[10px] font-bold font-sans flex items-center gap-1 cursor-pointer transition-colors ${
+                            likedReplies[reply.id] 
+                              ? 'text-rose-500 hover:text-rose-600' 
+                              : 'text-neutral-400 hover:text-tuco-cyan'
+                          }`}
                         >
-                          <Heart className="w-3.5 h-3.5 fill-rose-100" />
+                          <Heart 
+                            className={`w-3.5 h-3.5 ${
+                              likedReplies[reply.id] ? 'fill-rose-500 text-rose-500' : 'fill-rose-100'
+                            }`} 
+                          />
                           <span>{reply.likes || 0} Helpful</span>
                         </button>
                         <span className="text-xs text-neutral-200">|</span>
@@ -335,6 +352,7 @@ export function Modal({
                           </>
                         )}
                         <button
+                          type="button"
                           onClick={() => {
                             if (onReportReply && thread) {
                               onReportReply(thread.id, reply.id);
@@ -389,15 +407,49 @@ export function Modal({
                 <label className="block text-[10px] font-bold text-neutral-500 mb-1.5 text-left">
                   Your Answer/Advice
                 </label>
-                <textarea
-                  required
-                  rows={2}
-                  placeholder="Share what worked for your kid. Maintain clean organic safety standards..."
-                  className="w-full bg-white border border-neutral-200 rounded-xl py-2 px-3 text-xs text-neutral-700 outline-none font-sans font-semibold placeholder-neutral-400 focus:border-tuco-cyan"
-                  value={replyText}
-                  onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setReplyText(e.target.value)}
-                />
+                <div className="relative">
+                  <textarea
+                    required={!replyImage}
+                    rows={2}
+                    placeholder="Share what worked for your kid. Maintain clean organic safety standards..."
+                    className="w-full bg-white border border-neutral-200 rounded-xl py-2 px-3 pr-10 text-xs text-neutral-700 outline-none font-sans font-semibold placeholder-neutral-400 focus:border-tuco-cyan"
+                    value={replyText}
+                    onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setReplyText(e.target.value)}
+                  />
+                  <div className="absolute right-2 bottom-2 flex items-center gap-2">
+                    <input
+                      type="file"
+                      id="reply-image-upload"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                    />
+                    <label
+                      htmlFor="reply-image-upload"
+                      className="p-1.5 rounded-lg hover:bg-neutral-100 text-neutral-400 hover:text-tuco-cyan cursor-pointer transition-colors"
+                      title="Upload image"
+                    >
+                      <ImageIcon className="w-4 h-4" />
+                    </label>
+                  </div>
+                </div>
               </div>
+              {replyImage && (
+                <div className="relative inline-block mt-2">
+                  <img
+                    src={replyImage}
+                    alt="Preview"
+                    className="max-h-32 rounded-lg border border-neutral-200"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setReplyImage(undefined)}
+                    className="absolute -top-2 -right-2 w-5 h-5 bg-white border border-neutral-200 rounded-full flex items-center justify-center text-neutral-500 hover:text-rose-500 shadow-sm transition-colors"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              )}
               {errorMessage && (
                 <div className="text-red-600 font-bold text-xs bg-red-50 p-2.5 rounded-lg border border-red-200">
                   ⚠️ {errorMessage}
