@@ -57,9 +57,7 @@ export function ThreadCard({
       className={`tc w-full bg-white border border-neutral-200 rounded-[2rem] p-5 md:p-7 hover:shadow-md transition-all cursor-pointer flex gap-4 md:gap-6 text-left relative overflow-hidden group`}
     >
       {/* Branded Left Edge */}
-      <div className={`absolute left-0 top-0 bottom-0 w-[6px] ${
-        thread.isPinned ? 'bg-tuco-orange' : thread.isHot ? 'bg-tuco-cyan' : 'bg-transparent'
-      } pointer-events-none`}></div>
+      <div className="absolute left-0 top-0 bottom-0 w-[6px] bg-tuco-orange pointer-events-none"></div>
 
       {/* Vote Box (Left) */}
       <div 
@@ -129,7 +127,7 @@ export function ThreadCard({
           </div>
 
           {/* Bottom Actions Row */}
-          <div className="flex items-center justify-end gap-4">
+          <div className="pt-4 border-t border-neutral-100 flex items-center justify-end gap-4">
             <button
               className="save-btn flex items-center gap-1 transition-colors p-1"
               onClick={e => {

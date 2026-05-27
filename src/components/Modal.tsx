@@ -89,32 +89,30 @@ export function Modal({
             </button>
           </div>
 
-          <div className="flex-1 max-w-[400px]">
-            <div className="bg-[#F3F4F6] rounded-lg h-9 w-full flex items-center px-4 gap-3">
-              <Search className="w-4 h-4 text-neutral-400" strokeWidth={2} />
-              <span className="text-[14px] text-neutral-400 font-normal">search</span>
-              <span className="text-[14px] text-neutral-300 ml-auto">...</span>
+          <div className="flex-1 max-w-[440px]">
+            <div className="bg-[#F3F4F6] border border-neutral-200 rounded-lg h-9 w-full flex items-center px-4">
+              <div className="w-full h-4 bg-transparent" />
             </div>
           </div>
 
-          <div className="flex items-center gap-3 shrink-0">
-            <button className="p-1 hover:bg-neutral-50 rounded-full transition-colors">
+          <div className="flex items-center gap-2 shrink-0">
+            <button className="p-1.5 hover:bg-neutral-50 rounded-full transition-colors">
               <Bell className="w-6 h-6 text-neutral-300" strokeWidth={1.5} />
             </button>
             <button className="bg-[#35B5EC] text-white px-5 py-2 rounded-lg text-[14px] font-bold shadow-sm hover:bg-[#2da3d6] transition-colors">
               ask
             </button>
-            <div className="w-9 h-9 border-2 border-[#35B5EC] rounded-lg flex items-center justify-center text-[14px] font-bold text-[#35B5EC]">
+            <div className="w-9 h-9 border-2 border-[#35B5EC] rounded-lg flex items-center justify-center text-[14px] font-bold text-[#35B5EC] ml-1">
               LA
             </div>
           </div>
         </div>
       </header>
 
-      <div className="flex-1 max-w-[720px] mx-auto w-full px-4 py-8">
+      <div className="flex-1 max-w-[680px] mx-auto w-full px-4 py-6">
         {/* Main Post Card */}
-        <div className="bg-white border border-neutral-200 rounded-[20px] p-6 mb-4 shadow-sm">
-          <div className="flex items-start justify-between mb-4">
+        <div className="bg-white border border-neutral-200 rounded-[24px] p-6 mb-4 shadow-sm relative">
+          <div className="flex items-start justify-between mb-5">
             <div className="flex items-center gap-3">
               <div
                 className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-[15px]"
@@ -136,37 +134,37 @@ export function Modal({
             </span>
           </div>
 
-          <h2 className="font-bold text-[22px] text-[#4D4747] leading-[1.2] mb-5 tracking-tight">
+          <h2 className="font-bold text-[21px] text-[#4D4747] leading-[1.25] mb-5 tracking-tight">
             {thread.title}
           </h2>
 
-          <p className="text-[14px] text-[#666666] leading-relaxed font-normal mb-8">
+          <p className="text-[14.5px] text-[#555555] leading-relaxed font-normal mb-8">
             {thread.op.text}
           </p>
 
-          <div className="flex items-center justify-end gap-6">
-            <Bookmark className="w-5 h-5 text-neutral-300 cursor-pointer hover:text-neutral-400 transition-colors" strokeWidth={1.5} />
-            <div className="flex items-center gap-2 text-neutral-300">
-              <Eye className="w-5 h-5" strokeWidth={1.5} />
-              <span className="text-[13px] font-medium text-neutral-400">{thread.views || 691} views</span>
+          <div className="flex items-center justify-end gap-5 pt-5 border-t border-neutral-100">
+            <Bookmark className="w-5 h-5 text-neutral-400 cursor-pointer hover:text-neutral-500 transition-colors" strokeWidth={1.5} />
+            <div className="flex items-center gap-1.5 text-neutral-400">
+              <Eye className="w-5 h-5 text-neutral-400" strokeWidth={1.5} />
+              <span className="text-[13px] font-medium">{thread.views || 691} views</span>
             </div>
           </div>
         </div>
 
         {/* Join conversation Box */}
-        <div className="bg-white border border-neutral-200 rounded-[15px] p-5 mb-8 shadow-sm">
+        <div className="bg-white border border-neutral-200 rounded-[20px] p-5 mb-8 shadow-sm">
           <div className="relative">
             <textarea
               value={replyText}
               onChange={(e) => setReplyText(e.target.value)}
               placeholder="Join the conversation..."
-              className="w-full text-[15px] text-neutral-600 placeholder-neutral-300 outline-none resize-none min-h-[50px] font-normal"
+              className="w-full text-[16px] text-neutral-600 placeholder-neutral-300 outline-none resize-none min-h-[45px] font-normal"
             />
             <div className="flex justify-end mt-2">
               <button
                 type="submit"
                 onClick={handleReplySubmit}
-                className="bg-[#35B5EC] hover:bg-[#2da3d6] text-white px-8 py-2.5 rounded-full text-[14px] font-bold transition-all shadow-sm active:scale-95"
+                className="bg-[#35B5EC] hover:bg-[#2da3d6] text-white px-9 py-2.5 rounded-full text-[14px] font-bold transition-all shadow-sm active:scale-95"
               >
                 comment
               </button>
@@ -175,41 +173,41 @@ export function Modal({
         </div>
 
         {/* Replies Header */}
-        <div className="flex items-center gap-2 mb-4 px-1">
-          <MessageSquare className="w-5 h-5 text-[#35B5EC] fill-[#35B5EC]/10" strokeWidth={2} />
-          <span className="font-bold text-[15px] text-[#4D4747]">{thread.replies.length} replies</span>
+        <div className="flex items-center gap-2.5 mb-5 px-1">
+          <MessageSquare className="w-5 h-5 text-[#35B5EC]" strokeWidth={2} />
+          <span className="font-bold text-[16px] text-[#4D4747]">{thread.replies.length} replies</span>
         </div>
 
         {/* Replies Controls */}
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center gap-3 mb-8">
           <div className="relative">
             <button
               onClick={() => setIsSortOpen(!isSortOpen)}
-              className="flex items-center gap-2 px-5 py-2.5 bg-white border border-neutral-200 rounded-full text-[13px] font-medium text-neutral-400 hover:border-neutral-300 transition-all"
+              className="flex items-center gap-2 px-6 py-2.5 bg-white border border-neutral-200 rounded-full text-[14px] font-medium text-neutral-400 hover:border-neutral-300 transition-all"
             >
               <span>new (default)</span>
-              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isSortOpen ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`w-4 h-4 transition-transform ${isSortOpen ? 'rotate-180' : ''}`} />
             </button>
           </div>
           <div className="flex-1 relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-300" strokeWidth={1.5} />
+            <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-300" strokeWidth={1.5} />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="search comments"
-              className="w-full pl-10 pr-4 py-2.5 bg-white border border-neutral-200 rounded-full text-[13px] font-normal outline-none focus:border-neutral-300 placeholder-neutral-300 transition-all"
+              className="w-full pl-12 pr-6 py-2.5 bg-white border border-neutral-200 rounded-full text-[14px] font-normal outline-none focus:border-neutral-300 placeholder-neutral-300 transition-all"
             />
           </div>
         </div>
 
         {/* Replies List */}
-        <div className="space-y-4">
+        <div className="space-y-6">
           {thread.replies.map((reply) => {
             const product = reply.tucoRec ? getTucoProduct(reply.tucoRec) : null;
             return (
-              <div key={reply.id} className="bg-white border border-neutral-200 rounded-[20px] p-6 shadow-sm">
-                <div className="flex items-start justify-between mb-4">
+              <div key={reply.id} className="bg-white border border-neutral-200 rounded-[24px] p-6 shadow-sm">
+                <div className="flex items-start justify-between mb-5">
                   <div className="flex items-center gap-3">
                     <div
                       className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-[15px]"
@@ -231,28 +229,28 @@ export function Modal({
                   </span>
                 </div>
 
-                <p className="text-[14px] text-[#4D4747] leading-relaxed font-normal mb-5">
+                <p className="text-[14.5px] text-[#4D4747] leading-relaxed font-normal mb-6">
                   {reply.text}
                 </p>
 
-                <div className="flex items-center justify-end gap-1.5 mb-5">
+                <div className="flex items-center justify-end gap-2 mb-6">
                   <Heart className="w-4 h-4 text-neutral-300" strokeWidth={1.5} />
-                  <span className="text-[12px] font-medium text-neutral-400">12 helpful</span>
+                  <span className="text-[13px] font-medium text-neutral-400">12 helpful</span>
                 </div>
 
                 {product && (
-                  <div className="bg-white border border-neutral-100 rounded-[20px] overflow-hidden flex items-stretch border-l-0 shadow-xs">
-                    <div className="w-32 bg-[#FEF9C3] flex items-center justify-center p-6 shrink-0">
-                      <span className="text-5xl">{product.icon}</span>
+                  <div className="bg-white border border-neutral-100 rounded-[20px] overflow-hidden flex items-stretch shadow-sm">
+                    <div className="w-36 bg-[#FEF9C3] flex items-center justify-center p-7 shrink-0">
+                      <span className="text-6xl">{product.icon}</span>
                     </div>
-                    <div className="flex-1 p-6 flex flex-col justify-center">
-                      <h4 className="font-bold text-[17px] text-[#4D4747] leading-snug mb-1">
+                    <div className="flex-1 p-7 flex flex-col justify-center">
+                      <h5 className="font-bold text-[18px] text-[#4D4747] leading-snug mb-1">
                         {product.name}
-                      </h4>
-                      <p className="text-[12px] text-neutral-400 font-medium mb-5">
+                      </h5>
+                      <p className="text-[12px] text-neutral-400 font-medium mb-6">
                         {product.tag}
                       </p>
-                      <button className="bg-[#FED018] hover:bg-[#fccb0a] text-neutral-800 px-7 py-1.5 rounded-full text-[13px] font-bold w-fit transition-colors">
+                      <button className="bg-[#FED018] hover:bg-[#fccb0a] text-neutral-800 px-8 py-2 rounded-full text-[14px] font-bold w-fit transition-colors">
                         add to cart
                       </button>
                     </div>
