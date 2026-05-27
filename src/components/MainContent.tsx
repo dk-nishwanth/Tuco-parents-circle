@@ -112,11 +112,11 @@ export function MainContent({
         {/* Title and Category Row */}
         <div className="flex items-start justify-between">
           <div className="flex flex-col">
-            <h2 className="font-display font-bold text-[20px] text-[#4D4747] tracking-[-0.05em] leading-[100%] lowercase">
-              tuco parents circle :)
+            <h2 className="font-display font-bold text-[20px] text-[#4D4747] tracking-[-0.05em] leading-[100%]">
+              Tuco Parents Circle :)
             </h2>
             <p className="font-sans text-[11px] text-neutral-400 font-medium mt-1">
-              {processedThreads.length} discussions found
+              {processedThreads.length} Discussions found
             </p>
           </div>
           
@@ -127,7 +127,7 @@ export function MainContent({
               className="flex items-center gap-1 px-3 py-1.5 bg-white border border-neutral-200 rounded-lg text-[13px] font-display font-bold text-[#4D4747] shadow-sm"
             >
               <Users className="w-4 h-4 text-tuco-cyan" strokeWidth={2} />
-              <span className="lowercase">all discussions</span>
+              <span>All Discussions</span>
               <ChevronDown className={`w-3.5 h-3.5 text-neutral-400 transition-transform ${isCategoryOpen ? 'rotate-180' : ''}`} strokeWidth={2} />
             </button>
             
@@ -144,7 +144,7 @@ export function MainContent({
                     }`}
                   >
                     <Users className="w-4 h-4" strokeWidth={1.5} />
-                    <span className="lowercase">all discussions</span>
+                    <span>All Discussions</span>
                   </button>
                   {Object.values(CATEGORIES).map(cat => (
                     <button
@@ -158,7 +158,7 @@ export function MainContent({
                       }`}
                     >
                       <span>{cat.icon}</span>
-                      <span className="lowercase">{cat.label}</span>
+                      <span>{cat.label}</span>
                     </button>
                   ))}
                 </div>
@@ -176,7 +176,7 @@ export function MainContent({
                 activeTab === 'feed' ? 'bg-[#4D4747] text-white shadow-md' : 'text-[#888888]'
               }`}
             >
-              feed
+              Feed
             </button>
             <button
               onClick={() => setActiveTab('about')}
@@ -184,7 +184,7 @@ export function MainContent({
                 activeTab === 'about' ? 'bg-[#4D4747] text-white shadow-md' : 'text-[#888888]'
               }`}
             >
-              about
+              About
             </button>
           </div>
 
@@ -195,7 +195,7 @@ export function MainContent({
               className="flex items-center gap-1 px-3 py-1.5 bg-white border border-neutral-200 rounded-lg text-[13px] font-display font-bold text-[#4D4747] shadow-sm"
             >
               <span className="text-[#FFD700] text-sm">✨</span>
-              <span className="lowercase text-neutral-400 font-medium">new</span>
+              <span className="text-neutral-400 font-medium">New</span>
               <ChevronDown className={`w-3.5 h-3.5 text-neutral-400 transition-transform ${isSortOpen ? 'rotate-180' : ''}`} strokeWidth={2} />
             </button>
 
@@ -227,11 +227,11 @@ export function MainContent({
       <div className="hidden md:flex main-top flex flex-col gap-3 pb-4 mb-4 border-b border-neutral-100">
         <div className="flex flex-row items-start justify-between gap-3">
           <div className="flex flex-col gap-1 min-w-0">
-            <h2 className="font-display font-bold text-[20px] text-[#4D4747] tracking-[-0.05em] leading-[100%] lowercase flex items-center gap-2">
-              <span className="truncate">tuco parents circle :)</span>
+            <h2 className="font-display font-bold text-[20px] text-[#4D4747] tracking-[-0.05em] leading-[100%] flex items-center gap-2">
+              <span className="truncate">Tuco Parents Circle :)</span>
             </h2>
             <p className="font-sans text-[11px] text-neutral-400 font-medium">
-              {processedThreads.length} discussions found
+              {processedThreads.length} Discussions found
             </p>
           </div>
           
@@ -241,7 +241,7 @@ export function MainContent({
                 onClick={() => setIsSortOpen(!isSortOpen)}
                 className="flex items-center gap-2 px-4 py-2 bg-white border border-neutral-200 rounded-full text-sm font-display font-bold text-[#4D4747] hover:border-tuco-cyan hover:bg-neutral-50 transition-all shadow-xs"
               >
-                <span>✨ <span className="text-neutral-400 font-medium">new</span></span>
+                <span>✨ <span className="text-neutral-400 font-medium">New</span></span>
                 <ChevronDown className={`w-4 h-4 transition-transform ${isSortOpen ? 'rotate-180' : ''}`} strokeWidth={1.5} />
               </button>
 
@@ -281,8 +281,8 @@ export function MainContent({
         </div>
       ) : (
         <>
-          {/* Trending Section */}
-          <div className="flex flex-col gap-4">
+          {/* Trending Section - Mobile Only (Hidden on Desktop to avoid repetition with sidebar) */}
+          <div className="flex flex-col gap-4 md:hidden">
             <div className="flex items-center gap-2 px-1">
               <Pin className="w-5 h-5 text-[#4D4747] rotate-45" strokeWidth={2} />
               <h3 className="font-display font-bold text-[20px] text-[#4D4747] tracking-[-0.05em] leading-[100%]">Trending</h3>
@@ -299,17 +299,17 @@ export function MainContent({
                       {thread.title}
                     </h4>
                     <p className="text-[11px] text-neutral-400 font-medium mb-4">
-                      {thread.votes} vote • {thread.replies.length} comments
+                      {thread.votes} Votes • {thread.replies.length} Comments
                     </p>
                     <div className="flex items-center gap-2">
                       <div 
                         className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-sm" 
-                        style={{ backgroundColor: getAvatarColor(thread.op.author) }}
+                        style={{ backgroundColor: getAvatarColor(thread.op.author), color: '#ffffff' }}
                       >
                         {thread.op.author[0].toUpperCase()}
                       </div>
-                      <span className="text-[11px] font-sans font-medium text-[#4D4747]">by {thread.op.author}</span>
-                      <span className="bg-[#FFF5F0] text-[10px] text-[#EB3200] font-sans font-medium uppercase px-2 py-0.5 rounded-md border border-[#EB3200]/10 shadow-sm">
+                      <span className="text-[11px] font-sans font-medium text-[#4D4747]">By {thread.op.author}</span>
+                      <span className="bg-[#FFF5F0] text-[10px] text-[#EB3200] font-sans font-medium uppercase px-2.5 py-0.5 rounded-md border border-[#EB3200]/10 shadow-sm">
                         {thread.op.city}
                       </span>
                     </div>
@@ -317,6 +317,12 @@ export function MainContent({
                 ))}
               </div>
             </div>
+          </div>
+
+          {/* Feed Header - Desktop Only */}
+          <div className="hidden md:flex items-center gap-2 px-1 mb-2">
+            <Flame className="w-5 h-5 text-tuco-orange" strokeWidth={2} />
+            <h3 className="font-display font-bold text-[20px] text-[#4D4747] tracking-[-0.05em] leading-[100%]">Feed</h3>
           </div>
 
           {/* Feed Section */}

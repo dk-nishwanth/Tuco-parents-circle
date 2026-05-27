@@ -71,7 +71,7 @@ export function RightSidebar({
                   {mom.title}
                 </p>
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-neutral-400 font-bold italic">by {mom.author}</span>
+                  <span className="text-[10px] text-neutral-400 font-bold italic">By {mom.author}</span>
                   <span className="text-[10px] text-purple-500 font-bold">Featured 🌟</span>
                 </div>
               </button>
@@ -107,7 +107,7 @@ export function RightSidebar({
                 <div key={i} className="w-5 h-5 rounded-full border-2 border-white bg-neutral-200" />
               ))}
             </div>
-            <p className="text-[10px] text-neutral-400 font-bold italic">+24 today</p>
+            <p className="text-[10px] text-neutral-400 font-bold italic">+24 Today</p>
           </div>
         </div>
 

@@ -71,7 +71,10 @@ export function LeftSidebar({
               {savedPosts.length}
             </span>
           </button>
-          {}
+          {/* Categories Title */}
+          <div className="px-5 py-4 mt-2">
+            <h4 className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest">Categories</h4>
+          </div>
           {Object.values(CATEGORIES).map((cat, idx, arr) => {
             const isLast = idx === arr.length - 1;
             const isSelected = activeCategory === cat.id;

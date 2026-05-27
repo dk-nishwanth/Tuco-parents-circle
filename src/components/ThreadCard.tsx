@@ -93,7 +93,7 @@ export function ThreadCard({
           <div className="flex justify-start mb-2.5">
             <div className="flex items-center gap-2 px-4 py-1 rounded-full bg-[#FFF5F0] border border-[#EB3200]/10 shadow-sm">
               <span className="text-[12px]">{category.icon}</span>
-              <span className="text-[11px] font-sans font-medium text-[#EB3200] lowercase tracking-tight">
+              <span className="text-[11px] font-sans font-medium text-[#EB3200] tracking-tight">
                 {category.label}
               </span>
             </div>
@@ -113,12 +113,12 @@ export function ThreadCard({
           <div className="flex items-center gap-2.5 mb-5">
             <div
               className="w-6 h-6 rounded-full flex items-center justify-center font-display font-bold text-[10px] text-white shadow-sm"
-              style={{ backgroundColor: getAvatarColor(thread.op.author) }}
+              style={{ backgroundColor: getAvatarColor(thread.op.author), color: '#ffffff' }}
             >
               {getInitials(thread.op.author)}
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="text-[12px] font-sans font-medium text-[#4D4747]">by {thread.op.author}</span>
+              <span className="text-[12px] font-sans font-medium text-[#4D4747]">By {thread.op.author}</span>
               <AuthorBadges badges={opBadges} role={opRole} />
               <span className="bg-[#FFF5F0] text-[10px] text-[#EB3200] font-sans font-medium uppercase px-2.5 py-0.5 rounded-md border border-[#EB3200]/10 shadow-sm">
                 {thread.op.city}
@@ -143,11 +143,11 @@ export function ThreadCard({
             </button>
             <div className="flex items-center gap-1.5 text-[#4D4747]">
               <MessageSquare className="w-4 h-4 text-[#4D4747]" strokeWidth={2} />
-              <span className="text-[11px] font-sans font-medium text-neutral-500">{thread.replies.length} replies</span>
+              <span className="text-[11px] font-sans font-medium text-neutral-500">{thread.replies.length} Replies</span>
             </div>
             <div className="flex items-center gap-1.5 text-[#4D4747]">
               <Eye className="w-4 h-4 text-[#4D4747]" strokeWidth={2} />
-              <span className="text-[11px] font-sans font-medium text-neutral-500">{thread.views || 691} views</span>
+              <span className="text-[11px] font-sans font-medium text-neutral-500">{thread.views || 691} Views</span>
             </div>
           </div>
         </div>
