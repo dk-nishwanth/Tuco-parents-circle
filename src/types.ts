@@ -44,7 +44,7 @@ export interface Conversation {
 export type GreyAreaFlag =
   | 'religious_cultural'
   | 'mental_health'
-  | 'hinglish'
+  | 'english'
   | 'negative_tuco_review';
 export interface Category {
   id: string;

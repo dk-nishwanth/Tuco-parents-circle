@@ -1,5 +1,5 @@
 import { Conversation } from '../types';
-import { Clock, Mail, MessageCircle } from 'lucide-react';
+import { Clock, Mail, MessageSquare } from 'lucide-react';
 interface ThreadReviewConfirmationProps {
   threadTitle: string;
   relatedThreads: Conversation[];
@@ -49,7 +49,7 @@ export function ThreadReviewConfirmation({
           {relatedThreads.length > 0 && (
             <div>
               <p className="font-display font-black text-xs text-neutral-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                <MessageCircle className="w-3.5 h-3.5" />
+                <MessageSquare className="w-3.5 h-3.5" />
                 While you wait — related discussions
               </p>
               <div className="space-y-2">

@@ -14,7 +14,6 @@ import { AdminToolsPanel } from './components/AdminToolsPanel';
 import { LoadingScreen } from './components/LoadingScreen';
 import { ProfileModal } from './components/ProfileModal';
 import { WarningModal } from './components/WarningModal';
-import { NotificationsPage } from './components/NotificationsPage';
 import { ReportModal } from './components/ReportModal';
 import { INITIAL_CONVERSATIONS } from './data/conversations';
 import { CATEGORIES } from './data/categories';
@@ -47,6 +46,7 @@ import {
 } from './utils/emailService';
 import { mergeSeedWithExisting } from './utils/seedContent';
 import { api } from './utils/api';
+import { ChatBot } from './components/ChatBot';
 import tucoLogo from './assets/tuco-logo.webp';
 function enrichConversations(threads: Conversation[]): Conversation[] {
   return threads.map((c, i) => ({
@@ -84,7 +84,6 @@ export default function App() {
   const [isAuthOpen, setIsAuthOpen] = useState<boolean>(false);
   const [isModerationOpen, setIsModerationOpen] = useState<boolean>(false);
   const [isAdminOpen, setIsAdminOpen] = useState<boolean>(false);
-  const [isNotificationsOpen, setIsNotificationsOpen] = useState<boolean>(false);
   const [isReportOpen, setIsReportOpen] = useState<boolean>(false);
   const [reportTarget, setReportTarget] = useState<{ type: 'thread' | 'reply'; id: number } | null>(
     null
@@ -819,7 +818,7 @@ export default function App() {
     return <LoadingScreen />;
   }
   return (
-    <div className="min-h-screen bg-[#FAF8F4] flex flex-col font-sans text-neutral-800">
+    <div className="min-h-screen bg-[#FAFAFA] flex flex-col font-sans text-neutral-800">
       <Header
         searchTerm={searchTerm}
         onSearch={setSearchTerm}
@@ -831,19 +830,18 @@ export default function App() {
         onModerationClick={() => setIsModerationOpen(true)}
         onAdminClick={() => setIsAdminOpen(true)}
         onProfileClick={() => setIsProfileOpen(true)}
-        onNotificationsClick={() => setIsNotificationsOpen(true)}
+        onNotificationsClick={() => {}}
         onOpenCategories={() =>
           setActiveCategory(activeCategory === 'sidebar-open' ? 'all' : 'sidebar-open')
         }
         onSuggestionSelect={id => {
-          const thread = conversations.find(c => c.id === id);
-          if (thread) setSearchTerm(thread.title.split(' ').slice(0, 3).join(' '));
+          setSearchTerm(''); // Clear search term after selection
           handleThreadOpen(id);
         }}
         notifications={notifications}
         onMarkAsRead={id => {
           const updated = notifications.map(n => (n.id === id ? { ...n, read: true } : n));
-          saveNotifications(updated);
+          setNotifications(updated);
         }}
         onThreadOpen={handleThreadOpen}
       />
@@ -895,14 +893,18 @@ export default function App() {
                   onResetToDefault={handleResetToDefault}
                   onStartDiscussion={openNewPost}
                   users={users}
+                  featuredThreads={featuredThreads}
+                  onCategoryChange={setActiveCategory}
                 />
               )}
             </div>
+            {/* Right Sidebar - Desktop Only */}
             <div className="hidden lg:block">
               <RightSidebar
                 onTrendingClick={handleThreadOpen}
                 featuredThreads={featuredThreads}
                 onFeaturedClick={handleThreadOpen}
+                variant="sidebar"
               />
             </div>
           </div>
@@ -1012,17 +1014,8 @@ export default function App() {
         message={warningModal.message}
         onClose={() => setWarningModal({ ...warningModal, isOpen: false })}
       />
-      <NotificationsPage
-        isOpen={isNotificationsOpen}
-        notifications={notifications}
-        onMarkAsRead={id => {
-          const updated = notifications.map(n => (n.id === id ? { ...n, read: true } : n));
-          saveNotifications(updated);
-        }}
-        onClearAll={() => saveNotifications([])}
-          onClose={() => setIsNotificationsOpen(false)}
-          onThreadOpen={handleThreadOpen}
-        />
+
+      <ChatBot />
       <ReportModal
         isOpen={isReportOpen}
         onClose={() => {

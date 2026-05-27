@@ -1,15 +1,15 @@
 import { Conversation, DateFilter, User, BadgeType, UserRole } from '../types';
 const AVATAR_COLORS = [
-  '#FF6B35',
-  '#2E7D32',
-  '#1565C0',
+  '#B32D52', // Magenta/Burgundy from image
+  '#ff866b',
+  '#94f6ff',
+  '#b094ff',
   '#AD1457',
   '#6A1B9A',
   '#EF6C00',
   '#00838F',
   '#D84315',
   '#4E342E',
-  '#558B2F',
 ];
 export function getAvatarColor(name: string): string {
   let hash = 0;

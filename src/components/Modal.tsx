@@ -1,10 +1,9 @@
-import React, { useState, ChangeEvent, FormEvent } from 'react';
-import { CATEGORIES, CATEGORY_COLORS } from '../data/categories';
+import React, { useState, FormEvent } from 'react';
+import { CATEGORIES } from '../data/categories';
 import { PRODUCTS } from '../data/products';
 import { Conversation, User } from '../types';
-import { getAvatarColor, getInitials, getAuthorMeta } from '../utils/helpers';
-import { AuthorBadges } from './AuthorBadges';
-import { Heart, MessageSquare, Send, ShoppingBag, X, Image as ImageIcon } from 'lucide-react';
+import { Heart, MessageSquare, X, Eye, Bookmark, ChevronDown, Search, Bell, ArrowLeft } from 'lucide-react';
+import tucoLogo from '../assets/tuco-logo.webp';
 
 interface ModalProps {
   thread: Conversation | null;
@@ -38,62 +37,30 @@ export function Modal({
   likedReplies = {},
   users = {},
 }: ModalProps) {
-  const [replyName, setReplyName] = useState(currentUser?.username || '');
-  const [replyCity, setReplyCity] = useState(currentUser?.city || '');
   const [replyText, setReplyText] = useState('');
   const [replyImage, setReplyImage] = useState<string | undefined>(undefined);
   const [errorMessage, setErrorMessage] = useState('');
-  const [editingReplyId, setEditingReplyId] = useState<number | null>(null);
-  const [editReplyText, setEditReplyText] = useState('');
+  const [isSortOpen, setIsSortOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+
   if (!isOpen || !thread) return null;
-  const opMeta = getAuthorMeta(thread.op.author, thread.authorId, users);
-  const opRole = thread.op.authorRole ?? opMeta.role;
-  const opBadges = thread.op.authorBadges ?? opMeta.badges;
+  
   const category = CATEGORIES[thread.category] || { icon: '💬', label: 'General' };
-  const catColor = CATEGORY_COLORS[thread.category] || {
-    bg: '#FFF0E8',
-    text: '#D84315',
-    border: '#FFD8C2',
-  };
+  
   const getTucoProduct = (recId: string) => {
     return PRODUCTS.find(p => p.id === recId) || null;
-  };
-  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        setErrorMessage('Image size should be less than 5MB');
-        setReplyImage(undefined);
-        e.target.value = '';
-        return;
-      }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setReplyImage(reader.result as string);
-        e.target.value = '';
-      };
-      reader.readAsDataURL(file);
-    }
   };
 
   const handleReplySubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (!replyName.trim()) {
-      setErrorMessage('Please provide your name or pen-name.');
-      return;
-    }
-    if (!replyCity.trim()) {
-      setErrorMessage('Please state your city (e.g. Pune, Delhi).');
-      return;
-    }
     if (!replyText.trim() && !replyImage) {
       setErrorMessage('Please write some thoughts or upload an image.');
       return;
     }
     onAddReply(
       thread.id,
-      replyName.trim(),
-      replyCity.trim(),
+      currentUser?.username || 'Guest',
+      currentUser?.city || 'India',
       replyText.trim(),
       replyImage
     );
@@ -101,369 +68,199 @@ export function Modal({
     setReplyImage(undefined);
     setErrorMessage('');
   };
+
   return (
     <div
-      className="fixed inset-0 bg-neutral-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 z-50 overflow-y-auto"
-      onClick={e => e.target === e.currentTarget && onClose()}
+      className="fixed inset-0 bg-[#F9FAFB] z-[60] overflow-y-auto flex flex-col font-sans"
     >
-      {}
-      <div className="bg-white border border-neutral-200 rounded-3xl w-full max-w-3xl overflow-hidden shadow-xl animate-in fade-in-50 zoom-in-95 duration-200 text-left my-auto flex flex-col max-h-[92vh]">
-        {}
-        <div className="bg-neutral-50 px-5 py-4 border-b border-neutral-200 sticky top-0 z-10 flex items-start justify-between gap-4">
-          <div className="min-w-0 flex-1">
-            <span
-              className="cbadge font-display font-black text-[9px] tracking-wider uppercase py-0.5 px-2.5 rounded-full border border-neutral-200 inline-block"
-              style={{
-                backgroundColor: catColor.bg,
-                color: catColor.text,
-                borderColor: catColor.border,
-              }}
+      {/* App Header */}
+      <header className="bg-white border-b border-neutral-100 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3 shrink-0">
+            <button 
+              onClick={onClose} 
+              className="p-1.5 hover:bg-neutral-50 rounded-full transition-colors"
+              aria-label="Go back"
             >
-              {category.icon} {category.label}
-            </span>
-            <h2 className="font-display font-black text-sm sm:text-base text-neutral-800 leading-snug mt-1.5 line-clamp-2">
-              {thread.title}
-            </h2>
+              <ArrowLeft className="w-5 h-5 text-[#4D4747]" strokeWidth={2} />
+            </button>
+            <button onClick={onClose} className="hover:opacity-80 transition-opacity">
+              <img src={tucoLogo} alt="Tuco" className="h-7 w-auto" />
+            </button>
           </div>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-full border border-neutral-200 bg-white flex items-center justify-center text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 transition-colors cursor-pointer shrink-0"
-            aria-label="Close modal"
-          >
-            <X className="w-4 h-4" />
-          </button>
+
+          <div className="flex-1 max-w-[400px]">
+            <div className="bg-[#F3F4F6] rounded-lg h-9 w-full flex items-center px-4 gap-3">
+              <Search className="w-4 h-4 text-neutral-400" strokeWidth={2} />
+              <span className="text-[14px] text-neutral-400 font-normal">search</span>
+              <span className="text-[14px] text-neutral-300 ml-auto">...</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 shrink-0">
+            <button className="p-1 hover:bg-neutral-50 rounded-full transition-colors">
+              <Bell className="w-6 h-6 text-neutral-300" strokeWidth={1.5} />
+            </button>
+            <button className="bg-[#35B5EC] text-white px-5 py-2 rounded-lg text-[14px] font-bold shadow-sm hover:bg-[#2da3d6] transition-colors">
+              ask
+            </button>
+            <div className="w-9 h-9 border-2 border-[#35B5EC] rounded-lg flex items-center justify-center text-[14px] font-bold text-[#35B5EC]">
+              LA
+            </div>
+          </div>
         </div>
-        {}
-        <div className="modal-bd p-5 overflow-y-auto space-y-5 flex-1">
-          {}
-          <div className="op bg-neutral-50/70 border border-neutral-200/80 rounded-2xl p-4 md:p-5 relative">
-            <div className="absolute top-2.5 right-2.5 font-sans font-black text-[8px] bg-neutral-200 text-neutral-600 uppercase tracking-widest py-0.5 px-2 rounded-sm">
-              ORIGINAL QUESTION
-            </div>
-            <div className="post-auth flex items-center gap-3 mb-3">
+      </header>
+
+      <div className="flex-1 max-w-[720px] mx-auto w-full px-4 py-8">
+        {/* Main Post Card */}
+        <div className="bg-white border border-neutral-200 rounded-[20px] p-6 mb-4 shadow-sm">
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex items-center gap-3">
               <div
-                className="w-9 h-9 rounded-full flex items-center justify-center font-display font-black text-xs text-white border border-white"
-                style={{ backgroundColor: getAvatarColor(thread.op.author) }}
+                className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-[15px]"
+                style={{ backgroundColor: '#D81B60' }}
               >
-                {getInitials(thread.op.author)}
+                TR
               </div>
               <div>
-                <div className="font-display font-black text-xs sm:text-sm text-neutral-800 flex items-center gap-1.5">
+                <h4 className="font-bold text-[15px] text-[#4D4747] leading-none mb-1">
                   {thread.op.author}
-                  <AuthorBadges badges={opBadges} role={opRole} compact={false} />
-                </div>
-                <div className="font-sans text-[11px] text-neutral-400 font-bold flex items-center gap-2">
-                  <span>{thread.op.city}</span>
-                  <span>•</span>
-                  <span>{thread.op.time}</span>
-                </div>
+                </h4>
+                <p className="text-[12px] text-neutral-400 font-medium leading-none">
+                  {thread.op.city}
+                </p>
               </div>
             </div>
-            <p className="post-txt font-sans text-xs sm:text-sm text-neutral-600 leading-relaxed font-semibold whitespace-pre-wrap">
-              {thread.op.text}
-            </p>
-            {thread.op.image && (
-              <div className="mt-3">
-                <img
-                  src={thread.op.image}
-                  alt="Post attachment"
-                  className="max-h-[300px] w-auto rounded-2xl border border-neutral-200"
-                />
-              </div>
-            )}
+            <span className="text-[12px] text-neutral-400 font-medium">
+              1 day ago
+            </span>
           </div>
-          {}
-          <div className="flex items-center justify-between pb-2 border-b border-neutral-100">
-            <h4 className="font-display font-black text-xs sm:text-sm text-neutral-800 flex items-center gap-1.5">
-              <MessageSquare className="w-4 h-4 text-tuco-cyan" />
-              <span>{thread.replies.length} Member Answers</span>
-            </h4>
+
+          <h2 className="font-bold text-[22px] text-[#4D4747] leading-[1.2] mb-5 tracking-tight">
+            {thread.title}
+          </h2>
+
+          <p className="text-[14px] text-[#666666] leading-relaxed font-normal mb-8">
+            {thread.op.text}
+          </p>
+
+          <div className="flex items-center justify-end gap-6">
+            <Bookmark className="w-5 h-5 text-neutral-300 cursor-pointer hover:text-neutral-400 transition-colors" strokeWidth={1.5} />
+            <div className="flex items-center gap-2 text-neutral-300">
+              <Eye className="w-5 h-5" strokeWidth={1.5} />
+              <span className="text-[13px] font-medium text-neutral-400">{thread.views || 691} views</span>
+            </div>
           </div>
-          {}
-          <div className="space-y-3.5">
-            {thread.replies.map((reply, idx) => {
-              const replyMeta = getAuthorMeta(reply.author, undefined, users);
-              const replyRole = reply.authorRole ?? replyMeta.role;
-              const replyBadges = reply.authorBadges ?? replyMeta.badges;
-              return (
-                <div
-                  key={reply.id}
-                  className={`flex gap-3 sm:gap-4 p-4 rounded-2xl border border-neutral-200 ${
-                    idx % 2 === 0 ? 'bg-[#FFFAF7]' : 'bg-white'
-                  } hover:shadow-xs transition-all`}
-                >
-                  <div
-                    className="w-8.5 h-8.5 rounded-full flex items-center justify-center font-display font-black text-[11px] text-white border border-white shrink-0"
-                    style={{ backgroundColor: getAvatarColor(reply.author) }}
-                  >
-                    {getInitials(reply.author)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-1 flex-wrap mb-1">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="font-display font-black text-xs sm:text-sm text-neutral-800 flex items-center gap-1">
-                          {reply.author}
-                          <AuthorBadges badges={replyBadges} role={replyRole} />
-                        </span>
-                        <span className="text-[9px] bg-neutral-100 border border-neutral-200/50 font-bold text-neutral-500 rounded-md py-0.5 px-1.5 font-mono">
-                          {reply.city}
-                        </span>
-                      </div>
-                      <span className="font-mono text-[9px] font-bold text-neutral-400">
-                        {reply.time}
-                      </span>
-                    </div>
-                    {reply.image && (
-                      <div className="mt-2.5">
-                        <img
-                          src={reply.image}
-                          alt="Reply attachment"
-                          className="max-h-[200px] w-auto rounded-xl border border-neutral-100"
-                        />
-                      </div>
-                    )}
-                    {editingReplyId === reply.id ? (
-                      <div className="mt-3">
-                        <textarea
-                          value={editReplyText}
-                          onChange={e => setEditReplyText(e.target.value)}
-                          className="w-full p-3 border border-neutral-300 rounded-xl text-xs sm:text-sm font-sans focus:outline-none focus:ring-2 focus:ring-tuco-cyan focus:border-tuco-cyan"
-                          rows={4}
-                        />
-                        <div className="flex items-center gap-2 mt-2">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (editReplyText.trim() && onEditReply && thread) {
-                                onEditReply(thread.id, reply.id, editReplyText.trim());
-                              }
-                              setEditingReplyId(null);
-                              setEditReplyText('');
-                            }}
-                            className="text-xs bg-tuco-cyan hover:bg-tuco-cyan-hover text-white font-display font-black py-1.5 px-3 rounded-full cursor-pointer transition-all"
-                          >
-                            Save
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setEditingReplyId(null);
-                              setEditReplyText('');
-                            }}
-                            className="text-xs bg-neutral-200 hover:bg-neutral-300 text-neutral-700 font-display font-black py-1.5 px-3 rounded-full cursor-pointer transition-all"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <p className="font-sans text-xs sm:text-sm text-neutral-650 leading-relaxed font-semibold whitespace-pre-wrap mt-1">
-                        {reply.text}
-                      </p>
-                    )}
-                    {}
-                    {!editingReplyId &&
-                      reply.tucoRec &&
-                      (() => {
-                        const product = getTucoProduct(reply.tucoRec);
-                        if (!product) return null;
-                        return (
-                          <div className="mt-3.5 bg-gradient-to-br from-neutral-50 to-white border border-dashed border-tuco-cyan/35 hover:border-tuco-cyan rounded-2xl p-3 md:p-4 flex flex-col sm:flex-row items-center gap-3 sm:gap-4 transition-colors max-w-xl">
-                            <div className="w-11 h-11 rounded-xl bg-white border border-neutral-200 flex items-center justify-center text-xl shrink-0 shadow-xs">
-                              {product.icon}
-                            </div>
-                            <div className="min-w-0 flex-1 text-center sm:text-left">
-                              <div className="flex items-center justify-center sm:justify-start gap-1 pb-1">
-                                <span className="font-display text-[8px] font-black uppercase text-tuco-orange tracking-wider bg-[#FFF5F0] border border-tuco-orange/15 px-1.5 py-0.5 rounded-sm">
-                                  🌿 RECOMMENDED PICKS
-                                </span>
-                                <span className="font-mono text-[9px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 px-1.5 rounded-sm">
-                                  {product.tag}
-                                </span>
-                              </div>
-                              <h5 className="font-display font-black text-xs text-neutral-800 leading-snug">
-                                {product.name}
-                              </h5>
-                              <p className="font-sans text-[10px] text-neutral-400 font-bold leading-normal">
-                                All-natural, safe defense for child’s sensitive skin.
-                              </p>
-                            </div>
-                            <div className="shrink-0 flex sm:flex-col items-center gap-2">
-                              <span className="font-mono font-black text-xs text-tuco-orange">
-                                {product.price}
-                              </span>
-                              <a
-                                href={product.linkUrl}
-                                target="_blank"
-                                rel="referrer noopener"
-                                className="text-[11px] bg-tuco-cyan hover:bg-tuco-cyan-hover text-white font-display font-black py-1 px-4 rounded-full shadow-xs transition-all flex items-center gap-1 shrink-0 cursor-pointer"
-                              >
-                                <ShoppingBag className="w-3 h-3" />
-                                <span>Shop Now</span>
-                              </a>
-                            </div>
-                          </div>
-                        );
-                      })()}
-                    {}
-                    {!editingReplyId && (
-                      <div className="flex items-center gap-3 mt-3 pt-2 border-t border-neutral-100 flex-wrap">
-                        <button
-                          onClick={() => onLikeReply && onLikeReply(thread.id, reply.id)}
-                          className={`text-[10px] font-bold font-sans flex items-center gap-1 cursor-pointer transition-colors ${
-                            likedReplies[reply.id] 
-                              ? 'text-rose-500 hover:text-rose-600' 
-                              : 'text-neutral-400 hover:text-tuco-cyan'
-                          }`}
-                        >
-                          <Heart 
-                            className={`w-3.5 h-3.5 ${
-                              likedReplies[reply.id] ? 'fill-rose-500 text-rose-500' : 'fill-rose-100'
-                            }`} 
-                          />
-                          <span>{reply.likes || 0} Helpful</span>
-                        </button>
-                        <span className="text-xs text-neutral-200">|</span>
-                        {(currentUser?.username === reply.author ||
-                          currentUser?.role === 'moderator' ||
-                          currentUser?.role === 'tuco_team') && (
-                          <>
-                            <button
-                              onClick={() => {
-                                setEditingReplyId(reply.id);
-                                setEditReplyText(reply.text);
-                              }}
-                              className="text-[10px] font-bold font-sans text-neutral-400 hover:text-tuco-cyan transition-colors cursor-pointer"
-                            >
-                              Edit
-                            </button>
-                            <span className="text-xs text-neutral-200">|</span>
-                            <button
-                              onClick={() => {
-                                if (onDeleteReply && thread) {
-                                  onDeleteReply(thread.id, reply.id);
-                                }
-                              }}
-                              className="text-[10px] font-bold font-sans text-neutral-400 hover:text-rose-500 transition-colors cursor-pointer"
-                            >
-                              Delete
-                            </button>
-                            <span className="text-xs text-neutral-200">|</span>
-                          </>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (onReportReply && thread) {
-                              onReportReply(thread.id, reply.id);
-                            }
-                          }}
-                          className="text-[10px] font-bold font-sans text-neutral-350 hover:text-rose-500 transition-colors cursor-pointer"
-                        >
-                          Report
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          {}
-          <div className="reply-box-wrap bg-neutral-50/70 border border-neutral-200 rounded-2xl p-4 sm:p-5 mt-4">
-            <h4 className="font-display font-black text-xs sm:text-sm text-neutral-800 mb-2.5">
-              🗣️ share your experience
-            </h4>
-            <form onSubmit={handleReplySubmit} className="space-y-3.5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                <div>
-                  <label className="block text-[10px] font-bold text-neutral-500 mb-1.5 text-left">
-                    Your Username / Pen-Name
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. HappyMom_99"
-                    className="w-full bg-white border border-neutral-200 rounded-xl py-2 px-3 text-xs sm:text-sm text-neutral-700 outline-none font-sans font-semibold placeholder-neutral-400 focus:border-tuco-cyan"
-                    value={replyName}
-                    onChange={(e: ChangeEvent<HTMLInputElement>) => setReplyName(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-bold text-neutral-500 mb-1.5 text-left">
-                    Your City
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Pune, Bangalore"
-                    className="w-full bg-white border border-neutral-200 rounded-xl py-2 px-3 text-xs sm:text-sm text-neutral-700 outline-none font-sans font-semibold placeholder-neutral-400 focus:border-tuco-cyan"
-                    value={replyCity}
-                    onChange={(e: ChangeEvent<HTMLInputElement>) => setReplyCity(e.target.value)}
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-[10px] font-bold text-neutral-500 mb-1.5 text-left">
-                  Your Answer/Advice
-                </label>
-                <div className="relative">
-                  <textarea
-                    required={!replyImage}
-                    rows={2}
-                    placeholder="Share what worked for your kid. Maintain clean organic safety standards..."
-                    className="w-full bg-white border border-neutral-200 rounded-xl py-2 px-3 pr-10 text-xs text-neutral-700 outline-none font-sans font-semibold placeholder-neutral-400 focus:border-tuco-cyan"
-                    value={replyText}
-                    onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setReplyText(e.target.value)}
-                  />
-                  <div className="absolute right-2 bottom-2 flex items-center gap-2">
-                    <input
-                      type="file"
-                      id="reply-image-upload"
-                      className="hidden"
-                      accept="image/*"
-                      onChange={handleImageChange}
-                    />
-                    <label
-                      htmlFor="reply-image-upload"
-                      className="p-1.5 rounded-lg hover:bg-neutral-100 text-neutral-400 hover:text-tuco-cyan cursor-pointer transition-colors"
-                      title="Upload image"
-                    >
-                      <ImageIcon className="w-4 h-4" />
-                    </label>
-                  </div>
-                </div>
-              </div>
-              {replyImage && (
-                <div className="relative inline-block mt-2">
-                  <img
-                    src={replyImage}
-                    alt="Preview"
-                    className="max-h-32 rounded-lg border border-neutral-200"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setReplyImage(undefined)}
-                    className="absolute -top-2 -right-2 w-5 h-5 bg-white border border-neutral-200 rounded-full flex items-center justify-center text-neutral-500 hover:text-rose-500 shadow-sm transition-colors"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-              )}
-              {errorMessage && (
-                <div className="text-red-600 font-bold text-xs bg-red-50 p-2.5 rounded-lg border border-red-200">
-                  ⚠️ {errorMessage}
-                </div>
-              )}
+        </div>
+
+        {/* Join conversation Box */}
+        <div className="bg-white border border-neutral-200 rounded-[15px] p-5 mb-8 shadow-sm">
+          <div className="relative">
+            <textarea
+              value={replyText}
+              onChange={(e) => setReplyText(e.target.value)}
+              placeholder="Join the conversation..."
+              className="w-full text-[15px] text-neutral-600 placeholder-neutral-300 outline-none resize-none min-h-[50px] font-normal"
+            />
+            <div className="flex justify-end mt-2">
               <button
                 type="submit"
-                className="w-full py-2 bg-tuco-cyan hover:bg-tuco-cyan-hover text-white text-xs sm:text-sm font-display font-black rounded-xl cursor-pointer select-none shadow-xs active:scale-98 transition-all flex items-center justify-center gap-1.5"
+                onClick={handleReplySubmit}
+                className="bg-[#35B5EC] hover:bg-[#2da3d6] text-white px-8 py-2.5 rounded-full text-[14px] font-bold transition-all shadow-sm active:scale-95"
               >
-                <Send className="w-3.5 h-3.5" />
-                <span>Submit My Answer</span>
+                comment
               </button>
-            </form>
+            </div>
           </div>
+        </div>
+
+        {/* Replies Header */}
+        <div className="flex items-center gap-2 mb-4 px-1">
+          <MessageSquare className="w-5 h-5 text-[#35B5EC] fill-[#35B5EC]/10" strokeWidth={2} />
+          <span className="font-bold text-[15px] text-[#4D4747]">{thread.replies.length} replies</span>
+        </div>
+
+        {/* Replies Controls */}
+        <div className="flex items-center gap-3 mb-6">
+          <div className="relative">
+            <button
+              onClick={() => setIsSortOpen(!isSortOpen)}
+              className="flex items-center gap-2 px-5 py-2.5 bg-white border border-neutral-200 rounded-full text-[13px] font-medium text-neutral-400 hover:border-neutral-300 transition-all"
+            >
+              <span>new (default)</span>
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isSortOpen ? 'rotate-180' : ''}`} />
+            </button>
+          </div>
+          <div className="flex-1 relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-300" strokeWidth={1.5} />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="search comments"
+              className="w-full pl-10 pr-4 py-2.5 bg-white border border-neutral-200 rounded-full text-[13px] font-normal outline-none focus:border-neutral-300 placeholder-neutral-300 transition-all"
+            />
+          </div>
+        </div>
+
+        {/* Replies List */}
+        <div className="space-y-4">
+          {thread.replies.map((reply) => {
+            const product = reply.tucoRec ? getTucoProduct(reply.tucoRec) : null;
+            return (
+              <div key={reply.id} className="bg-white border border-neutral-200 rounded-[20px] p-6 shadow-sm">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-[15px]"
+                      style={{ backgroundColor: '#D81B60' }}
+                    >
+                      TR
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-[15px] text-[#4D4747] leading-none mb-1">
+                        {reply.author}
+                      </h4>
+                      <p className="text-[12px] text-neutral-400 font-medium leading-none">
+                        {reply.city}
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-[12px] text-neutral-400 font-medium">
+                    1 day ago
+                  </span>
+                </div>
+
+                <p className="text-[14px] text-[#4D4747] leading-relaxed font-normal mb-5">
+                  {reply.text}
+                </p>
+
+                <div className="flex items-center justify-end gap-1.5 mb-5">
+                  <Heart className="w-4 h-4 text-neutral-300" strokeWidth={1.5} />
+                  <span className="text-[12px] font-medium text-neutral-400">12 helpful</span>
+                </div>
+
+                {product && (
+                  <div className="bg-white border border-neutral-100 rounded-[20px] overflow-hidden flex items-stretch border-l-0 shadow-xs">
+                    <div className="w-32 bg-[#FEF9C3] flex items-center justify-center p-6 shrink-0">
+                      <span className="text-5xl">{product.icon}</span>
+                    </div>
+                    <div className="flex-1 p-6 flex flex-col justify-center">
+                      <h4 className="font-bold text-[17px] text-[#4D4747] leading-snug mb-1">
+                        {product.name}
+                      </h4>
+                      <p className="text-[12px] text-neutral-400 font-medium mb-5">
+                        {product.tag}
+                      </p>
+                      <button className="bg-[#FED018] hover:bg-[#fccb0a] text-neutral-800 px-7 py-1.5 rounded-full text-[13px] font-bold w-fit transition-colors">
+                        add to cart
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

@@ -21,24 +21,24 @@ export function LeftSidebar({
       {}
       <div className="bg-white border border-neutral-200 rounded-3xl overflow-hidden shadow-xs">
         <div className="bg-neutral-50 px-5 py-3.5 border-b border-neutral-200 flex items-center justify-between">
-          <span className="font-display font-black text-tuco-dark text-xs uppercase tracking-wider">
-            🌿 Categories
+          <span className="font-display font-bold text-tuco-dark text-xs uppercase tracking-wider">
+            Categories
           </span>
-          <span className="font-mono text-[10px] bg-tuco-cyan/10 border border-tuco-cyan/30 text-tuco-cyan py-0.5 px-2.5 rounded-full font-black">
-            {conversations.length} topics
+          <span className="font-mono text-[10px] bg-tuco-cyan/10 border border-tuco-cyan/30 text-tuco-cyan py-0.5 px-2.5 rounded-full font-bold">
+            {Object.keys(CATEGORIES).length}
           </span>
         </div>
         <div className="flex flex-col">
           {}
           <button
             onClick={() => onCategoryChange('all')}
-            className={`cat-row flex items-center gap-3 w-full text-left px-5 py-3 hover:bg-neutral-50 transition-all cursor-pointer font-display font-black text-sm border-b border-neutral-100 ${
+            className={`cat-row flex items-center gap-3 w-full text-left px-5 py-3 hover:bg-neutral-50 transition-all cursor-pointer font-display font-bold text-sm border-b border-neutral-100 ${
               activeCategory === 'all'
                 ? 'bg-tuco-cyan text-white hover:bg-tuco-cyan-hover'
                 : 'text-tuco-cyan'
             }`}
           >
-            <Home className="w-4 h-4 shrink-0 font-bold" />
+            <Home className="w-4 h-4 shrink-0 font-bold" strokeWidth={1.5} />
             <span className="flex-1">All Discussions</span>
             <span
               className={`text-[11px] px-2 py-0.5 rounded-full font-bold border ${
@@ -53,13 +53,13 @@ export function LeftSidebar({
           {}
           <button
             onClick={() => onCategoryChange('saved')}
-            className={`cat-row flex items-center gap-3 w-full text-left px-5 py-3 hover:bg-neutral-50 transition-all cursor-pointer font-display font-black text-sm border-b border-neutral-100 ${
+            className={`cat-row flex items-center gap-3 w-full text-left px-5 py-3 hover:bg-neutral-50 transition-all cursor-pointer font-display font-bold text-sm border-b border-neutral-100 ${
               activeCategory === 'saved'
                 ? 'bg-tuco-cyan text-white hover:bg-tuco-cyan-hover'
                 : 'text-tuco-cyan'
             }`}
           >
-            <Bookmark className="w-4 h-4 shrink-0 font-bold" />
+            <Bookmark className="w-4 h-4 shrink-0 font-bold" strokeWidth={1.5} />
             <span className="flex-1">Saved</span>
             <span
               className={`text-[11px] px-2 py-0.5 rounded-full font-bold border ${
@@ -83,14 +83,14 @@ export function LeftSidebar({
                   isLast ? '' : 'border-b border-neutral-100'
                 } ${
                   isSelected
-                    ? 'bg-[#EBF7FD] text-tuco-cyan font-black border-l-4 border-l-tuco-cyan'
+                    ? 'bg-[#EBF7FD] text-tuco-cyan font-bold border-l-4 border-l-tuco-cyan'
                     : 'text-neutral-600'
                 }`}
               >
                 <span className="text-lg shrink-0 leading-none">{cat.icon}</span>
                 <span className="flex-1 truncate">{cat.label}</span>
                 <span
-                  className={`text-[10px] px-2 py-0.5 rounded-full font-black font-mono border ${
+                  className={`text-[10px] px-2 py-0.5 rounded-full font-bold font-mono border ${
                     isSelected
                       ? 'bg-tuco-cyan text-white border-tuco-cyan'
                       : 'bg-neutral-50 text-neutral-400 border-neutral-200/50'
@@ -107,30 +107,30 @@ export function LeftSidebar({
       <div className="bg-[#FFFDF9] border border-[#F0EAE1] rounded-3xl p-5 shadow-xs">
         <div className="flex items-center gap-2 mb-3">
           <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0" />
-          <h4 className="font-display font-black text-sm text-tuco-dark text-left">
-            Community Rules
+          <h4 className="font-display font-bold text-sm text-tuco-dark text-left">
+            Community Guidelines
           </h4>
         </div>
-        <ul className="text-left font-sans text-xs text-neutral-600 space-y-2.5 leading-relaxed">
-          <li className="flex items-start gap-1.5">
-            <span className="text-[#3DAA73] font-black">✓</span>
-            <span>Be kind, supportive & helpful.</span>
+        <ul className="space-y-2.5">
+          <li className="flex items-start gap-2.5 text-[11px] text-neutral-600 font-sans font-medium leading-tight">
+            <span className="text-[#3DAA73] font-bold">✓</span>
+            <span>Keep it kind & helpful</span>
           </li>
-          <li className="flex items-start gap-1.5">
-            <span className="text-[#3DAA73] font-black">✓</span>
-            <span>Share real daily parenting tips.</span>
+          <li className="flex items-start gap-2.5 text-[11px] text-neutral-600 font-sans font-medium leading-tight">
+            <span className="text-[#3DAA73] font-bold">✓</span>
+            <span>No medical advice</span>
           </li>
-          <li className="flex items-start gap-1.5">
-            <span className="text-[#3DAA73] font-black">✓</span>
-            <span>No toxic chemicals — clean only.</span>
+          <li className="flex items-start gap-2.5 text-[11px] text-neutral-600 font-sans font-medium leading-tight">
+            <span className="text-[#3DAA73] font-bold">✓</span>
+            <span>Respect privacy</span>
           </li>
-          <li className="flex items-start gap-1.5">
-            <span className="text-[#3DAA73] font-black">✓</span>
-            <span>Respect skincare preferences.</span>
+          <li className="flex items-start gap-2.5 text-[11px] text-neutral-600 font-sans font-medium leading-tight">
+            <span className="text-[#3DAA73] font-bold">✓</span>
+            <span>No spam or promos</span>
           </li>
-          <li className="flex items-start gap-1.5">
-            <span className="text-[#3DAA73] font-black">✓</span>
-            <span>Avoid spam or unsolicited selling.</span>
+          <li className="flex items-start gap-2.5 text-[11px] text-neutral-600 font-sans font-medium leading-tight">
+            <span className="text-[#3DAA73] font-bold">✓</span>
+            <span>Safe for parents & kids</span>
           </li>
         </ul>
       </div>

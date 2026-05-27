@@ -80,14 +80,14 @@ export function NewPostModal({ isOpen, onClose, onSubmit, isTucoTeam }: NewPostM
       <div className="bg-white border border-neutral-200 rounded-3xl w-full max-w-xl overflow-hidden shadow-xl animate-in fade-in-50 zoom-in-95 duration-200 text-left my-auto flex flex-col">
         {}
         <div className="bg-neutral-50 px-5 py-4 border-b border-neutral-150 flex items-center justify-between">
-          <h3 className="font-display font-black text-lg text-neutral-800 flex items-center gap-2">
+          <h3 className="font-display font-bold text-lg text-neutral-800 flex items-center gap-2">
             ✏️ start a parenting discussion
           </h3>
           <button
             onClick={onClose}
             className="w-8 h-8 rounded-full border border-neutral-200 bg-white flex items-center justify-center text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 transition-colors cursor-pointer shrink-0"
           >
-            <X className="w-4 h-4" />
+            <X className="w-4 h-4" strokeWidth={1.5} />
           </button>
         </div>
         {}
@@ -107,7 +107,7 @@ export function NewPostModal({ isOpen, onClose, onSubmit, isTucoTeam }: NewPostM
               Select Discussing Category
             </label>
             <select
-              className="w-full bg-neutral-50 border border-neutral-200 rounded-xl py-2 px-3 text-xs sm:text-sm text-neutral-700 outline-none font-display font-black"
+              className="w-full bg-neutral-50 border border-neutral-200 rounded-xl py-2 px-3 text-xs sm:text-sm text-neutral-700 outline-none font-display font-bold"
               value={category}
               onChange={(e: ChangeEvent<HTMLSelectElement>) => setCategory(e.target.value)}
             >
@@ -185,7 +185,7 @@ export function NewPostModal({ isOpen, onClose, onSubmit, isTucoTeam }: NewPostM
                   className="p-2 rounded-lg hover:bg-neutral-100 text-neutral-400 hover:text-tuco-cyan cursor-pointer transition-colors"
                   title="Upload image"
                 >
-                  <ImageIcon className="w-5 h-5" />
+                  <ImageIcon className="w-5 h-5" strokeWidth={1.5} />
                 </label>
               </div>
             </div>
@@ -202,7 +202,7 @@ export function NewPostModal({ isOpen, onClose, onSubmit, isTucoTeam }: NewPostM
                 onClick={() => setImage(undefined)}
                 className="absolute -top-2 -right-2 w-6 h-6 bg-white border border-neutral-200 rounded-full flex items-center justify-center text-neutral-500 hover:text-rose-500 shadow-md transition-colors"
               >
-                <X className="w-4 h-4" />
+                <X className="w-4 h-4" strokeWidth={1.5} />
               </button>
             </div>
           )}
@@ -220,10 +220,10 @@ export function NewPostModal({ isOpen, onClose, onSubmit, isTucoTeam }: NewPostM
               Cancel
             </button>
             <button
-              type="submit"
-              className="flex-1 py-2 bg-tuco-cyan hover:bg-tuco-cyan-hover text-white text-xs sm:text-sm font-display font-black rounded-xl flex items-center justify-center gap-1.5 cursor-pointer shadow-sm active:scale-98 transition-all"
-            >
-              <Send className="w-3.5 h-3.5" />
+                type="submit"
+                className="flex-1 py-2 bg-tuco-cyan hover:bg-tuco-cyan-hover text-white text-xs sm:text-sm font-display font-bold rounded-xl flex items-center justify-center gap-1.5 cursor-pointer shadow-sm active:scale-98 transition-all"
+              >
+              <Send className="w-3.5 h-3.5" strokeWidth={1.5} />
               <span>Launch Thread</span>
             </button>
           </div>

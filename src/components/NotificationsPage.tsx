@@ -1,4 +1,4 @@
-import { X, Bell, ThumbsUp, MessageCircle, Award, CheckCircle, Trash2 } from 'lucide-react';
+import { X, Bell, ThumbsUp, MessageSquare, Award, CheckCircle, Trash2 } from 'lucide-react';
 import { Notification } from '../types';
 
 interface NotificationsPageProps {
@@ -23,7 +23,7 @@ export function NotificationsPage({
   const getIcon = (type: Notification['type']) => {
     switch (type) {
       case 'reply':
-        return <MessageCircle className="w-5 h-5 text-tuco-cyan" />;
+        return <MessageSquare className="w-5 h-5 text-tuco-cyan" />;
       case 'like':
         return <ThumbsUp className="w-5 h-5 text-tuco-orange" />;
       case 'badge':

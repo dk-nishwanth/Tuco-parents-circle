@@ -1,15 +1,15 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Nunito:wght@400;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "DM Sans", "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Nunito", sans-serif;
+  --font-sans: "Poppins", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Poppins", sans-serif;
   
   --color-tuco-cyan: #35B5EC;
   --color-tuco-cyan-hover: #219FD5;
   --color-tuco-yellow: #FED018;
-  --color-tuco-orange: #FF5E2B;
-  --color-tuco-orange-hover: #E44211;
+  --color-tuco-orange: #EB3200;
+  --color-tuco-orange-hover: #D12D00;
   --color-tuco-cream: #FCFAF6;
   --color-tuco-dark: #1F1B19;
   --color-tuco-border: #E8E2DA;
@@ -17,9 +17,19 @@
 
 /* Bright, clean white background to reflect the fresh organic skincare look of tucokids.com */
 html, body {
-  background-color: #FAF8F4;
-  font-family: "DM Sans", sans-serif;
-  color: #1F1B19;
+  background-color: #FAFAFA;
+  font-family: "Poppins", sans-serif;
+  color: #4D4747;
+}
+
+/* Ensure all headings and text elements inherit the correct base color */
+h1, h2, h3, h4, h5, h6, p, div, strong {
+  color: inherit;
+}
+
+input, select, textarea {
+  background-color: #FAFAFA;
+  color: #4D4747;
 }
 
 /* Simple focus state styling */
@@ -71,4 +81,15 @@ input:focus, select:focus, textarea:focus {
 .loading-bar-fill {
   width: 45%;
   animation: loading-bar 1.2s ease-in-out infinite;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
 }

@@ -1,8 +1,25 @@
-import { Conversation, User } from '../types';
+import { Conversation, User, Notification } from '../types';
 
-const API_BASE_URL = 'http://localhost:3001/api';
+// Use the current hostname to prevent connection issues when accessing via IP
+const API_HOST = window.location.hostname;
+const API_BASE_URL = `http://${API_HOST}:3001/api`;
 
 export const api = {
+  async checkHealth(): Promise<boolean> {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2000); // 2 second timeout
+      
+      const response = await fetch(`${API_BASE_URL}/health`, { 
+        signal: controller.signal 
+      });
+      clearTimeout(timeoutId);
+      return response.ok;
+    } catch {
+      return false;
+    }
+  },
+
   async getConversations(): Promise<Conversation[]> {
     const response = await fetch(`${API_BASE_URL}/conversations`);
     if (!response.ok) throw new Error('Failed to fetch conversations');
@@ -31,5 +48,16 @@ export const api = {
       body: JSON.stringify(user),
     });
     if (!response.ok) throw new Error('Failed to save user');
+  },
+
+  async chat(messages: { role: 'user' | 'assistant'; content: string }[]): Promise<string> {
+    const response = await fetch(`${API_BASE_URL}/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages }),
+    });
+    if (!response.ok) throw new Error('Failed to communicate with ChatBot');
+    const data = await response.json();
+    return data.content;
   },
 };

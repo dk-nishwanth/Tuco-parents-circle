@@ -42,7 +42,7 @@ export function ModerationDashboard({
           <Shield className="w-4 h-4 text-orange-600 shrink-0 mt-0.5" />
           <p>
             <strong>Tuco Team rules:</strong> Cannot close threads or remove negative feedback.
-            Hinglish/Hindi posts are never auto-removed for language.
+            English/Hindi posts are never auto-removed for language.
           </p>
         </div>
       </div>
@@ -101,9 +101,9 @@ export function ModerationDashboard({
                       💛 {reminder}
                     </div>
                   )}
-                  {thread.greyAreaFlags?.includes('hinglish') && (
+                  {thread.greyAreaFlags?.includes('english') && (
                     <p className="text-[10px] text-emerald-700 font-bold mb-2">
-                      ✓ Hinglish/regional language — do not reject for language alone
+                      ✓ English/Hindi/regional language — do not reject for language alone
                     </p>
                   )}
                   {thread.greyAreaFlags?.includes('negative_tuco_review') && (

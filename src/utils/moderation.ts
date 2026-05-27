@@ -371,11 +371,11 @@ export interface ModerationAnalysis {
   civilityReminder?: string;
 }
 
-export function detectHinglish(text: string): boolean {
-  const hinglishMarkers =
+export function detectEnglish(text: string): boolean {
+  const englishMarkers =
     /\b(kya|kaise|kaisa|nahi|nahin|bilkul|acha|accha|theek|thik|bhai|didi|mummy|papa|bachcha|baccha|bacha|zaroor|zyaada|jyada|bahut|bohot|matlab|shayad|abhi|kal|aaj|subah|raat|dawai|dawa|doctor\s+ko|ghar\s+pe|school\s+mein|problem\s+hai|help\s+chahiye)\b/gi;
   const devanagari = /[\u0900-\u097F]/;
-  return hinglishMarkers.test(text) || devanagari.test(text);
+  return englishMarkers.test(text) || devanagari.test(text);
 }
 
 export function detectGreyAreas(content: string): GreyAreaFlag[] {
@@ -386,8 +386,8 @@ export function detectGreyAreas(content: string): GreyAreaFlag[] {
   if (MENTAL_HEALTH_PATTERNS.some(p => p.test(content))) {
     flags.push('mental_health');
   }
-  if (detectHinglish(content)) {
-    flags.push('hinglish');
+  if (detectEnglish(content)) {
+    flags.push('english');
   }
   if (NEGATIVE_TUCO_PATTERNS.some(p => p.test(content))) {
     flags.push('negative_tuco_review');
@@ -407,9 +407,9 @@ export function getGreyAreaReminder(flags: GreyAreaFlag[]): string | undefined {
       'Be kind. Mental health and postpartum topics are sensitive — share support, not judgment. This is not medical advice.'
     );
   }
-  if (flags.includes('hinglish')) {
+  if (flags.includes('english')) {
     reminders.push(
-      'Hindi, Hinglish, and regional languages are welcome here. Posts in mixed languages will not be removed for language alone.'
+      'English, Hindi, and regional languages are welcome here. Posts in mixed languages will not be removed for language alone.'
     );
   }
   if (flags.includes('negative_tuco_review')) {
@@ -557,21 +557,10 @@ export function canTucoTeamModerateAction(action: 'close_thread' | 'remove_negat
 }
 
 export const MODERATION_RULES = {
-  RULES: [
-    'Medical prescriptions or dosage advice',
-    'Diagnosis statements (e.g., "sounds autistic")',
-    'Brand promotion or spam',
-    'Personal information (phone, address, school names)',
-    'Photos without consent',
-    'Medical misinformation (vaccines cause autism)',
-    'Product delivery complaints',
-    'Personal attacks on members',
-  ],
   GREY_AREAS: {
-    'Negative Tuco reviews': 'ALLOW — cannot remove or close threads for criticism',
-    'Competitor product recommendations': 'ALLOW',
-    'Religious/cultural parenting differences': 'ALLOW_WITH_CIVILITY',
-    'Mental health discussions': 'ALLOW_WITH_CARE — be kind reminders',
-    'Hinglish / Hindi / regional languages': 'ALLOW — never auto-remove for language',
+    RELIGIOUS_CULTURAL: 'Religious/Cultural parenting choices',
+    MENTAL_HEALTH: 'Mental health & sensitivity',
+    ENGLISH: 'English/Hindi/Regional languages',
+    NEGATIVE_TUCO: 'Negative Tuco feedback (allow)',
   },
 };

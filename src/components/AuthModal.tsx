@@ -80,7 +80,7 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin }: AuthModalProps
             onClick={onClose}
             className="w-8 h-8 rounded-full border border-neutral-200 bg-white flex items-center justify-center text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 transition-colors"
           >
-            <X className="w-4 h-4" />
+            <X className="w-4 h-4" strokeWidth={1.5} />
           </button>
         </div>
         {}
@@ -117,7 +117,7 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin }: AuthModalProps
           {}
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
-              <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+              <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" strokeWidth={1.5} />
               <p className="text-sm text-red-600 font-medium">{error}</p>
             </div>
           )}
@@ -129,7 +129,7 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin }: AuthModalProps
                   Email Address
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-3 w-4 h-4 text-neutral-400" />
+                  <Mail className="absolute left-3 top-3 w-4 h-4 text-neutral-400" strokeWidth={1.5} />
                   <input
                     type="text"
                     placeholder="any@email.com"
@@ -142,7 +142,7 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin }: AuthModalProps
               <div>
                 <label className="block text-xs font-bold text-neutral-700 mb-1.5">Password</label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-3 w-4 h-4 text-neutral-400" />
+                  <Lock className="absolute left-3 top-3 w-4 h-4 text-neutral-400" strokeWidth={1.5} />
                   <input
                     type="password"
                     placeholder="••••••••"
@@ -172,7 +172,7 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin }: AuthModalProps
                   Email Address (We'll verify it)
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-3 w-4 h-4 text-neutral-400" />
+                  <Mail className="absolute left-3 top-3 w-4 h-4 text-neutral-400" strokeWidth={1.5} />
                   <input
                     type="email"
                     placeholder="mom@example.com"
@@ -205,7 +205,7 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin }: AuthModalProps
                   Your Pen-Name (Not your real name)
                 </label>
                 <div className="relative">
-                  <User className="absolute left-3 top-3 w-4 h-4 text-neutral-400" />
+                  <User className="absolute left-3 top-3 w-4 h-4 text-neutral-400" strokeWidth={1.5} />
                   <input
                     type="text"
                     placeholder="e.g. PriyasMom, ArjunsDad"
@@ -224,7 +224,7 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin }: AuthModalProps
                   Your City (Optional but helps context)
                 </label>
                 <div className="relative">
-                  <MapPin className="absolute left-3 top-3 w-4 h-4 text-neutral-400" />
+                  <MapPin className="absolute left-3 top-3 w-4 h-4 text-neutral-400" strokeWidth={1.5} />
                   <input
                     type="text"
                     placeholder="e.g. Bangalore, Mumbai"

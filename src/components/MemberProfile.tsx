@@ -1,6 +1,6 @@
 import { User, Conversation } from '../types';
 import { BADGE_DISPLAY } from '../utils/badgeSystem';
-import { Mail, MapPin, Award, Lock, Baby, Shield, MessageCircle } from 'lucide-react';
+import { Mail, MapPin, Award, Lock, Baby, Shield, MessageSquare } from 'lucide-react';
 interface MemberProfileProps {
   user: User;
   conversations?: Conversation[];
@@ -156,7 +156,7 @@ export function MemberProfile({
       {userThreads.length > 0 && (
         <div className="border-t border-neutral-150 pt-6 mt-6">
           <div className="flex items-center gap-2 mb-4">
-            <MessageCircle className="w-4 h-4 text-tuco-orange" />
+            <MessageSquare className="w-4 h-4 text-tuco-orange" />
             <h3 className="font-display font-black text-sm text-neutral-800">Their Threads</h3>
           </div>
           <div className="space-y-3">
@@ -181,7 +181,7 @@ export function MemberProfile({
       {userReplies.length > 0 && (
         <div className="border-t border-neutral-150 pt-6 mt-6">
           <div className="flex items-center gap-2 mb-4">
-            <MessageCircle className="w-4 h-4 text-tuco-cyan" />
+            <MessageSquare className="w-4 h-4 text-tuco-cyan" />
             <h3 className="font-display font-black text-sm text-neutral-800">Their Replies</h3>
           </div>
           <div className="space-y-3">
