@@ -20,6 +20,7 @@ interface MainContentProps {
   users?: Record<string, User>;
   featuredThreads?: Conversation[];
   onCategoryChange?: (categoryId: string) => void;
+  onOpenRightSidebar?: () => void;
 }
 
 export function MainContent({
@@ -36,6 +37,7 @@ export function MainContent({
   users = {},
   featuredThreads = [],
   onCategoryChange,
+  onOpenRightSidebar,
 }: MainContentProps) {
   const [sortType, setSortType] = useState<string>('hot');
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -64,6 +66,19 @@ export function MainContent({
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Reset activeTab to 'feed' on desktop view
+  useEffect(() => {
+    function handleResize() {
+      if (window.innerWidth >= 768) { // md breakpoint
+        setActiveTab('feed');
+      }
+    }
+    // Initial check
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const processedThreads = useMemo(() => {
@@ -107,50 +122,68 @@ export function MainContent({
 
   return (
     <main className="main min-w-0 flex flex-col gap-4 md:gap-6">
-      {/* Mobile View Specific Header (Based on Image) */}
-      <div className="md:hidden flex flex-col gap-4 mb-4">
+      {/* Mobile View Specific Header (Exact Design) */}
+      <div className="md:hidden flex flex-col gap-3 mb-4">
         {/* Title and Category Row */}
-        <div className="flex items-start justify-between">
-          <div className="flex flex-col">
-            <h2 className="font-display font-bold text-[20px] text-[#4D4747] tracking-[-0.05em] leading-[100%]">
-              Tuco Parents Circle :)
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex flex-col gap-0.5 min-w-0">
+            <h2 className="font-display font-black text-[20px] text-[#4D4747] tracking-[-0.01em] leading-[1.1] whitespace-nowrap">
+              tuco parents circle :)
             </h2>
-            <p className="font-sans text-[11px] text-neutral-400 font-medium mt-1">
-              {processedThreads.length} Discussions found
+            <p className="font-sans text-[13px] text-neutral-600 font-medium">
+              {processedThreads.length} discussions found
             </p>
           </div>
           
           {/* Category Dropdown (Mobile) */}
-          <div className="relative" ref={categoryRef}>
+          <div className="relative shrink-0" ref={categoryRef}>
             <button
               onClick={() => setIsCategoryOpen(!isCategoryOpen)}
-              className="flex items-center gap-1 px-3 py-1.5 bg-white border border-neutral-200 rounded-lg text-[13px] font-display font-bold text-[#4D4747] shadow-sm"
+              className="flex items-center gap-1 px-3 py-1.5 bg-white border border-neutral-300 rounded-full text-[14px] font-display font-bold text-[#4D4747] shadow-sm hover:bg-neutral-50 transition-colors"
             >
               {activeCategory === 'saved' ? (
-                <span className="text-sm">📌</span>
+                <span className="text-lg">📌</span>
               ) : categoryItem ? (
-                <span className="text-sm">{categoryItem.icon}</span>
+                <span className="text-lg">{categoryItem.icon}</span>
               ) : (
-                <Users className="w-4 h-4 text-tuco-cyan" strokeWidth={2} />
+                <span className="text-lg">🗣️</span>
               )}
-              <span>{activeCategory === 'saved' ? 'Saved Discussions' : categoryItem ? categoryItem.label : 'All Discussions'}</span>
-              <ChevronDown className={`w-3.5 h-3.5 text-neutral-400 transition-transform ${isCategoryOpen ? 'rotate-180' : ''}`} strokeWidth={2} />
+              <span className="truncate max-w-[120px]">
+                {activeCategory === 'saved' 
+                  ? 'saved discussions' 
+                  : categoryItem 
+                    ? (categoryItem.id === 'skincare' ? 'skincare' : categoryItem.label.toLowerCase())
+                    : 'all discussions'}
+              </span>
+              <ChevronDown className={`w-3.5 h-3.5 text-neutral-600 transition-transform ${isCategoryOpen ? 'rotate-180' : ''}`} strokeWidth={2} />
             </button>
             
             {isCategoryOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-white border border-neutral-200 rounded-2xl shadow-lg z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                <div className="py-1">
+              <div className="absolute right-0 mt-2 w-52 bg-white border border-neutral-200 rounded-2xl shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="py-2">
                   <button
                     onClick={() => {
                       onCategoryChange?.('all');
                       setIsCategoryOpen(false);
                     }}
-                    className={`w-full text-left px-4 py-2 text-sm font-display font-bold flex items-center gap-2 transition-colors ${
+                    className={`w-full text-left px-4 py-3 text-sm font-display font-bold flex items-center gap-3 transition-colors ${
                       activeCategory === 'all' ? 'bg-tuco-cyan/5 text-tuco-cyan' : 'text-neutral-600 hover:bg-neutral-50'
                     }`}
                   >
-                    <Users className="w-4 h-4" strokeWidth={1.5} />
-                    <span>All Discussions</span>
+                    <Users className="w-5 h-5" strokeWidth={1.5} />
+                    <span>all discussions</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      onCategoryChange?.('saved');
+                      setIsCategoryOpen(false);
+                    }}
+                    className={`w-full text-left px-4 py-3 text-sm font-display font-bold flex items-center gap-3 transition-colors ${
+                      activeCategory === 'saved' ? 'bg-tuco-cyan/5 text-tuco-cyan' : 'text-neutral-600 hover:bg-neutral-50'
+                    }`}
+                  >
+                    <span className="text-lg">📌</span>
+                    <span>saved discussions</span>
                   </button>
                   {Object.values(CATEGORIES).map(cat => (
                     <button
@@ -159,11 +192,11 @@ export function MainContent({
                         onCategoryChange?.(cat.id);
                         setIsCategoryOpen(false);
                       }}
-                      className={`w-full text-left px-4 py-2 text-sm font-display font-bold flex items-center gap-2 transition-colors ${
+                      className={`w-full text-left px-4 py-3 text-sm font-display font-bold flex items-center gap-3 transition-colors ${
                         activeCategory === cat.id ? 'bg-tuco-cyan/5 text-tuco-cyan' : 'text-neutral-600 hover:bg-neutral-50'
                       }`}
                     >
-                      <span>{cat.icon}</span>
+                      <span className="text-lg">{cat.icon}</span>
                       <span>{cat.label}</span>
                     </button>
                   ))}
@@ -173,36 +206,39 @@ export function MainContent({
           </div>
         </div>
 
+        {/* Divider */}
+        <div className="w-full h-[2px] bg-neutral-200"></div>
+
         {/* Tabs and Sort Row */}
-        <div className="flex items-center justify-between">
-          <div className="flex bg-[#EDEDED] p-1 rounded-full gap-1">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex gap-2">
             <button
               onClick={() => setActiveTab('feed')}
-              className={`px-5 py-1.5 rounded-full text-[13px] font-display font-bold transition-all ${
-                activeTab === 'feed' ? 'bg-[#4D4747] text-white shadow-md' : 'text-[#888888]'
+              className={`px-5 py-1.5 rounded-full text-[15px] font-display font-bold transition-all ${
+                activeTab === 'feed' ? 'bg-[#444444] text-white shadow-sm' : 'bg-[#E0E0E0] text-neutral-500'
               }`}
             >
-              Feed
+              feed
             </button>
             <button
               onClick={() => setActiveTab('about')}
-              className={`px-5 py-1.5 rounded-full text-[13px] font-display font-bold transition-all ${
-                activeTab === 'about' ? 'bg-[#4D4747] text-white shadow-md' : 'text-[#888888]'
+              className={`px-5 py-1.5 rounded-full text-[15px] font-display font-bold transition-all ${
+                activeTab === 'about' ? 'bg-[#444444] text-white shadow-sm' : 'bg-[#E0E0E0] text-neutral-500'
               }`}
             >
-              About
+              about
             </button>
           </div>
 
           {/* Sort Dropdown (Mobile Tab Row) */}
-          <div className="relative" ref={mobileSortRef}>
+          <div className="relative shrink-0" ref={mobileSortRef}>
             <button
               onClick={() => setIsSortOpen(!isSortOpen)}
-              className="flex items-center gap-1 px-3 py-1.5 bg-white border border-neutral-200 rounded-lg text-[13px] font-display font-bold text-[#4D4747] shadow-sm"
+              className="flex items-center gap-1 px-3 py-1.5 bg-white border border-neutral-300 rounded-full text-[14px] font-display font-bold text-[#4D4747] shadow-sm hover:bg-neutral-50 transition-colors"
             >
-              <span className="text-[#FFD700] text-sm">✨</span>
-              <span className="text-neutral-400 font-medium">New</span>
-              <ChevronDown className={`w-3.5 h-3.5 text-neutral-400 transition-transform ${isSortOpen ? 'rotate-180' : ''}`} strokeWidth={2} />
+              <span className="text-lg">✨</span>
+              <span>new</span>
+              <ChevronDown className={`w-3.5 h-3.5 text-neutral-600 transition-transform ${isSortOpen ? 'rotate-180' : ''}`} strokeWidth={2} />
             </button>
 
             {isSortOpen && (
@@ -287,11 +323,12 @@ export function MainContent({
         </div>
       ) : (
         <>
-          {/* Trending Section - Mobile Only (Hidden on Desktop to avoid repetition with sidebar) */}
-          <div className="flex flex-col gap-4 md:hidden">
+          {/* Trending Section - Both Mobile and Desktop */}
+          <div className="flex flex-col gap-4">
             <div className="flex items-center gap-2 px-1">
-              <Pin className="w-5 h-5 text-[#4D4747] rotate-45" strokeWidth={2} />
+              <Pin className="w-5 h-5 text-[#4D4747]" strokeWidth={2} />
               <h3 className="font-display font-bold text-[20px] text-[#4D4747] tracking-[-0.05em] leading-[100%]">Trending</h3>
+              <ChevronDown className="w-5 h-5 text-[#4D4747] rotate-[-90deg]" strokeWidth={2} />
             </div>
             <div className="overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide">
               <div className="flex gap-4 min-w-max">
@@ -323,12 +360,6 @@ export function MainContent({
                 ))}
               </div>
             </div>
-          </div>
-
-          {/* Feed Header - Desktop Only */}
-          <div className="hidden md:flex items-center gap-2 px-1 mb-2">
-            <Flame className="w-5 h-5 text-tuco-orange" strokeWidth={2} />
-            <h3 className="font-display font-bold text-[20px] text-[#4D4747] tracking-[-0.05em] leading-[100%]">Feed</h3>
           </div>
 
           {/* Feed Section */}

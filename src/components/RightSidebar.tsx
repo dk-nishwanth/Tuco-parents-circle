@@ -1,6 +1,6 @@
 import { TRENDING } from '../data/products';
 import { Conversation } from '../types';
-import { Flame, Instagram, TrendingUp, Heart, Users, Sparkles } from 'lucide-react';
+import { Flame, Sparkles } from 'lucide-react';
 
 interface RightSidebarProps {
   onTrendingClick: (id: number) => void;
@@ -19,7 +19,7 @@ export function RightSidebar({
 
   const containerClasses = isCarousel
     ? "flex overflow-x-auto pb-6 pt-2 gap-4 snap-x snap-mandatory scrollbar-hide -mx-4 px-4 items-stretch"
-    : "flex flex-col gap-6 md:gap-8 mb-6 lg:mb-0";
+    : "flex flex-col gap-6";
 
   const itemClasses = isCarousel
     ? "min-w-[240px] max-w-[280px] shrink-0 snap-center flex flex-col"
@@ -29,99 +29,75 @@ export function RightSidebar({
     <aside className={isCarousel ? "relative w-full" : "rsidebar"}>
       <div className={containerClasses}>
         {/* Card 1: Welcome */}
-        <div className={`${itemClasses} bg-white border border-neutral-200 rounded-[2.5rem] p-6 shadow-sm relative group`}>
-          <div className="flex items-center gap-3 mb-4">
+        <div className={`${itemClasses} bg-white border border-neutral-200 rounded-2xl p-5 shadow-sm`}>
+          <div className="flex items-center gap-2 mb-3">
             <span className="text-2xl">👋</span>
-            <h4 className="font-display font-bold text-lg text-neutral-800 tracking-tight">
+            <h4 className="font-display font-bold text-lg text-[#4D4747]">
               HELLO!
             </h4>
           </div>
-          <p className="font-sans text-[13px] text-neutral-600 leading-relaxed font-bold mb-6">
+          <p className="font-sans text-[13px] text-[#4D4747] font-medium leading-relaxed mb-3">
             Tuco Circle is your safe, judgment-free space to share and support.
           </p>
-          <div className="mt-auto">
-            <p className="font-sans text-[12px] text-neutral-400 font-bold">
-              Hindi & English Welcome
-            </p>
-          </div>
+          <p className="font-sans text-[12px] text-neutral-500 font-medium">
+            Hindi & English Welcome
+          </p>
         </div>
 
-        {/* Card 2: Member Spotlight (Mom of Month style) */}
-        <div className={`${itemClasses} bg-[#FAF5FF] border border-purple-200 rounded-[2.5rem] p-6 shadow-sm relative group`}>
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center shadow-sm">
-              <Instagram className="w-5 h-5 text-purple-600" strokeWidth={2} />
-            </div>
-            <h4 className="font-display font-bold text-sm text-neutral-800 tracking-wide uppercase">
+        {/* Card 2: Member Spotlight */}
+        <div className={`${itemClasses} bg-white border border-neutral-200 rounded-2xl p-5 shadow-sm`}>
+          <div className="flex items-center gap-2 mb-3">
+            <Sparkles className="w-4 h-4 text-[#4D4747]" strokeWidth={2} />
+            <h4 className="font-display font-bold text-xs text-[#4D4747] uppercase">
               MEMBER SPOTLIGHT
             </h4>
           </div>
-          
-          <p className="text-[11px] text-purple-400 font-bold mb-4 ml-11">
+          <p className="text-[11px] text-neutral-500 font-medium mb-4">
             Featured community voices
           </p>
-          
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4">
             {[
-              { author: "Sneha V.", title: "Dry flaky patches on 5yo?", replies: "3 replies" },
-              { author: "Deepika S.", title: "Best summer spots in India?", replies: "2 replies" }
-            ].map((mom, i) => (
-              <button key={i} className="bg-white p-4 rounded-2xl shadow-xs text-left group/item border border-white hover:border-purple-200 transition-all">
-                <p className="font-display font-extrabold text-[12px] text-neutral-800 line-clamp-2 leading-tight mb-1.5">
-                  {mom.title}
+              { author: "Sneha V.", title: "Dry flaky patches on 5yo?" },
+              { author: "Deepika S.", title: "Best summer spots in India?" }
+            ].map((item, i) => (
+              <div key={i} className="flex flex-col gap-1">
+                <p className="font-display font-bold text-[12px] text-[#4D4747] leading-snug">
+                  {item.title}
                 </p>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-neutral-400 font-bold italic">By {mom.author}</span>
-                  <span className="text-[10px] text-purple-500 font-bold">Featured 🌟</span>
-                </div>
-              </button>
+                <p className="text-[11px] text-neutral-500 font-medium">
+                  By {item.author} Featured 🌟
+                </p>
+              </div>
             ))}
           </div>
         </div>
 
-        {/* Card 3: Live Stats (Community Stats style) */}
-        <div className={`${itemClasses} bg-white border border-neutral-200 rounded-[2.5rem] p-6 shadow-sm relative group`}>
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-8 h-8 rounded-lg bg-neutral-50 flex items-center justify-center">
-              <TrendingUp className="w-5 h-5 text-tuco-cyan" strokeWidth={2} />
+        {/* Card 3: Live Stats */}
+        <div className={`${itemClasses} bg-white border border-neutral-200 rounded-2xl p-5 shadow-sm`}>
+          <h4 className="font-display font-bold text-xs text-[#4D4747] uppercase mb-4">
+            LIVE STATS
+          </h4>
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-1">
+              <span className="font-display font-bold text-lg text-[#4D4747]">14.2k</span>
+              <span className="text-[11px] text-neutral-500 font-medium">Active Parents</span>
             </div>
-            <h4 className="font-display font-bold text-sm text-neutral-800 tracking-wide uppercase">
-              LIVE STATS
-            </h4>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-3 mb-4">
-            <div className="bg-neutral-50/50 p-4 rounded-2xl border border-neutral-50 text-center">
-              <div className="font-display font-bold text-xl text-tuco-orange leading-tight">14.2k</div>
-              <div className="text-[9px] text-neutral-400 font-bold uppercase tracking-tight mt-1">Active Parents</div>
+            <div className="flex flex-col gap-1">
+              <span className="font-display font-bold text-lg text-[#4D4747]">3.8k</span>
+              <span className="text-[11px] text-neutral-500 font-medium">Safe Answers</span>
             </div>
-            <div className="bg-neutral-50/50 p-4 rounded-2xl border border-neutral-50 text-center">
-              <div className="font-display font-bold text-xl text-tuco-cyan leading-tight">3.8k</div>
-              <div className="text-[9px] text-neutral-400 font-bold uppercase tracking-tight mt-1">Safe Answers</div>
-            </div>
-          </div>
-          
-          <div className="flex items-center justify-center gap-2">
-            <div className="flex -space-x-1.5">
-              {[1,2,3].map(i => (
-                <div key={i} className="w-5 h-5 rounded-full border-2 border-white bg-neutral-200" />
-              ))}
-            </div>
-            <p className="text-[10px] text-neutral-400 font-bold italic">+24 Today</p>
+            <p className="text-[11px] text-neutral-500 font-medium">+24 Today</p>
           </div>
         </div>
 
         {/* Card 4: Trending Now */}
-        <div className={`${itemClasses} bg-white border border-neutral-200 rounded-[2.5rem] p-6 shadow-sm relative group`}>
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-8 h-8 rounded-lg bg-neutral-50 flex items-center justify-center">
-              <Flame className="w-5 h-5 text-tuco-orange" strokeWidth={2} />
-            </div>
-            <h4 className="font-display font-bold text-sm text-neutral-800 tracking-wide uppercase">
+        <div className={`${itemClasses} bg-white border border-neutral-200 rounded-2xl p-5 shadow-sm`}>
+          <div className="flex items-center gap-2 mb-4">
+            <Flame className="w-4 h-4 text-[#4D4747]" strokeWidth={2} />
+            <h4 className="font-display font-bold text-xs text-[#4D4747] uppercase">
               TRENDING NOW
             </h4>
           </div>
-          
           <div className="space-y-4">
             {[
               { id: 1, title: "Best sunscreen for outdoor cricket this summer?" },
@@ -130,13 +106,13 @@ export function RightSidebar({
             ].map((trend, idx) => (
               <div
                 key={trend.id}
-                className="flex items-start gap-3 cursor-pointer group/item"
+                className="flex items-start gap-3 cursor-pointer"
                 onClick={() => onTrendingClick(trend.id)}
               >
-                <span className="font-display font-bold text-sm text-tuco-cyan leading-none pt-0.5">
+                <span className="font-display font-bold text-sm text-[#4D4747] leading-none pt-0.5">
                   #{idx + 1}
                 </span>
-                <p className="font-display font-bold text-[12px] text-neutral-700 group-hover:text-tuco-cyan line-clamp-2 transition-colors leading-snug">
+                <p className="font-display font-bold text-[12px] text-[#4D4747] line-clamp-2 leading-snug">
                   {trend.title}
                 </p>
               </div>

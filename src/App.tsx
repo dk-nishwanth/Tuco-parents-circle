@@ -107,6 +107,7 @@ export default function App() {
     title: string;
     message: string;
   }>({ isOpen: false, title: '', message: '' });
+  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState<boolean>(false);
   useEffect(() => {
     async function initData() {
       try {
@@ -856,8 +857,8 @@ export default function App() {
             />
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-[252px_1fr_280px] gap-4 md:gap-8">
-            <div className="hidden lg:block">
+          <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] lg:grid-cols-[252px_1fr_280px] gap-4 md:gap-8">
+            <div className="hidden md:block">
               <LeftSidebar
                 activeCategory={activeCategory}
                 onCategoryChange={setActiveCategory}
@@ -895,6 +896,7 @@ export default function App() {
                   users={users}
                   featuredThreads={featuredThreads}
                   onCategoryChange={setActiveCategory}
+                  onOpenRightSidebar={() => setIsRightSidebarOpen(true)}
                 />
               )}
             </div>
@@ -991,6 +993,34 @@ export default function App() {
           loginPassword={sessionCredentials?.password}
           onClose={() => setIsProfileOpen(false)}
         />
+      )}
+      
+      {/* Right Sidebar Modal (Mobile Only) */}
+      {isRightSidebarOpen && (
+        <div className="fixed inset-0 bg-neutral-900/60 backdrop-blur-xs flex items-end md:items-center justify-center p-4 z-50 overflow-y-auto">
+          <div className="bg-white border border-neutral-200 rounded-t-3xl md:rounded-3xl w-full max-w-sm max-h-[85vh] overflow-y-auto shadow-xl relative animate-in slide-in-from-bottom">
+            <button
+              onClick={() => setIsRightSidebarOpen(false)}
+              className="absolute right-4 top-4 w-8 h-8 rounded-full border border-neutral-200 bg-white flex items-center justify-center text-neutral-500 hover:text-neutral-700 z-10"
+            >
+              ✕
+            </button>
+            <div className="p-5 pt-12">
+              <RightSidebar
+                onTrendingClick={(id) => {
+                  handleThreadOpen(id);
+                  setIsRightSidebarOpen(false);
+                }}
+                featuredThreads={featuredThreads}
+                onFeaturedClick={(id) => {
+                  handleThreadOpen(id);
+                  setIsRightSidebarOpen(false);
+                }}
+                variant="sidebar"
+              />
+            </div>
+          </div>
+        </div>
       )}
       {pendingReview && (
         <ThreadReviewConfirmation
