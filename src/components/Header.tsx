@@ -154,8 +154,8 @@ export function Header({
   return (
     <header className="header bg-white border-b border-neutral-100 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-3 md:px-4 py-1.5 flex items-center gap-2 md:gap-3">
-        {/* Mobile Left: Menu & Logo */}
-        <div className="flex items-center gap-2 shrink-0">
+        {/* Left: Logo (Desktop) / Menu + Logo (Mobile) */}
+        <div className="flex items-center gap-2 shrink-0 w-32 md:w-auto justify-start">
           <button 
             onClick={onOpenCategories}
             className="p-1 md:hidden"
@@ -171,18 +171,20 @@ export function Header({
         </div>
 
         {/* Center: Search */}
-        <div className="flex-1 min-w-0 max-w-sm">
-          <SearchInput
-            searchTerm={searchTerm}
-            onSearch={onSearch}
-            conversations={conversations}
-            onSuggestionSelect={onSuggestionSelect}
-            compact={true}
-          />
+        <div className="flex-1 min-w-0 flex justify-center">
+          <div className="max-w-sm w-full">
+            <SearchInput
+              searchTerm={searchTerm}
+              onSearch={onSearch}
+              conversations={conversations}
+              onSuggestionSelect={onSuggestionSelect}
+              compact={true}
+            />
+          </div>
         </div>
 
         {/* Right: Actions */}
-        <div className="flex items-center gap-1 md:gap-2 shrink-0">
+        <div className="flex items-center gap-1 md:gap-2 shrink-0 w-32 md:w-auto justify-end">
           <div className="relative" ref={notificationsRef}>
             <button
               onClick={() => setShowNotificationsDropdown(!showNotificationsDropdown)}
