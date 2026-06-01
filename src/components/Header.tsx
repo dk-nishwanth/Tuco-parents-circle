@@ -153,7 +153,7 @@ export function Header({
 
   return (
     <header className="header bg-white border-b border-neutral-100 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 py-1.5 flex items-center gap-3">
+      <div className="max-w-7xl mx-auto px-3 md:px-4 py-1.5 flex items-center gap-2 md:gap-3">
         {/* Mobile Left: Menu & Logo */}
         <div className="flex items-center gap-2 shrink-0">
           <button 
@@ -171,7 +171,7 @@ export function Header({
         </div>
 
         {/* Center: Search */}
-        <div className="flex-1 min-w-0 max-w-sm mx-auto">
+        <div className="flex-1 min-w-0 max-w-sm">
           <SearchInput
             searchTerm={searchTerm}
             onSearch={onSearch}
@@ -182,7 +182,7 @@ export function Header({
         </div>
 
         {/* Right: Actions */}
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-1 md:gap-2 shrink-0">
           <div className="relative" ref={notificationsRef}>
             <button
               onClick={() => setShowNotificationsDropdown(!showNotificationsDropdown)}
@@ -272,7 +272,7 @@ export function Header({
           
           <button
             onClick={onNewPostClick}
-            className="bg-[#35B5EC] text-white px-5 py-2 rounded-lg text-[13px] font-display font-bold transition-all shadow-sm active:scale-95"
+            className="bg-[#35B5EC] text-white px-3 md:px-5 py-1.5 md:py-2 rounded-lg text-xs md:text-[13px] font-display font-bold transition-all shadow-sm active:scale-95"
           >
             ask
           </button>
@@ -281,7 +281,7 @@ export function Header({
             <div className="relative" ref={notificationsRef}>
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
-                className="w-9 h-9 bg-white border border-[#35B5EC] rounded-lg flex items-center justify-center text-[13px] font-display font-bold text-[#35B5EC] shadow-sm hover:bg-[#35B5EC]/5 transition-colors"
+                className="w-8 h-8 md:w-9 md:h-9 bg-white border border-[#35B5EC] rounded-lg flex items-center justify-center text-xs md:text-[13px] font-display font-bold text-[#35B5EC] shadow-sm hover:bg-[#35B5EC]/5 transition-colors"
               >
                 {currentUser.username.substring(0, 2).toUpperCase()}
               </button>
@@ -320,7 +320,7 @@ export function Header({
           ) : (
             <button
               onClick={onLoginClick}
-              className="w-9 h-9 bg-white border border-[#35B5EC] rounded-lg flex items-center justify-center text-[13px] font-display font-bold text-[#35B5EC] shadow-sm hover:bg-[#35B5EC]/5 transition-colors"
+              className="w-8 h-8 md:w-9 md:h-9 bg-white border border-[#35B5EC] rounded-lg flex items-center justify-center text-xs md:text-[13px] font-display font-bold text-[#35B5EC] shadow-sm hover:bg-[#35B5EC]/5 transition-colors"
             >
               LA
             </button>

@@ -138,22 +138,22 @@ export function Modal({
     >
       {/* App Header */}
       <header className="bg-white border-b border-neutral-100 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-2 flex items-center gap-3">
-          {/* Mobile Left: Back, Logo, and Category Dropdown */}
+        <div className="max-w-7xl mx-auto px-3 md:px-4 py-1.5 flex items-center gap-2 md:gap-3">
+          {/* Mobile Left: Back, Logo */}
           <div className="flex items-center gap-2 shrink-0">
             <button 
               onClick={onClose} 
-              className="p-1.5 hover:bg-neutral-50 rounded-full transition-colors"
+              className="p-1 hover:bg-neutral-50 rounded-full transition-colors"
               aria-label="Go back"
             >
               <ArrowLeft className="w-5 h-5 text-[#4D4747]" strokeWidth={2} />
             </button>
             <button onClick={onClose} className="hover:opacity-80 transition-opacity">
-              <img src={tucoLogo} alt="Tuco" className="h-7 w-auto" />
+              <img src={tucoLogo} alt="Tuco" className="h-6 w-auto" />
             </button>
 
-            {/* Category Dropdown (Mobile) */}
-            <div className="relative" ref={categoryRef}>
+            {/* Category Dropdown (Desktop only) */}
+            <div className="hidden md:block relative" ref={categoryRef}>
               <button
                 onClick={() => setIsCategoryOpen(!isCategoryOpen)}
                 className="flex items-center gap-1 px-3 py-1.5 bg-white border border-neutral-200 rounded-lg text-[13px] font-display font-bold text-[#4D4747] shadow-sm"
@@ -165,7 +165,7 @@ export function Modal({
                 ) : (
                   <Users className="w-4 h-4 text-tuco-cyan" strokeWidth={2} />
                 )}
-                <span>{activeCategory === 'saved' ? 'Saved Discussions' : categoryItem ? categoryItem.label : 'All Discussions'}</span>
+                <span className="hidden lg:inline">{activeCategory === 'saved' ? 'Saved Discussions' : categoryItem ? categoryItem.label : 'All Discussions'}</span>
                 <ChevronDown className={`w-3.5 h-3.5 text-neutral-400 transition-transform ${isCategoryOpen ? 'rotate-180' : ''}`} strokeWidth={2} />
               </button>
               
@@ -206,7 +206,7 @@ export function Modal({
           </div>
 
           {/* Center: Search */}
-          <div className="flex-1 min-w-0 max-w-sm mx-auto" ref={suggestionsRef}>
+          <div className="flex-1 min-w-[80px] max-w-sm" ref={suggestionsRef}>
             <div className="relative">
               <div
                 className="flex items-center bg-[#F3F4F6] border border-neutral-200 rounded-lg focus-within:bg-white focus-within:border-[#35B5EC]/30 transition-all py-1 px-3"
@@ -259,11 +259,11 @@ export function Modal({
           </div>
 
           {/* Right: Actions */}
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1 md:gap-2 shrink-0">
             <div className="relative" ref={notificationsRef}>
               <button
                 onClick={() => setShowNotificationsDropdown(!showNotificationsDropdown)}
-                className="p-1.5 relative hover:bg-neutral-50 rounded-full transition-colors"
+                className="p-1 relative hover:bg-neutral-50 rounded-full transition-colors"
               >
                 <Bell className="w-5 h-5 text-[#4D4747]" strokeWidth={2} />
                 {unreadCount > 0 && (
@@ -348,7 +348,7 @@ export function Modal({
             
             <button
               onClick={onNewPostClick}
-              className="bg-[#35B5EC] text-white px-5 py-2 rounded-lg text-[13px] font-display font-bold transition-all shadow-sm active:scale-95"
+              className="bg-[#35B5EC] text-white px-3 md:px-5 py-1.5 md:py-2 rounded-lg text-xs md:text-[13px] font-display font-bold transition-all shadow-sm active:scale-95"
             >
               Ask
             </button>
@@ -357,7 +357,7 @@ export function Modal({
               <div className="relative">
                 <button
                   onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="w-9 h-9 bg-white border border-[#35B5EC] rounded-lg flex items-center justify-center text-[13px] font-display font-bold text-[#35B5EC] shadow-sm hover:bg-[#35B5EC]/5 transition-colors"
+                  className="w-8 h-8 md:w-9 md:h-9 bg-white border border-[#35B5EC] rounded-lg flex items-center justify-center text-xs md:text-[13px] font-display font-bold text-[#35B5EC] shadow-sm hover:bg-[#35B5EC]/5 transition-colors"
                 >
                   {currentUser.username.substring(0, 2).toUpperCase()}
                 </button>
@@ -418,7 +418,7 @@ export function Modal({
             ) : (
               <button
                 onClick={onLoginClick}
-                className="w-9 h-9 bg-white border border-[#35B5EC] rounded-lg flex items-center justify-center text-[13px] font-display font-bold text-[#35B5EC] shadow-sm hover:bg-[#35B5EC]/5 transition-colors"
+                className="w-8 h-8 md:w-9 md:h-9 bg-white border border-[#35B5EC] rounded-lg flex items-center justify-center text-xs md:text-[13px] font-display font-bold text-[#35B5EC] shadow-sm hover:bg-[#35B5EC]/5 transition-colors"
               >
                 LA
               </button>
