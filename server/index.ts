@@ -2,6 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import crypto from 'crypto';
 import dotenv from 'dotenv';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+import pino from 'pino-http';
 import { Database } from './db';
 import { Conversation, User } from '../src/types';
 import Anthropic from '@anthropic-ai/sdk';
@@ -10,39 +13,76 @@ dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3002;
+const NODE_ENV = process.env.NODE_ENV || 'development';
 const db = Database.getInstance();
 
-// Move anthropic initialization to a function or handle empty key
+// ------------------------------
+// PRODUCTION MIDDLEWARE
+// ------------------------------
+
+// Security headers
+app.use(helmet({
+  contentSecurityPolicy: NODE_ENV === 'production' ? undefined : false // Disable CSP in dev for Vite HMR
+}));
+
+// Logging (Pino is very fast for production)
+app.use(pino({
+  transport: NODE_ENV === 'development' ? { target: 'pino-pretty' } : undefined
+}));
+
+// Rate limiting to prevent abuse
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  limit: NODE_ENV === 'production' ? 100 : 1000, // 100 requests per IP per window
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again later.' }
+});
+app.use('/api/', apiLimiter);
+
+// CORS configuration
+const corsOptions = {
+  origin: NODE_ENV === 'production' 
+    ? ['https://yourdomain.com', 'https://admin.shopify.com'] // Add your actual domains
+    : ['http://localhost:3000', 'http://localhost:3006', 'http://localhost:5173'], // Dev origins
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions));
+
+// Body parsing limits
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
+
+// ------------------------------
+// UTILITIES
+// ------------------------------
+
 const getAnthropicClient = () => {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return null;
   return new Anthropic({ apiKey });
 };
 
-app.use(cors());
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ limit: '10mb', extended: true }));
+// ------------------------------
+// SHOPIFY VERIFICATION MIDDLEWARE
+// ------------------------------
 
-// Health Check
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', time: new Date().toISOString() });
-});
-
-// --- Shopify Proxy Verification Middleware ---
 const verifyShopifyProxy = (req: express.Request, res: express.Response, next: express.NextFunction) => {
   const { signature, ...params } = req.query;
   const secret = process.env.SHOPIFY_API_SECRET;
 
   if (!secret) {
-    console.warn('SHOPIFY_API_SECRET not set, skipping verification (Development mode)');
-    return next();
+    if (NODE_ENV === 'development') {
+      return next();
+    }
+    return res.status(500).json({ error: 'Server configuration error' });
   }
 
   if (!signature) {
     return res.status(401).json({ error: 'Missing signature' });
   }
 
-  // Sort parameters alphabetically and join them
   const message = Object.keys(params)
     .sort()
     .map(key => `${key}=${params[key]}`)
@@ -60,95 +100,97 @@ const verifyShopifyProxy = (req: express.Request, res: express.Response, next: e
   return res.status(401).json({ error: 'Invalid signature' });
 };
 
-// --- API Endpoints ---
+// ------------------------------
+// HEALTH CHECKS
+// ------------------------------
 
-// Get all conversations
-app.get('/api/conversations', async (req, res) => {
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'healthy', uptime: process.uptime() });
+});
+
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'ok', time: new Date().toISOString(), env: NODE_ENV });
+});
+
+// ------------------------------
+// API ENDPOINTS
+// ------------------------------
+
+app.get('/api/conversations', async (req, res, next) => {
   try {
     const conversations = await db.getConversations();
-    res.json(conversations);
+    res.status(200).json(conversations);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch conversations' });
+    next(error);
   }
 });
 
-// Save all conversations (replaces current list)
-app.post('/api/conversations', async (req, res) => {
+app.post('/api/conversations', async (req, res, next) => {
   try {
     const conversations: Conversation[] = req.body;
     await db.saveConversations(conversations);
-    res.json({ success: true });
+    res.status(200).json({ success: true });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to save conversations' });
+    next(error);
   }
 });
 
-// Get all users
-app.get('/api/users', async (req, res) => {
+app.get('/api/users', async (req, res, next) => {
   try {
     const users = await db.getUsers();
-    res.json(users);
+    res.status(200).json(users);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch users' });
+    next(error);
   }
 });
 
-// Save a user
-app.post('/api/users', async (req, res) => {
+app.post('/api/users', async (req, res, next) => {
   try {
     const user: User = req.body;
     await db.saveUser(user);
-    res.json({ success: true });
+    res.status(200).json(user);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to save user' });
+    next(error);
   }
 });
 
 // Claude Chat Endpoint
-app.post('/api/chat', async (req, res) => {
+app.post('/api/chat', async (req, res, next) => {
   try {
     const { messages } = req.body;
     const client = getAnthropicClient();
 
     if (!client) {
       // Mock response for testing if no API key is provided
-      const userMessage = messages[messages.length - 1].content.toLowerCase();
+      const userMessage = (messages[messages.length - 1]?.content || '').toLowerCase();
       let mockReply = "I'm currently in testing mode (no API key found). How can I help you today?";
       
-      // 1. Greetings
       if (userMessage.match(/hi|hello|hey|greetings|good morning/)) {
         mockReply = "Hello! 👋 I'm your Tuco Parenting Assistant. How can I help you today?";
       }
-      // 2. Skincare
       else if (userMessage.match(/sunscreen|spf|skin|rash|eczema|moisturizer|soap|bath/)) {
         mockReply = "For skincare, we always recommend natural, paraben-free products. For specific concerns like rashes or eczema, it's best to consult a pediatric dermatologist. You can also check the 'Skincare' category in our forum!";
       }
-      // 3. Nutrition & Food
       else if (userMessage.match(/eat|food|vegetable|tiffin|nutrition|protein|water|milk|sugar/)) {
         mockReply = "Nutrition is key for growing kids! Try involving them in cooking to reduce pickiness. Check out our 'Parenting Hacks' for healthy tiffin ideas from other moms.";
       }
-      // 4. Sleep & Growth
       else if (userMessage.match(/sleep|bedtime|walk|teeth|tantrum|growth|potty/)) {
         mockReply = "Every child grows at their own pace. Establishing a consistent bedtime routine usually helps with sleep issues. You'll find many threads on these topics in 'Kids & Growth'.";
       }
-      // 5. School & Learning
       else if (userMessage.match(/school|homework|math|reading|preschool|exam|cbse|ib/)) {
         mockReply = "Education is a big topic! Whether it's choosing between CBSE/IB or managing exam stress, our 'School & Learning' category has plenty of parent-shared experiences.";
       }
-      // 6. Website Features & Navigation
       else if (userMessage.match(/post|discussion|saved|category|categories|reply|image|upload|helpful|notification|search|hot|log out|logout/)) {
         mockReply = "To use the forum: Click 'New Post' to start a discussion, use the 'Helpful' heart to thank others, and find your saved posts in the sidebar. You can also upload images using the camera icon!";
       }
-      // 7. Community & Badges
       else if (userMessage.match(/badge|badges|trusted|insider|score|reward|moderator/)) {
         mockReply = "You earn badges by being helpful! Post quality advice to increase your Trust Score and unlock badges like 'Community Insider' or 'Trusted Member'.";
       }
-      // 8. Recommended Picks
       else if (userMessage.match(/recommended|picks|product|products/)) {
         mockReply = "Recommended Picks are safe, natural Tuco products suggested by our community experts to help with specific parenting needs.";
       }
       
-      return res.json({ content: mockReply });
+      return res.status(200).json({ content: mockReply });
     }
 
     const response = await client.messages.create({
@@ -171,23 +213,43 @@ Your Instructions:
 4. Keep responses concise and easy to read on a mobile-friendly chat window.`,
     });
 
-    res.json({ content: response.content[0].type === 'text' ? response.content[0].text : 'Sorry, I could not process that.' });
+    const content = response.content[0].type === 'text' ? response.content[0].text : 'Sorry, I could not process that.';
+    res.status(200).json({ content });
   } catch (error) {
-    console.error('Claude API Error:', error);
-    res.status(500).json({ error: 'Failed to communicate with Claude' });
+    next(error);
   }
 });
 
-// Shopify Proxy entry point (example)
 app.get('/apps/community', verifyShopifyProxy, (req, res) => {
-  // If request is from Shopify, we can identify the user by req.query.logged_in_customer_id
   const customerId = req.query.logged_in_customer_id;
-  console.log('Request from Shopify for customer:', customerId);
-  
-  // In production, this would serve the built React index.html
   res.send('Welcome to the community! (Proxy is working)');
 });
 
+// ------------------------------
+// CENTRALIZED ERROR HANDLING
+// ------------------------------
+
+app.use((error: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  req.log.error(error, 'Unhandled error');
+  res.status(500).json({ 
+    error: NODE_ENV === 'production' 
+      ? 'Internal server error' 
+      : error.message 
+  });
+});
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ error: 'Not found' });
+});
+
+// ------------------------------
+// START SERVER
+// ------------------------------
+
 app.listen(port, () => {
-  console.log(`Backend server running at http://localhost:${port}`);
+  console.log(`🚀 Server running on http://localhost:${port} [${NODE_ENV}]`);
+  if (NODE_ENV === 'production') {
+    console.log('🔒 Production mode enabled');
+  }
 });

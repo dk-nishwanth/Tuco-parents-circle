@@ -71,6 +71,7 @@ const DEMO_MODERATOR: User = {
   totalUpvotes: 0,
   trustScore: 1,
   emailNotifications: true,
+  savedPosts: [],
 };
 export default function App() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -237,6 +238,13 @@ export default function App() {
     }
     setSavedPosts(newSaved);
     localStorage.setItem('tuco_saved_posts_v1', JSON.stringify(newSaved));
+    
+    // Update current user's saved posts
+    const updatedUser = { ...currentUser, savedPosts: newSaved };
+    setCurrentUser(updatedUser);
+    localStorage.setItem('tuco_current_user', JSON.stringify(updatedUser));
+    saveUser(updatedUser);
+    
     if (savedPosts.includes(threadId)) {
       setWarningModal({
         isOpen: true,
@@ -258,6 +266,11 @@ export default function App() {
     setCurrentUser(user);
     if (user) {
       localStorage.setItem('tuco_current_user', JSON.stringify(user));
+      // Load user's saved posts
+      if (user.savedPosts) {
+        setSavedPosts(user.savedPosts);
+        localStorage.setItem('tuco_saved_posts_v1', JSON.stringify(user.savedPosts));
+      }
       try {
         await api.saveUser(user);
         const updatedUsers = { ...users, [user.id]: user };
@@ -276,6 +289,7 @@ export default function App() {
       }
     } else {
       localStorage.removeItem('tuco_current_user');
+      setSavedPosts([]);
     }
   };
   const checkAndAwardBadges = (user: User) => {
@@ -315,8 +329,8 @@ export default function App() {
     const newUser: User = {
       id: `user_${Date.now()}`,
       username,
-      email,
-      city,
+      email: email.trim().toLowerCase(),
+      city: city || 'India',
       childAge,
       role: 'member',
       badges: [],
@@ -327,19 +341,26 @@ export default function App() {
       totalUpvotes: 0,
       trustScore: 0.5,
       emailNotifications: true,
+      savedPosts: [],
     };
+
     const updatedUsers = { ...users, [newUser.id]: newUser };
     setUsers(updatedUsers);
     localStorage.setItem('tuco_users_db', JSON.stringify(updatedUsers));
-    setSessionCredentials({ email, password: '(signed up via OTP)' });
+    setSessionCredentials({ email: newUser.email, password: '(signed up via OTP)' });
+    setCurrentUser(newUser);
     saveUser(newUser);
     setIsAuthOpen(false);
   };
+
   const handleLogin = (email: string, password: string) => {
     const normalizedEmail = email.trim().toLowerCase();
     if (!normalizedEmail) return;
+
     setSessionCredentials({ email: email.trim(), password });
-    let user = Object.values(users).find(u => u.email.toLowerCase() === normalizedEmail);
+
+    let user: User | undefined = Object.values(users).find(u => u.email.toLowerCase() === normalizedEmail);
+
     if (normalizedEmail === DEMO_MODERATOR.email.toLowerCase()) {
       user = DEMO_MODERATOR;
     } else if (!user) {
@@ -358,11 +379,15 @@ export default function App() {
         totalUpvotes: 0,
         trustScore: 0.5,
         emailNotifications: true,
+        savedPosts: [],
       };
+
       const updatedUsers = { ...users, [user.id]: user };
       setUsers(updatedUsers);
       localStorage.setItem('tuco_users_db', JSON.stringify(updatedUsers));
     }
+
+    setCurrentUser(user);
     saveUser(user);
     setIsAuthOpen(false);
   };
