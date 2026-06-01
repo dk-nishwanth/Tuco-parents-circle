@@ -1,7 +1,7 @@
 {
-  "name": "react-example",
+  "name": "tuco-parents-circle",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -17,7 +17,9 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:seed": "prisma db seed",
-    "db:migrate": "prisma migrate dev"
+    "db:migrate": "prisma migrate dev",
+    "postinstall": "prisma generate",
+    "start": "npm run build && NODE_ENV=production tsx server/index.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.98.0",

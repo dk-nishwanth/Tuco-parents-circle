@@ -1,0 +1,14 @@
+[phases.setup]
+  nixpkgsArchive = "2024-01-15"
+  nixPkgs = ["nodejs", "git"]
+
+[phases.install]
+  cmds = ["npm ci"]
+  dependsOn = ["setup"]
+
+[phases.build]
+  cmds = ["npm run build"]
+  dependsOn = ["install"]
+
+[start]
+  cmd = "npm run start"

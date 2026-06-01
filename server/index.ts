@@ -5,6 +5,8 @@ import dotenv from 'dotenv';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import pino from 'pino-http';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { Database } from './db';
 import { Conversation, User } from '../src/types';
 import Anthropic from '@anthropic-ai/sdk';
@@ -101,24 +103,18 @@ const verifyShopifyProxy = (req: express.Request, res: express.Response, next: e
 };
 
 // ------------------------------
-// ROOT & HEALTH CHECKS
+// STATIC FILES (FRONTEND)
 // ------------------------------
 
-app.get('/', (req, res) => {
-  res.status(200).json({ 
-    message: 'Tuco Parents Circle API', 
-    status: 'running',
-    endpoints: [
-      'GET /health',
-      'GET /api/health',
-      'GET /api/conversations',
-      'POST /api/conversations',
-      'GET /api/users',
-      'POST /api/users',
-      'POST /api/chat'
-    ]
-  });
-});
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const distPath = path.join(__dirname, '..', 'dist');
+
+app.use(express.static(distPath));
+
+// ------------------------------
+// ROOT & HEALTH CHECKS
+// ------------------------------
 
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'healthy', uptime: process.uptime() });
@@ -126,6 +122,14 @@ app.get('/health', (req, res) => {
 
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok', time: new Date().toISOString(), env: NODE_ENV });
+});
+
+// Serve React app for all non-API routes
+app.get('*', (req, res) => {
+  if (req.path.startsWith('/api') || req.path.startsWith('/apps')) {
+    return res.status(404).json({ error: 'Not found' });
+  }
+  res.sendFile(path.join(distPath, 'index.html'));
 });
 
 // ------------------------------

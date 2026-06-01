@@ -1,8 +1,7 @@
 import { Conversation, User, Notification } from '../types';
 
-// Use the current hostname to prevent connection issues when accessing via IP
-const API_HOST = window.location.hostname;
-const API_BASE_URL = `http://${API_HOST}:3002/api`;
+// Use relative path since frontend and backend are served from the same domain
+const API_BASE_URL = '/api';
 
 export const api = {
   async checkHealth(): Promise<boolean> {
