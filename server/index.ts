@@ -45,7 +45,7 @@ app.use('/api/', apiLimiter);
 // CORS configuration
 const corsOptions = {
   origin: NODE_ENV === 'production' 
-    ? ['https://yourdomain.com', 'https://admin.shopify.com'] // Add your actual domains
+    ? true // Allow all origins for Railway deployment (update with your domain later
     : ['http://localhost:3000', 'http://localhost:3006', 'http://localhost:5173'], // Dev origins
   credentials: true,
   optionsSuccessStatus: 200
