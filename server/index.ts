@@ -101,8 +101,24 @@ const verifyShopifyProxy = (req: express.Request, res: express.Response, next: e
 };
 
 // ------------------------------
-// HEALTH CHECKS
+// ROOT & HEALTH CHECKS
 // ------------------------------
+
+app.get('/', (req, res) => {
+  res.status(200).json({ 
+    message: 'Tuco Parents Circle API', 
+    status: 'running',
+    endpoints: [
+      'GET /health',
+      'GET /api/health',
+      'GET /api/conversations',
+      'POST /api/conversations',
+      'GET /api/users',
+      'POST /api/users',
+      'POST /api/chat'
+    ]
+  });
+});
 
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'healthy', uptime: process.uptime() });
