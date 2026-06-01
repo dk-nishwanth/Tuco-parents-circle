@@ -124,14 +124,6 @@ app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok', time: new Date().toISOString(), env: NODE_ENV });
 });
 
-// Serve React app for all non-API routes
-app.get('*', (req, res) => {
-  if (req.path.startsWith('/api') || req.path.startsWith('/apps')) {
-    return res.status(404).json({ error: 'Not found' });
-  }
-  res.sendFile(path.join(distPath, 'index.html'));
-});
-
 // ------------------------------
 // API ENDPOINTS
 // ------------------------------
@@ -243,6 +235,14 @@ Your Instructions:
 app.get('/apps/community', verifyShopifyProxy, (req, res) => {
   const customerId = req.query.logged_in_customer_id;
   res.send('Welcome to the community! (Proxy is working)');
+});
+
+// Serve React app for all non-API routes - MUST COME LAST!
+app.get('*', (req, res) => {
+  if (req.path.startsWith('/api') || req.path.startsWith('/apps')) {
+    return res.status(404).json({ error: 'Not found' });
+  }
+  res.sendFile(path.join(distPath, 'index.html'));
 });
 
 // ------------------------------
