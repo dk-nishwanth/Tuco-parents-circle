@@ -9,7 +9,7 @@ import Anthropic from '@anthropic-ai/sdk';
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3001;
+const port = process.env.PORT || 3002;
 const db = Database.getInstance();
 
 // Move anthropic initialization to a function or handle empty key

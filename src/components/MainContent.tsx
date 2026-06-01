@@ -126,8 +126,14 @@ export function MainContent({
               onClick={() => setIsCategoryOpen(!isCategoryOpen)}
               className="flex items-center gap-1 px-3 py-1.5 bg-white border border-neutral-200 rounded-lg text-[13px] font-display font-bold text-[#4D4747] shadow-sm"
             >
-              <Users className="w-4 h-4 text-tuco-cyan" strokeWidth={2} />
-              <span>All Discussions</span>
+              {activeCategory === 'saved' ? (
+                <span className="text-sm">📌</span>
+              ) : categoryItem ? (
+                <span className="text-sm">{categoryItem.icon}</span>
+              ) : (
+                <Users className="w-4 h-4 text-tuco-cyan" strokeWidth={2} />
+              )}
+              <span>{activeCategory === 'saved' ? 'Saved Discussions' : categoryItem ? categoryItem.label : 'All Discussions'}</span>
               <ChevronDown className={`w-3.5 h-3.5 text-neutral-400 transition-transform ${isCategoryOpen ? 'rotate-180' : ''}`} strokeWidth={2} />
             </button>
             

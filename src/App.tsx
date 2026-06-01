@@ -941,6 +941,33 @@ export default function App() {
         currentUser={currentUser}
         likedReplies={likedReplies}
         users={users}
+        searchTerm={searchTerm}
+        onSearch={setSearchTerm}
+        conversations={conversations}
+        onNewPostClick={openNewPost}
+        onLogout={handleLogout}
+        onLoginClick={() => setIsAuthOpen(true)}
+        onModerationClick={() => setIsModerationOpen(true)}
+        onAdminClick={() => setIsAdminOpen(true)}
+        onProfileClick={() => setIsProfileOpen(true)}
+        onNotificationsClick={() => {}}
+        onOpenCategories={() =>
+          setActiveCategory(activeCategory === 'sidebar-open' ? 'all' : 'sidebar-open')
+        }
+        notifications={notifications}
+        onMarkAsRead={(id) => {
+          const updated = notifications.map(n => (n.id === id ? { ...n, read: true } : n));
+          setNotifications(updated);
+        }}
+        onSuggestionSelect={(id) => {
+          setSearchTerm('');
+          handleThreadOpen(id);
+        }}
+        onThreadOpen={handleThreadOpen}
+        activeCategory={activeCategory}
+        onCategoryChange={(catId) => {
+          setActiveCategory(catId);
+        }}
       />
       <NewPostModal
         isOpen={isNewPostOpen}
