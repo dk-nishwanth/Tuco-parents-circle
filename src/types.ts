@@ -78,6 +78,7 @@ export interface User {
   id: string;
   username: string;
   email: string;
+  passwordHash?: string;
   city: string;
   childAge?: string;
   role: UserRole;
@@ -135,5 +136,24 @@ export interface Notification {
   time: string;
   read: boolean;
   threadId?: number;
+}
+
+export interface Vote {
+  id?: string;
+  userId?: string;
+  conversationId?: number;
+  replyId?: number;
+  type: 'UP' | 'DOWN';
+  createdAt?: string;
+}
+
+export interface ModerationLog {
+  id?: string;
+  moderatorId?: string;
+  targetType?: 'CONVERSATION' | 'REPLY';
+  targetId?: number;
+  action?: string;
+  reason?: string;
+  createdAt?: string;
 }
 
