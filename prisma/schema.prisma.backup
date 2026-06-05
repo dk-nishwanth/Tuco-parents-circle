@@ -1,0 +1,226 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// --- Users Table ---
+model User {
+  id                String         @id @default(uuid())
+  username          String
+  email            String         @unique
+  passwordHash      String
+  city              String
+  childAge          String?
+  role              UserRole       @default(MEMBER)
+  badges            Json? // We'll store Badge[] as JSON for now (since it's embedded in your original types
+  createdAt         DateTime       @default(now())
+  isVerified        Boolean        @default(false)
+  postCount         Int            @default(0)
+  replyCount        Int            @default(0)
+  totalUpvotes      Int            @default(0)
+  trustScore        Int            @default(0)
+  emailNotifications Boolean        @default(true)
+  savedPosts        Int[]
+  conversations     Conversation[]
+  replies           Reply[]
+  votes             Vote[]
+  notifications     Notification[]
+  chatSessions      ChatSession[]
+}
+
+// --- Conversations Table ---
+model Conversation {
+  id                Int               @id @default(autoincrement())
+  title             String
+  category          String
+  isPinned          Boolean           @default(false)
+  isHot             Boolean           @default(false)
+  isFeatured        Boolean           @default(false)
+  featuredLabel     String?
+  votes             Int               @default(0)
+  views             Int               @default(0)
+  opAuthor          String
+  opCity            String
+  opTime            String
+  opText            String
+  opImage           String?
+  opAuthorRole      UserRole          @default(MEMBER)
+  opAuthorBadges    String[] // Array of BadgeType values
+  replies           Reply[]
+  moderationStatus  ModerationStatus  @default(PENDING)
+  moderatedBy       String?
+  moderationReason String?
+  createdAt         DateTime          @default(now())
+  authorId          String
+  author            User              @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  greyAreaFlags    String[] // Array of GreyAreaFlag
+  reviewPriority    Int?
+  votesRelation      Vote[] @relation("VoteToConversation")
+}
+
+// --- Replies Table ---
+model Reply {
+  id                Int               @id @default(autoincrement())
+  conversationId    Int
+  conversation      Conversation      @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  author            String
+  authorId          String
+  authorUser        User              @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  city              String
+  time              String
+  text              String
+  image             String?
+  tucoRec           String?
+  likes             Int               @default(0)
+  authorRole        UserRole          @default(MEMBER)
+  authorBadges      String[]
+  moderationStatus  ModerationStatus  @default(PENDING)
+  votesRelation     Vote[] @relation("VoteToReply")
+}
+
+// --- Votes & Likes Table ---
+model Vote {
+  id               String            @id @default(uuid())
+  userId           String
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversationId   Int?
+  conversation     Conversation?     @relation("VoteToConversation", fields: [conversationId], references: [id], onDelete: Cascade)
+  replyId          Int?
+  reply            Reply?            @relation("VoteToReply", fields: [replyId], references: [id], onDelete: Cascade)
+  type             VoteType
+  createdAt        DateTime          @default(now())
+}
+
+// --- Notifications Table ---
+model Notification {
+  id              Int               @id @default(autoincrement())
+  userId          String
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type            NotificationType
+  title           String
+  description     String
+  time            String
+  read            Boolean           @default(false)
+  threadId        Int?
+}
+
+// --- AI Chat Sessions Table ---
+model ChatSession {
+  id            String         @id @default(uuid())
+  userId        String
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages      ChatMessage[]
+  createdAt     DateTime       @default(now())
+  lastActive    DateTime       @default(now())
+}
+
+model ChatMessage {
+  id            String         @id @default(uuid())
+  sessionId     String
+  session       ChatSession    @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  role          ChatRole
+  content       String
+  timestamp     DateTime       @default(now())
+}
+
+// --- Moderation Logs Table ---
+model ModerationLog {
+  id             String           @id @default(uuid())
+  moderatorId    String
+  targetType     ModerationTarget
+  targetId       Int
+  action         ModerationAction
+  reason         String?
+  timestamp      DateTime         @default(now())
+}
+
+// --- Categories Table ---
+model Category {
+  id           String  @id
+  label        String
+  icon         String
+  className    String
+  count        Int     @default(0)
+  bg           String
+  text         String
+  border       String
+}
+
+// --- Products Table ---
+model Product {
+  id         String  @id
+  name       String
+  icon       String
+  subtitle   String
+  tag        String
+  price      String
+  linkUrl    String
+}
+
+// --- Email Logs Table ---
+model EmailLog {
+  id        String       @id @default(uuid())
+  type      EmailType
+  to        String
+  subject   String
+  sentAt    DateTime     @default(now())
+  preview   String
+}
+
+// --- Enums ---
+enum UserRole {
+  GUEST
+  MEMBER
+  TRUSTED
+  MODERATOR
+  TUCO_TEAM
+}
+
+enum ModerationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  FLAGGED
+}
+
+enum VoteType {
+  UP
+  DOWN
+}
+
+enum NotificationType {
+  REPLY
+  LIKE
+  BADGE
+  SYSTEM
+}
+
+enum ChatRole {
+  USER
+  ASSISTANT
+}
+
+enum ModerationTarget {
+  CONVERSATION
+  REPLY
+}
+
+enum ModerationAction {
+  APPROVED
+  REJECTED
+  FLAGGED
+}
+
+enum EmailType {
+  APPROVAL
+  WEEKLY_ENGAGEMENT
+  LAUNCH
+}
