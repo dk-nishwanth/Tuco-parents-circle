@@ -285,17 +285,28 @@ app.post('/api/auth/signup', authLimiter, async (req: AuthRequest, res, next) =>
         role: 'MEMBER',
         isVerified: false,
         trustScore: 50, // 0.5 in frontend scale
+        savedPosts: [], // Initialize empty array
       },
     });
 
+    // Check for JWT_SECRET
+    if (!JWT_SECRET) {
+      console.error('JWT_SECRET is not set');
+      return res.status(500).json({ error: 'Server configuration error' });
+    }
+
     const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: '30d' });
 
-    // Send welcome email
-    await sendEmail(
-      user.email,
-      'Welcome to Tuco Parents Circle!',
-      `<h2>Welcome, ${user.username}!</h2><p>You've joined the Tuco Parents Circle community. Start sharing your parenting experiences today!</p><p><a href="${process.env.FRONTEND_URL || 'https://your-app.onrender.com'}">Visit the community</a></p>`
-    );
+    // Send welcome email (don't fail signup if email fails)
+    try {
+      await sendEmail(
+        user.email,
+        'Welcome to Tuco Parents Circle!',
+        `<h2>Welcome, ${user.username}!</h2><p>You've joined the Tuco Parents Circle community. Start sharing your parenting experiences today!</p><p><a href="${process.env.FRONTEND_URL || 'https://your-app.onrender.com'}">Visit the community</a></p>`
+      );
+    } catch (emailErr) {
+      console.warn('Welcome email failed, but signup successful:', emailErr);
+    }
 
     res.status(201).json({ token, user: formatUser(user) });
   } catch (error) {
