@@ -45,7 +45,7 @@ import {
   sendWeeklyEngagementToAllUsers,
 } from './utils/emailService';
 import { mergeSeedWithExisting } from './utils/seedContent';
-import { api } from './utils/api';
+import { api, tokenStore } from './utils/api';
 import { ChatBot } from './components/ChatBot';
 import tucoLogo from './assets/tuco-logo.webp';
 function enrichConversations(threads: Conversation[]): Conversation[] {
@@ -112,11 +112,24 @@ export default function App() {
   useEffect(() => {
     async function initData() {
       try {
-        // Fetch from API
-        const [apiConversations, apiUsers] = await Promise.all([
-          api.getConversations(),
-          api.getUsers(),
-        ]);
+        // Check if user has an existing session
+        const existingToken = tokenStore.get();
+        if (existingToken) {
+          try {
+            const user = await api.getMe();
+            setCurrentUser(user);
+            if (user.savedPosts) {
+              setSavedPosts(user.savedPosts);
+            }
+          } catch (error) {
+            console.error('Failed to restore session:', error);
+            tokenStore.clear();
+          }
+        }
+
+        // Fetch conversations from API
+        const apiConversations = await api.getConversations();
+        const apiUsers = await api.getUsers();
 
         const categoryIds = Object.keys(CATEGORIES);
         const hasAllCategories = categoryIds.every(catId => 
@@ -124,7 +137,23 @@ export default function App() {
         );
         if (apiConversations.length < 100 || !hasAllCategories) {
           const seeded = enrichConversations(mergeSeedWithExisting(apiConversations, 100));
-          await api.saveConversations(seeded);
+          // Create conversations in the backend
+          for (const conv of seeded) {
+            try {
+              await api.createConversation({
+                title: conv.title,
+                category: conv.category,
+                city: conv.op.city,
+                text: conv.op.text,
+                image: conv.op.image,
+                moderationStatus: conv.moderationStatus,
+                greyAreaFlags: conv.greyAreaFlags,
+                reviewPriority: conv.reviewPriority,
+              });
+            } catch (error) {
+              console.error('Failed to create conversation:', error);
+            }
+          }
           setConversations(seeded);
         } else {
           setConversations(apiConversations);
@@ -132,7 +161,7 @@ export default function App() {
 
         if (Object.keys(apiUsers).length === 0) {
           // Seed users if empty
-          await api.saveUser(DEMO_MODERATOR);
+          await api.updateMe(DEMO_MODERATOR);
           setUsers({ [DEMO_MODERATOR.id]: DEMO_MODERATOR });
         } else {
           setUsers(apiUsers);
@@ -163,18 +192,6 @@ export default function App() {
           setNotifications(JSON.parse(cachedNotifications));
         } catch {}
       }
-      const cachedSavedPosts = localStorage.getItem('tuco_saved_posts_v1');
-      if (cachedSavedPosts) {
-        try {
-          setSavedPosts(JSON.parse(cachedSavedPosts));
-        } catch {}
-      }
-      const cachedUser = localStorage.getItem('tuco_current_user');
-      if (cachedUser) {
-        try {
-          setCurrentUser(JSON.parse(cachedUser));
-        } catch {}
-      }
 
       const minDisplayMs = 1200;
       setTimeout(() => setIsAppReady(true), minDisplayMs);
@@ -198,7 +215,43 @@ export default function App() {
     
     setConversations(uniqueThreads);
     try {
-      await api.saveConversations(uniqueThreads);
+      // For each conversation that has changed, update it via API
+      // This is a simplified approach - in a real app you'd track which specific fields changed
+      for (const conv of uniqueThreads) {
+        const existingConv = conversations.find(c => c.id === conv.id);
+        if (!existingConv) {
+          // New conversation - create it
+          await api.createConversation({
+            title: conv.title,
+            category: conv.category,
+            city: conv.op.city,
+            text: conv.op.text,
+            image: conv.op.image,
+            moderationStatus: conv.moderationStatus,
+            greyAreaFlags: conv.greyAreaFlags,
+            reviewPriority: conv.reviewPriority,
+          });
+        } else {
+          // Existing conversation - update fields that may have changed
+          if (
+            existingConv.votes !== conv.votes ||
+            existingConv.views !== conv.views ||
+            existingConv.isPinned !== conv.isPinned ||
+            existingConv.isFeatured !== conv.isFeatured ||
+            existingConv.moderationStatus !== conv.moderationStatus
+          ) {
+            await api.updateConversation(conv.id, {
+              votes: conv.votes,
+              views: conv.views,
+              isPinned: conv.isPinned,
+              isFeatured: conv.isFeatured,
+              moderationStatus: conv.moderationStatus,
+              moderationReason: conv.moderationReason,
+              moderatedBy: conv.moderatedBy,
+            });
+          }
+        }
+      }
     } catch (error) {
       console.error('Failed to sync with the server:', error);
       setWarningModal({
@@ -237,13 +290,13 @@ export default function App() {
       newSaved = [...savedPosts, threadId];
     }
     setSavedPosts(newSaved);
-    localStorage.setItem('tuco_saved_posts_v1', JSON.stringify(newSaved));
     
-    // Update current user's saved posts
+    // Update current user's saved posts via API
     const updatedUser = { ...currentUser, savedPosts: newSaved };
     setCurrentUser(updatedUser);
-    localStorage.setItem('tuco_current_user', JSON.stringify(updatedUser));
-    saveUser(updatedUser);
+    api.updateMe({ savedPosts: newSaved }).catch(error => {
+      console.error('Failed to update saved posts:', error);
+    });
     
     if (savedPosts.includes(threadId)) {
       setWarningModal({
@@ -265,31 +318,25 @@ export default function App() {
   const saveUser = async (user: User | null) => {
     setCurrentUser(user);
     if (user) {
-      localStorage.setItem('tuco_current_user', JSON.stringify(user));
-      // Load user's saved posts
-      if (user.savedPosts) {
-        setSavedPosts(user.savedPosts);
-        localStorage.setItem('tuco_saved_posts_v1', JSON.stringify(user.savedPosts));
-      }
+      // Update user via API
       try {
-        await api.saveUser(user);
-        const updatedUsers = { ...users, [user.id]: user };
+        const updated = await api.updateMe(user);
+        setCurrentUser(updated);
+        const updatedUsers = { ...users, [user.id]: updated };
         setUsers(updatedUsers);
 
         // Check for promotion to trusted member
         if (user.trustScore >= 0.85 && user.role === 'member') {
-          const promoted = { ...user, role: 'trusted' as const };
+          const promoted = { ...updated, role: 'trusted' as const };
+          await api.updateMe(promoted);
           setCurrentUser(promoted);
-          localStorage.setItem('tuco_current_user', JSON.stringify(promoted));
-          await api.saveUser(promoted);
           setUsers({ ...updatedUsers, [user.id]: promoted });
         }
       } catch (error) {
         console.error('Failed to save user to API:', error);
       }
     } else {
-      localStorage.removeItem('tuco_current_user');
-      setSavedPosts([]);
+      api.logout();
     }
   };
   const checkAndAwardBadges = (user: User) => {
@@ -325,75 +372,71 @@ export default function App() {
       });
     }
   };
-  const handleSignup = (email: string, username: string, city: string, childAge: string) => {
-    const newUser: User = {
-      id: `user_${Date.now()}`,
-      username,
-      email: email.trim().toLowerCase(),
-      city: city || 'India',
-      childAge,
-      role: 'member',
-      badges: [],
-      createdAt: new Date().toISOString(),
-      isVerified: true,
-      postCount: 0,
-      replyCount: 0,
-      totalUpvotes: 0,
-      trustScore: 0.5,
-      emailNotifications: true,
-      savedPosts: [],
-    };
-
-    const updatedUsers = { ...users, [newUser.id]: newUser };
-    setUsers(updatedUsers);
-    localStorage.setItem('tuco_users_db', JSON.stringify(updatedUsers));
-    setSessionCredentials({ email: newUser.email, password: '(signed up via OTP)' });
-    setCurrentUser(newUser);
-    saveUser(newUser);
-    setIsAuthOpen(false);
-  };
-
-  const handleLogin = (email: string, password: string) => {
-    const normalizedEmail = email.trim().toLowerCase();
-    if (!normalizedEmail) return;
-
-    setSessionCredentials({ email: email.trim(), password });
-
-    let user: User | undefined = Object.values(users).find(u => u.email.toLowerCase() === normalizedEmail);
-
-    if (normalizedEmail === DEMO_MODERATOR.email.toLowerCase()) {
-      user = DEMO_MODERATOR;
-    } else if (!user) {
-      const username = normalizedEmail.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '_') || 'Parent';
-      user = {
-        id: `user_${Date.now()}`,
-        username,
-        email: normalizedEmail,
-        city: 'India',
-        role: 'member',
-        badges: [],
-        createdAt: new Date().toISOString(),
-        isVerified: true,
-        postCount: 0,
-        replyCount: 0,
-        totalUpvotes: 0,
-        trustScore: 0.5,
-        emailNotifications: true,
-        savedPosts: [],
-      };
-
+  const handleSignup = async (email: string, username: string, city: string, childAge: string, password: string) => {
+    try {
+      const { user, token } = await api.signup(email, password, username, city, childAge);
+      
+      // User is already logged in and token is stored by api.signup()
       const updatedUsers = { ...users, [user.id]: user };
       setUsers(updatedUsers);
-      localStorage.setItem('tuco_users_db', JSON.stringify(updatedUsers));
+      setCurrentUser(user);
+      setSessionCredentials({ email: user.email, password });
+      
+      setIsAuthOpen(false);
+      setWarningModal({
+        isOpen: true,
+        type: 'success',
+        title: 'Welcome!',
+        message: `Welcome to the circle, ${user.username}! 👋`,
+      });
+    } catch (error) {
+      console.error('Signup failed:', error);
+      setWarningModal({
+        isOpen: true,
+        type: 'error',
+        title: 'Signup Failed',
+        message: error instanceof Error ? error.message : 'Failed to create account. Please try again.',
+      });
     }
+  };
 
-    setCurrentUser(user);
-    saveUser(user);
-    setIsAuthOpen(false);
+  const handleLogin = async (email: string, password: string) => {
+    try {
+      const { user, token } = await api.login(email, password);
+      
+      // User is already logged in and token is stored by api.login()
+      const updatedUsers = { ...users, [user.id]: user };
+      setUsers(updatedUsers);
+      setCurrentUser(user);
+      setSessionCredentials({ email, password });
+      
+      // Load user's saved posts
+      if (user.savedPosts) {
+        setSavedPosts(user.savedPosts);
+      }
+      
+      setIsAuthOpen(false);
+      setWarningModal({
+        isOpen: true,
+        type: 'success',
+        title: 'Welcome Back!',
+        message: `Welcome back, ${user.username}! 👋`,
+      });
+    } catch (error) {
+      console.error('Login failed:', error);
+      setWarningModal({
+        isOpen: true,
+        type: 'error',
+        title: 'Login Failed',
+        message: error instanceof Error ? error.message : 'Invalid email or password. Please try again.',
+      });
+    }
   };
   const handleLogout = () => {
     setSessionCredentials(null);
-    saveUser(null);
+    api.logout();
+    setCurrentUser(null);
+    setSavedPosts([]);
   };
   const selectedThread = conversations.find(c => c.id === selectedThreadId) || null;
   const isSearchMode = searchTerm.trim().length > 0;
@@ -433,43 +476,61 @@ export default function App() {
     setSelectedThreadId(threadId);
     setIsModalOpen(true);
   };
-  const handleVote = (threadId: number, type: 'up' | 'down') => {
+  const handleVote = async (threadId: number, type: 'up' | 'down') => {
     if (!currentUser) {
       setIsAuthOpen(true);
       return;
     }
-    const previousState = votedThreads[threadId] || null;
-    let voteDiff = 0;
-    let upvoteDiff = 0;
-    if (previousState === type) {
-      voteDiff = type === 'up' ? -1 : 1;
-      upvoteDiff = type === 'up' ? -1 : 0;
-      const nextVotes = { ...votedThreads };
-      delete nextVotes[threadId];
-      saveVotes(nextVotes);
-    } else {
-      if (previousState === null) {
-        voteDiff = type === 'up' ? 1 : -1;
-        upvoteDiff = type === 'up' ? 1 : 0;
-      } else {
-        voteDiff = type === 'up' ? 2 : -2;
-        upvoteDiff = type === 'up' ? 1 : -1;
-      }
-      saveVotes({ ...votedThreads, [threadId]: type });
-    }
     
-    setConversations(prev => {
-      const updated = prev.map(c =>
-        c.id === threadId ? { ...c, votes: c.votes + voteDiff } : c
-      );
-      saveConversations(updated);
-      return updated;
-    });
+    try {
+      // Call API to register the vote
+      await api.vote({
+        conversationId: threadId,
+        type: type.toUpperCase() as 'UP' | 'DOWN',
+      });
+      
+      const previousState = votedThreads[threadId] || null;
+      let voteDiff = 0;
+      let upvoteDiff = 0;
+      
+      if (previousState === type) {
+        voteDiff = type === 'up' ? -1 : 1;
+        upvoteDiff = type === 'up' ? -1 : 0;
+        const nextVotes = { ...votedThreads };
+        delete nextVotes[threadId];
+        saveVotes(nextVotes);
+      } else {
+        if (previousState === null) {
+          voteDiff = type === 'up' ? 1 : -1;
+          upvoteDiff = type === 'up' ? 1 : 0;
+        } else {
+          voteDiff = type === 'up' ? 2 : -2;
+          upvoteDiff = type === 'up' ? 1 : -1;
+        }
+        saveVotes({ ...votedThreads, [threadId]: type });
+      }
+      
+      setConversations(prev => {
+        const updated = prev.map(c =>
+          c.id === threadId ? { ...c, votes: c.votes + voteDiff } : c
+        );
+        saveConversations(updated);
+        return updated;
+      });
 
-    if (upvoteDiff !== 0 && currentUser) {
-      const updatedUser = { ...currentUser, totalUpvotes: currentUser.totalUpvotes + upvoteDiff };
-      saveUser(updatedUser);
-      checkAndAwardBadges(updatedUser);
+      if (upvoteDiff !== 0 && currentUser) {
+        const updatedUser = { ...currentUser, totalUpvotes: currentUser.totalUpvotes + upvoteDiff };
+        saveUser(updatedUser);
+        checkAndAwardBadges(updatedUser);
+      }
+    } catch (error) {
+      console.error('Failed to vote:', error);
+      setWarningModal({
+        isOpen: true,
+        type: 'error',
+        title: 'Vote Failed',
+        message: 'Failed to register your vote. Please try again.',
+      });
     }
   };
   const detectProductRecommendation = (text: string): string | undefined => {
@@ -480,7 +541,7 @@ export default function App() {
     if (/shampoo|hair|scalp|lice|conditioning/.test(raw)) return 'shampoo';
     return undefined;
   };
-  const handleAddReply = (
+  const handleAddReply = async (
     threadId: number,
     name: string,
     city: string,
@@ -505,46 +566,65 @@ export default function App() {
       return;
     }
 
-    const newReply: Reply = {
-      id: Date.now() + Math.random(),
-      author: name,
-      city,
-      time: 'Just now',
-      text: analysis.civilityReminder ? `${text}\n\n---\n💛 ${analysis.civilityReminder}` : text,
-      image,
-      tucoRec: detectProductRecommendation(text),
-      likes: 0,
-      authorRole: currentUser.role,
-      authorBadges: currentUser.badges.map(b => b.type),
-    };
+    try {
+      const tucoRec = detectProductRecommendation(text);
+      
+      // Create reply via API
+      const createdReply = await api.addReply(threadId, {
+        text: analysis.civilityReminder ? `${text}\n\n---\n💛 ${analysis.civilityReminder}` : text,
+        city,
+        image,
+        tucoRec,
+      });
 
-    setConversations(prev => {
-      const thread = prev.find(c => c.id === threadId);
-      const updated = prev.map(c =>
-        c.id === threadId ? { ...c, replies: [...c.replies, newReply] } : c
-      );
+      const newReply: Reply = {
+        id: createdReply.id || Date.now() + Math.random(),
+        author: name,
+        city,
+        time: 'Just now',
+        text: analysis.civilityReminder ? `${text}\n\n---\n💛 ${analysis.civilityReminder}` : text,
+        image,
+        tucoRec,
+        likes: 0,
+        authorRole: currentUser.role,
+        authorBadges: currentUser.badges.map(b => b.type),
+      };
 
-      // Add notification for the thread author
-      if (thread && thread.authorId && thread.authorId !== currentUser.id) {
-        const newNotif: Notification = {
-          id: Date.now() + Math.random(),
-          type: 'reply',
-          title: 'New reply to your thread',
-          description: `${currentUser.username} replied to "${thread.title}"`,
-          time: 'Just now',
-          read: false,
-          threadId: thread.id,
-        };
-        saveNotifications([newNotif, ...notifications]);
-      }
+      setConversations(prev => {
+        const thread = prev.find(c => c.id === threadId);
+        const updated = prev.map(c =>
+          c.id === threadId ? { ...c, replies: [...c.replies, newReply] } : c
+        );
 
-      saveConversations(updated);
-      return updated;
-    });
+        // Add notification for the thread author
+        if (thread && thread.authorId && thread.authorId !== currentUser.id) {
+          const newNotif: Notification = {
+            id: Date.now() + Math.random(),
+            type: 'reply',
+            title: 'New reply to your thread',
+            description: `${currentUser.username} replied to "${thread.title}"`,
+            time: 'Just now',
+            read: false,
+            threadId: thread.id,
+          };
+          saveNotifications([newNotif, ...notifications]);
+        }
 
-    const updatedUser = { ...currentUser, replyCount: currentUser.replyCount + 1 };
-    saveUser(updatedUser);
-    checkAndAwardBadges(updatedUser);
+        return updated;
+      });
+
+      const updatedUser = { ...currentUser, replyCount: currentUser.replyCount + 1 };
+      saveUser(updatedUser);
+      checkAndAwardBadges(updatedUser);
+    } catch (error) {
+      console.error('Failed to add reply:', error);
+      setWarningModal({
+        isOpen: true,
+        type: 'error',
+        title: 'Reply Failed',
+        message: error instanceof Error ? error.message : 'Failed to add reply. Please try again.',
+      });
+    }
   };
   const handleReportReply = (threadId: number, replyId: number) => {
     if (!currentUser) {
@@ -554,58 +634,107 @@ export default function App() {
     setReportTarget({ type: 'reply', id: replyId });
     setIsReportOpen(true);
   };
-  const handleSubmitReport = (reason: string, details: string) => {
-    setWarningModal({
-      isOpen: true,
-      type: 'success',
-      title: 'Report Submitted',
-      message: 'Thank you for your report. Our moderation team will review this promptly.',
-    });
-    setReportTarget(null);
+  const handleSubmitReport = async (reason: string, details: string) => {
+    if (!reportTarget) return;
+    
+    try {
+      await api.submitReport({
+        targetType: reportTarget.type,
+        targetId: reportTarget.id,
+        reason,
+        details,
+      });
+      
+      setWarningModal({
+        isOpen: true,
+        type: 'success',
+        title: 'Report Submitted',
+        message: 'Thank you for your report. Our moderation team will review this promptly.',
+      });
+      setReportTarget(null);
+    } catch (error) {
+      console.error('Failed to submit report:', error);
+      setWarningModal({
+        isOpen: true,
+        type: 'error',
+        title: 'Report Failed',
+        message: error instanceof Error ? error.message : 'Failed to submit report. Please try again.',
+      });
+    }
   };
-  const handleEditReply = (threadId: number, replyId: number, newText: string) => {
+  const handleEditReply = async (threadId: number, replyId: number, newText: string) => {
     if (!currentUser) {
       setIsAuthOpen(true);
       return;
     }
-    const updated = conversations.map(c => {
-      if (c.id === threadId) {
-        const updatedReplies = c.replies.map(r => {
-          if (r.id === replyId) {
-            return { ...r, text: newText };
-          }
-          return r;
-        });
-        return { ...c, replies: updatedReplies };
-      }
-      return c;
-    });
-    saveConversations(updated);
-    setWarningModal({
-      isOpen: true,
-      type: 'success',
-      title: 'Reply Updated',
-      message: 'Your reply has been successfully updated!',
-    });
+    
+    try {
+      // Update reply via API
+      await api.updateReply(replyId, { text: newText });
+      
+      const updated = conversations.map(c => {
+        if (c.id === threadId) {
+          const updatedReplies = c.replies.map(r => {
+            if (r.id === replyId) {
+              return { ...r, text: newText };
+            }
+            return r;
+          });
+          return { ...c, replies: updatedReplies };
+        }
+        return c;
+      });
+      setConversations(updated);
+      
+      setWarningModal({
+        isOpen: true,
+        type: 'success',
+        title: 'Reply Updated',
+        message: 'Your reply has been successfully updated!',
+      });
+    } catch (error) {
+      console.error('Failed to update reply:', error);
+      setWarningModal({
+        isOpen: true,
+        type: 'error',
+        title: 'Update Failed',
+        message: error instanceof Error ? error.message : 'Failed to update reply. Please try again.',
+      });
+    }
   };
-  const handleDeleteReply = (threadId: number, replyId: number) => {
+  const handleDeleteReply = async (threadId: number, replyId: number) => {
     if (!currentUser) {
       setIsAuthOpen(true);
       return;
     }
-    const updated = conversations.map(c => {
-      if (c.id === threadId) {
-        return { ...c, replies: c.replies.filter(r => r.id !== replyId) };
-      }
-      return c;
-    });
-    saveConversations(updated);
-    setWarningModal({
-      isOpen: true,
-      type: 'info',
-      title: 'Reply Deleted',
-      message: 'Your reply has been deleted.',
-    });
+    
+    try {
+      // Delete reply via API
+      await api.deleteReply(replyId);
+      
+      const updated = conversations.map(c => {
+        if (c.id === threadId) {
+          return { ...c, replies: c.replies.filter(r => r.id !== replyId) };
+        }
+        return c;
+      });
+      setConversations(updated);
+      
+      setWarningModal({
+        isOpen: true,
+        type: 'info',
+        title: 'Reply Deleted',
+        message: 'Your reply has been deleted.',
+      });
+    } catch (error) {
+      console.error('Failed to delete reply:', error);
+      setWarningModal({
+        isOpen: true,
+        type: 'error',
+        title: 'Delete Failed',
+        message: error instanceof Error ? error.message : 'Failed to delete reply. Please try again.',
+      });
+    }
   };
   const handleLikeReply = (threadId: number, replyId: number) => {
     if (!currentUser) {
@@ -659,7 +788,7 @@ export default function App() {
     });
     saveConversations(updated);
   };
-  const handleCreateNewThread = (
+  const handleCreateNewThread = async (
     title: string,
     category: string,
     author: string,
@@ -700,62 +829,87 @@ export default function App() {
     if (analysis.outcome === 'CLEAR_VIOLATION') {
       moderationStatus = 'rejected';
     }
-    const newThread: Conversation = {
-      id: Date.now() + Math.random(),
-      title,
-      category,
-      votes: 1,
-      views: 0,
-      op: {
-        author: currentUser.role === 'tuco_team' ? 'Tuco Team' : author,
+    
+    try {
+      // Create conversation via API
+      const createdConv = await api.createConversation({
+        title,
+        category,
         city,
-        time: 'Just now',
         text: analysis.civilityReminder ? `${text}\n\n---\n💛 ${analysis.civilityReminder}` : text,
         image,
-        authorRole: currentUser.role,
-        authorBadges: currentUser.badges.map(b => b.type),
-      },
-      replies: [],
-      moderationStatus,
-      authorId: currentUser.id,
-      createdAt: new Date().toISOString(),
-      greyAreaFlags: analysis.greyAreaFlags,
-      reviewPriority: getReviewPriority(
-        currentUser.role,
-        currentUser.trustScore,
-        analysis.greyAreaFlags
-      ),
-    };
-    if (moderationStatus === 'rejected') {
+        moderationStatus,
+        greyAreaFlags: analysis.greyAreaFlags,
+        reviewPriority: getReviewPriority(
+          currentUser.role,
+          currentUser.trustScore,
+          analysis.greyAreaFlags
+        ),
+      });
+
+      if (moderationStatus === 'rejected') {
+        setWarningModal({
+          isOpen: true,
+          type: 'error',
+          title: 'Post Rejected',
+          message:
+            'Your post was rejected due to community guidelines violation. Please review the Moderation Rules.',
+        });
+        return;
+      }
+
+      const newThread: Conversation = {
+        id: createdConv.id || Date.now() + Math.random(),
+        title,
+        category,
+        votes: 1,
+        views: 0,
+        op: {
+          author: currentUser.role === 'tuco_team' ? 'Tuco Team' : author,
+          city,
+          time: 'Just now',
+          text: analysis.civilityReminder ? `${text}\n\n---\n💛 ${analysis.civilityReminder}` : text,
+          image,
+          authorRole: currentUser.role,
+          authorBadges: currentUser.badges.map(b => b.type),
+        },
+        replies: [],
+        moderationStatus,
+        authorId: currentUser.id,
+        createdAt: new Date().toISOString(),
+        greyAreaFlags: analysis.greyAreaFlags,
+        reviewPriority: getReviewPriority(
+          currentUser.role,
+          currentUser.trustScore,
+          analysis.greyAreaFlags
+        ),
+      };
+
+      setConversations(prev => [newThread, ...prev]);
+
+      const updatedUser = { ...currentUser, postCount: currentUser.postCount + 1 };
+      saveUser(updatedUser);
+      checkAndAwardBadges(updatedUser);
+      setIsNewPostOpen(false);
+      
+      if (moderationStatus === 'pending') {
+        setPendingReview({
+          threadId: newThread.id,
+          title,
+          category,
+          submittedAt: new Date().toISOString(),
+        });
+      } else {
+        handleThreadOpen(newThread.id);
+      }
+    } catch (error) {
+      console.error('Failed to create thread:', error);
       setWarningModal({
         isOpen: true,
         type: 'error',
-        title: 'Post Rejected',
-        message:
-          'Your post was rejected due to community guidelines violation. Please review the Moderation Rules.',
+        title: 'Post Failed',
+        message: error instanceof Error ? error.message : 'Failed to create post. Please try again.',
       });
-      return;
-    }
-
-    setConversations(prev => {
-      const updated = [newThread, ...prev];
-      saveConversations(updated);
-      return updated;
-    });
-
-    const updatedUser = { ...currentUser, postCount: currentUser.postCount + 1 };
-    saveUser(updatedUser);
-    checkAndAwardBadges(updatedUser);
-    setIsNewPostOpen(false);
-    if (moderationStatus === 'pending') {
-      setPendingReview({
-        threadId: newThread.id,
-        title,
-        category,
-        submittedAt: new Date().toISOString(),
-      });
-    } else {
-      handleThreadOpen(newThread.id);
     }
   };
   const handleApproveThread = (threadId: number) => {

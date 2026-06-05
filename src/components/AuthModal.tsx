@@ -3,7 +3,7 @@ import { X, Mail, Lock, MapPin, User, AlertCircle, CheckCircle } from 'lucide-re
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSignup: (email: string, username: string, city: string, childAge: string) => void;
+  onSignup: (email: string, username: string, city: string, childAge: string, password: string) => void;
   onLogin: (email: string, password: string) => void;
 }
 export function AuthModal({ isOpen, onClose, onSignup, onLogin }: AuthModalProps) {
@@ -13,8 +13,6 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin }: AuthModalProps
   const [username, setUsername] = useState('');
   const [city, setCity] = useState('');
   const [childAge, setChildAge] = useState('');
-  const [otpSent, setOtpSent] = useState(false);
-  const [otp, setOtp] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   if (!isOpen) return null;
@@ -24,6 +22,11 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin }: AuthModalProps
     setLoading(true);
     if (!email.includes('@')) {
       setError('Please enter a valid email');
+      setLoading(false);
+      return;
+    }
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters');
       setLoading(false);
       return;
     }
@@ -37,20 +40,8 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin }: AuthModalProps
       setLoading(false);
       return;
     }
-    if (!otpSent) {
-      setOtpSent(true);
-      setError('');
-      setLoading(false);
-      return;
-    }
-    if (otp !== '123456') {
-      setError('Invalid OTP. Try 123456 for demo');
-      setLoading(false);
-      return;
-    }
-    onSignup(email, username, city, childAge);
+    await onSignup(email, username, city, childAge, password);
     setLoading(false);
-    onClose();
   };
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -164,12 +155,11 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin }: AuthModalProps
               </p>
             </form>
           )}
-          {}
           {mode === 'signup' && (
             <form onSubmit={handleSignupSubmit} className="space-y-4">
               <div>
                 <label className="block text-xs font-bold text-neutral-700 mb-1.5">
-                  Email Address (We'll verify it)
+                  Email Address
                 </label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 w-4 h-4 text-neutral-400" strokeWidth={1.5} />
@@ -178,28 +168,25 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin }: AuthModalProps
                     placeholder="mom@example.com"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
-                    disabled={otpSent}
-                    className="w-full pl-10 pr-4 py-2.5 border border-neutral-200 rounded-lg outline-none text-sm focus:border-tuco-cyan focus:ring-2 focus:ring-tuco-cyan/10 disabled:bg-neutral-50"
+                    className="w-full pl-10 pr-4 py-2.5 border border-neutral-200 rounded-lg outline-none text-sm focus:border-tuco-cyan focus:ring-2 focus:ring-tuco-cyan/10"
                   />
                 </div>
-                <p className="text-xs text-neutral-500 mt-1.5">📧 We'll send you a 6-digit code</p>
               </div>
-              {otpSent && (
-                <div>
-                  <label className="block text-xs font-bold text-neutral-700 mb-1.5">
-                    Enter OTP
-                  </label>
+              <div>
+                <label className="block text-xs font-bold text-neutral-700 mb-1.5">
+                  Password
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-3 w-4 h-4 text-neutral-400" strokeWidth={1.5} />
                   <input
-                    type="text"
-                    placeholder="123456"
-                    maxLength={6}
-                    value={otp}
-                    onChange={e => setOtp(e.target.value)}
-                    className="w-full px-4 py-2.5 border border-neutral-200 rounded-lg outline-none text-sm font-mono text-center font-bold focus:border-tuco-cyan focus:ring-2 focus:ring-tuco-cyan/10"
+                    type="password"
+                    placeholder="At least 6 characters"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2.5 border border-neutral-200 rounded-lg outline-none text-sm focus:border-tuco-cyan focus:ring-2 focus:ring-tuco-cyan/10"
                   />
-                  <p className="text-xs text-neutral-500 mt-1.5">Check your email for the code</p>
                 </div>
-              )}
+              </div>
               <div>
                 <label className="block text-xs font-bold text-neutral-700 mb-1.5">
                   Your Pen-Name (Not your real name)
@@ -211,17 +198,14 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin }: AuthModalProps
                     placeholder="e.g. PriyasMom, ArjunsDad"
                     value={username}
                     onChange={e => setUsername(e.target.value)}
-                    disabled={otpSent && !otp}
-                    className="w-full pl-10 pr-4 py-2.5 border border-neutral-200 rounded-lg outline-none text-sm focus:border-tuco-cyan focus:ring-2 focus:ring-tuco-cyan/10 disabled:bg-neutral-50"
+                    className="w-full pl-10 pr-4 py-2.5 border border-neutral-200 rounded-lg outline-none text-sm focus:border-tuco-cyan focus:ring-2 focus:ring-tuco-cyan/10"
                   />
                 </div>
-                <p className="text-xs text-neutral-500 mt-1.5">
-                  Keep it anonymous for sensitive topics
-                </p>
+                <p className="text-xs text-neutral-500 mt-1.5">Keep it anonymous for sensitive topics</p>
               </div>
               <div>
                 <label className="block text-xs font-bold text-neutral-700 mb-1.5">
-                  Your City (Optional but helps context)
+                  Your City (Optional)
                 </label>
                 <div className="relative">
                   <MapPin className="absolute left-3 top-3 w-4 h-4 text-neutral-400" strokeWidth={1.5} />
@@ -230,8 +214,7 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin }: AuthModalProps
                     placeholder="e.g. Bangalore, Mumbai"
                     value={city}
                     onChange={e => setCity(e.target.value)}
-                    disabled={otpSent && !otp}
-                    className="w-full pl-10 pr-4 py-2.5 border border-neutral-200 rounded-lg outline-none text-sm focus:border-tuco-cyan focus:ring-2 focus:ring-tuco-cyan/10 disabled:bg-neutral-50"
+                    className="w-full pl-10 pr-4 py-2.5 border border-neutral-200 rounded-lg outline-none text-sm focus:border-tuco-cyan focus:ring-2 focus:ring-tuco-cyan/10"
                   />
                 </div>
               </div>
@@ -242,8 +225,7 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin }: AuthModalProps
                 <select
                   value={childAge}
                   onChange={e => setChildAge(e.target.value)}
-                  disabled={otpSent && !otp}
-                  className="w-full px-4 py-2.5 border border-neutral-200 rounded-lg outline-none text-sm focus:border-tuco-cyan focus:ring-2 focus:ring-tuco-cyan/10 disabled:bg-neutral-50"
+                  className="w-full px-4 py-2.5 border border-neutral-200 rounded-lg outline-none text-sm focus:border-tuco-cyan focus:ring-2 focus:ring-tuco-cyan/10"
                 >
                   <option value="">Select age range...</option>
                   <option value="0-1">0-1 years (Baby)</option>
@@ -252,20 +234,16 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin }: AuthModalProps
                   <option value="6-12">6-12 years (School)</option>
                   <option value="12+">12+ years (Teen)</option>
                 </select>
-                <p className="text-xs text-neutral-500 mt-1.5">
-                  Helps personalise your experience (and filters non-parents)
-                </p>
               </div>
               <button
                 type="submit"
-                disabled={loading || (otpSent && !otp)}
+                disabled={loading}
                 className="w-full py-2.5 bg-tuco-cyan hover:bg-tuco-cyan-hover text-white font-display font-black text-sm rounded-lg transition-colors disabled:opacity-50"
               >
-                {loading ? 'Processing...' : !otpSent ? 'Send OTP' : 'Complete Signup'}
+                {loading ? 'Creating account...' : 'Create Account'}
               </button>
               <p className="text-xs text-neutral-500 text-center">
-                ✓ No phone number required
-                <br />✓ Use any email for demo
+                ✓ No phone number required &nbsp;✓ Anonymous pen-name
               </p>
             </form>
           )}
