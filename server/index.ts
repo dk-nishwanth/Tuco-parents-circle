@@ -152,19 +152,27 @@ app.use(pino({
 
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  limit: NODE_ENV === 'production' ? 200 : 1000,
+  limit: NODE_ENV === 'production' ? 500 : 1000,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many requests, please try again later.' },
+  handler: (req, res) => {
+    console.warn('⚠️ API rate limit hit for IP:', req.ip);
+    res.status(429).json({ error: 'Too many requests, please try again later.' });
+  }
 });
 app.use('/api/', apiLimiter);
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  limit: 20,
+  limit: 100,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many auth attempts, please try again later.' },
+  handler: (req, res) => {
+    console.warn('⚠️ Auth rate limit hit for IP:', req.ip);
+    res.status(429).json({ error: 'Too many auth attempts, please try again later.' });
+  }
 });
 
 const corsOptions = {
