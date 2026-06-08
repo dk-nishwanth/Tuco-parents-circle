@@ -123,8 +123,20 @@ async function seedOnStartup() {
   console.log('✅ Database seed check complete!');
 }
 
-// Run seed on startup
-seedOnStartup().catch(console.error);
+// Test Prisma connection and run seed on startup
+async function startup() {
+  try {
+    console.log('🔌 Connecting to database...');
+    await prisma.$connect();
+    console.log('✅ Database connected successfully!');
+    await seedOnStartup();
+  } catch (error) {
+    console.error('❌ Failed to connect to database or seed:', error);
+    process.exit(1);
+  }
+}
+
+startup();
 
 // ------------------------------
 // MIDDLEWARE
@@ -362,21 +374,28 @@ const signupSchema = z.object({
 });
 
 app.post('/api/auth/signup', authLimiter, async (req: AuthRequest, res, next) => {
+  console.log('📝 Processing signup request...');
   try {
     const parsed = signupSchema.safeParse(req.body);
     if (!parsed.success) {
       const firstError = parsed.error.issues[0];
+      console.log('❌ Validation failed:', firstError);
       return res.status(400).json({ error: firstError?.message || 'Validation failed' });
     }
     const { email, password, username, city, childAge } = parsed.data;
     const normalEmail = email.trim().toLowerCase();
+    console.log('👤 Checking if user exists:', normalEmail);
 
     const existing = await prisma.user.findUnique({ where: { email: normalEmail } });
     if (existing) {
+      console.log('❌ User already exists');
       return res.status(409).json({ error: 'Email already registered' });
     }
 
+    console.log('🔐 Hashing password...');
     const passwordHash = await bcrypt.hash(password, 12);
+    
+    console.log('💾 Creating user in database...');
     const user = await prisma.user.create({
       data: {
         email: normalEmail,
@@ -391,9 +410,11 @@ app.post('/api/auth/signup', authLimiter, async (req: AuthRequest, res, next) =>
       },
     });
 
+    console.log('✅ User created:', user.id);
+
     // Check for JWT_SECRET
     if (!JWT_SECRET) {
-      console.error('JWT_SECRET is not set');
+      console.error('❌ JWT_SECRET is not set');
       return res.status(500).json({ error: 'Server configuration error' });
     }
 
@@ -407,11 +428,13 @@ app.post('/api/auth/signup', authLimiter, async (req: AuthRequest, res, next) =>
         `<h2>Welcome, ${user.username}!</h2><p>You've joined the Tuco Parents Circle community. Start sharing your parenting experiences today!</p><p><a href="${process.env.FRONTEND_URL || 'https://your-app.onrender.com'}">Visit the community</a></p>`
       );
     } catch (emailErr) {
-      console.warn('Welcome email failed, but signup successful:', emailErr);
+      console.warn('⚠️ Welcome email failed, but signup successful:', emailErr);
     }
 
+    console.log('✅ Signup successful');
     res.status(201).json({ token, user: formatUser(user) });
   } catch (error) {
+    console.error('❌ Signup error:', error);
     next(error);
   }
 });
@@ -422,27 +445,35 @@ const loginSchema = z.object({
 });
 
 app.post('/api/auth/login', authLimiter, async (req: AuthRequest, res, next) => {
+  console.log('🔐 Processing login request...');
   try {
     const parsed = loginSchema.safeParse(req.body);
     if (!parsed.success) {
+      console.log('❌ Login validation failed');
       return res.status(400).json({ error: 'Invalid email or password' });
     }
     const { email, password } = parsed.data;
     const normalEmail = email.trim().toLowerCase();
+    console.log('👤 Looking up user:', normalEmail);
 
     const user = await prisma.user.findUnique({ where: { email: normalEmail } });
     if (!user) {
+      console.log('❌ User not found');
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
+    console.log('🔑 Verifying password...');
     const valid = await bcrypt.compare(password, user.passwordHash);
     if (!valid) {
+      console.log('❌ Invalid password');
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
+    console.log('✅ Login successful for user:', user.id);
     const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: '30d' });
     res.status(200).json({ token, user: formatUser(user) });
   } catch (error) {
+    console.error('❌ Login error:', error);
     next(error);
   }
 });
