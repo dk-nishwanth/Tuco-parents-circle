@@ -4,7 +4,7 @@ services:
     runtime: node
     repo: https://github.com/your-username/your-repo.git  # Update this!
     plan: starter
-    buildCommand: npm install && npm run build && npx prisma migrate deploy
+    buildCommand: npm install && npm run build && npx prisma db push
     startCommand: npm start
     envVars:
       - key: NODE_ENV
@@ -12,9 +12,7 @@ services:
       - key: PORT
         value: 10000
       - key: DATABASE_URL
-        fromDatabase:
-          name: tuco-parents-circle-db
-          property: connectionString
+        sync: false  # Set this manually in Render dashboard
       - key: JWT_SECRET
         generateValue: true
       - key: ANTHROPIC_API_KEY
@@ -25,9 +23,3 @@ services:
         sync: false
       - key: FRONTEND_URL
         sync: false
-
-databases:
-  - name: tuco-parents-circle-db
-    databaseName: tuco_parents_circle
-    user: tuco_parents_circle_user
-    plan: starter
