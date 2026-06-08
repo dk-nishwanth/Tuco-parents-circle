@@ -1,0 +1,33 @@
+services:
+  - type: web
+    name: tuco-parents-circle
+    runtime: node
+    repo: https://github.com/your-username/your-repo.git  # Update this!
+    plan: starter
+    buildCommand: npm install && npm run build && npx prisma migrate deploy
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        fromDatabase:
+          name: tuco-parents-circle-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+
+databases:
+  - name: tuco-parents-circle-db
+    databaseName: tuco_parents_circle
+    user: tuco_parents_circle_user
+    plan: starter
