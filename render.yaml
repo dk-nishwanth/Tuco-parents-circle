@@ -4,7 +4,7 @@ services:
     runtime: node
     repo: https://github.com/your-username/your-repo.git  # Update this!
     plan: starter
-    buildCommand: npm install && npm run build && npx prisma db push
+    buildCommand: npm install && npx prisma generate && npm run build && npx prisma db push
     startCommand: npm start
     envVars:
       - key: NODE_ENV
