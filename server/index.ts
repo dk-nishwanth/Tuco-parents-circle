@@ -530,18 +530,25 @@ const createThreadSchema = z.object({
 });
 
 app.post('/api/conversations', authenticate, async (req: AuthRequest, res, next) => {
+  console.log('💬 Creating new conversation...');
   try {
     const parsed = createThreadSchema.safeParse(req.body);
     if (!parsed.success) {
       const firstError = parsed.error.issues[0];
+      console.log('❌ Conversation validation failed:', firstError);
       return res.status(400).json({ error: firstError?.message || 'Validation failed' });
     }
 
+    console.log('👤 Finding user:', req.userId);
     const user = await prisma.user.findUnique({ where: { id: req.userId } });
-    if (!user) return res.status(404).json({ error: 'User not found' });
+    if (!user) {
+      console.log('❌ User not found');
+      return res.status(404).json({ error: 'User not found' });
+    }
 
     const { title, category, city, text, image, moderationStatus, greyAreaFlags, reviewPriority } = parsed.data;
 
+    console.log('💾 Creating conversation in database...');
     const conversation = await prisma.conversation.create({
       data: {
         title,
@@ -561,15 +568,19 @@ app.post('/api/conversations', authenticate, async (req: AuthRequest, res, next)
       },
       include: { replies: true },
     });
+    console.log('✅ Conversation created with ID:', conversation.id);
 
     // Update user post count
+    console.log('📊 Updating user post count...');
     await prisma.user.update({
       where: { id: req.userId },
       data: { postCount: { increment: 1 } },
     });
 
+    console.log('✅ Conversation created successfully!');
     res.status(201).json(formatConversation(conversation));
   } catch (error) {
+    console.error('❌ Error creating conversation:', error);
     next(error);
   }
 });
@@ -648,19 +659,27 @@ const replySchema = z.object({
 });
 
 app.post('/api/conversations/:id/replies', authenticate, async (req: AuthRequest, res, next) => {
+  console.log('💬 Adding reply to conversation:', req.params.id);
   try {
     const conversationId = parseInt(req.params.id);
+    console.log('📝 Parsing reply data...');
     const parsed = replySchema.safeParse(req.body);
     if (!parsed.success) {
       const firstError = parsed.error.issues[0];
+      console.log('❌ Reply validation failed:', firstError);
       return res.status(400).json({ error: firstError?.message || 'Validation failed' });
     }
 
+    console.log('👤 Finding user:', req.userId);
     const user = await prisma.user.findUnique({ where: { id: req.userId } });
-    if (!user) return res.status(404).json({ error: 'User not found' });
+    if (!user) {
+      console.log('❌ User not found');
+      return res.status(404).json({ error: 'User not found' });
+    }
 
     const { text, city, image, tucoRec } = parsed.data;
 
+    console.log('💾 Creating reply in database...');
     const reply = await prisma.reply.create({
       data: {
         conversationId,
@@ -675,16 +694,20 @@ app.post('/api/conversations/:id/replies', authenticate, async (req: AuthRequest
         authorBadges: (user.badges as any[] || []).map((b: any) => b.type),
       },
     });
+    console.log('✅ Reply created with ID:', reply.id);
 
     // Update reply count
+    console.log('📊 Updating user reply count...');
     await prisma.user.update({
       where: { id: req.userId },
       data: { replyCount: { increment: 1 } },
     });
 
     // Notify thread author
+    console.log('🔍 Finding conversation...');
     const conversation = await prisma.conversation.findUnique({ where: { id: conversationId } });
     if (conversation && conversation.authorId !== req.userId) {
+      console.log('🔔 Creating notification for thread author...');
       await prisma.notification.create({
         data: {
           userId: conversation.authorId,
@@ -697,6 +720,7 @@ app.post('/api/conversations/:id/replies', authenticate, async (req: AuthRequest
       });
     }
 
+    console.log('✅ Reply added successfully!');
     res.status(201).json({
       id: reply.id,
       author: reply.author,
@@ -705,11 +729,12 @@ app.post('/api/conversations/:id/replies', authenticate, async (req: AuthRequest
       text: reply.text,
       image: reply.image,
       tucoRec: reply.tucoRec,
-      likes: reply.likes,
+      likes: reply.likes || 0,
       authorRole: mapRole(reply.authorRole),
-      authorBadges: reply.authorBadges,
+      authorBadges: reply.authorBadges || [],
     });
   } catch (error) {
+    console.error('❌ Error adding reply:', error);
     next(error);
   }
 });
