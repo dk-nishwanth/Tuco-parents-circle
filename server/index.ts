@@ -265,17 +265,17 @@ const formatUser = (u: any) => ({
   id: u.id,
   username: u.username,
   email: u.email,
-  city: u.city,
-  childAge: u.childAge,
+  city: u.city || '',
+  childAge: u.childAge || '',
   role: mapRole(u.role),
   badges: u.badges || [],
-  createdAt: u.createdAt.toISOString(),
-  isVerified: u.isVerified,
-  postCount: u.postCount,
-  replyCount: u.replyCount,
-  totalUpvotes: u.totalUpvotes,
-  trustScore: u.trustScore / 100, // stored as 0-100 in DB, frontend expects 0-1
-  emailNotifications: u.emailNotifications,
+  createdAt: u.createdAt ? u.createdAt.toISOString() : new Date().toISOString(),
+  isVerified: u.isVerified || false,
+  postCount: u.postCount || 0,
+  replyCount: u.replyCount || 0,
+  totalUpvotes: u.totalUpvotes || 0,
+  trustScore: (u.trustScore || 0) / 100, // stored as 0-100 in DB, frontend expects 0-1
+  emailNotifications: u.emailNotifications || true,
   savedPosts: u.savedPosts || [],
 });
 
@@ -284,12 +284,12 @@ const formatConversation = (c: any) => ({
   id: c.id,
   title: c.title,
   category: c.category,
-  isPinned: c.isPinned,
-  isHot: c.isHot,
-  isFeatured: c.isFeatured,
+  isPinned: c.isPinned || false,
+  isHot: c.isHot || false,
+  isFeatured: c.isFeatured || false,
   featuredLabel: c.featuredLabel,
-  votes: c.votes,
-  views: c.views,
+  votes: c.votes || 0,
+  views: c.views || 0,
   op: {
     author: c.opAuthor,
     city: c.opCity,
@@ -297,7 +297,7 @@ const formatConversation = (c: any) => ({
     text: c.opText,
     image: c.opImage,
     authorRole: mapRole(c.opAuthorRole),
-    authorBadges: c.opAuthorBadges,
+    authorBadges: c.opAuthorBadges || [],
   },
   replies: (c.replies || []).map((r: any) => ({
     id: r.id,
@@ -307,14 +307,14 @@ const formatConversation = (c: any) => ({
     text: r.text,
     image: r.image,
     tucoRec: r.tucoRec,
-    likes: r.likes,
+    likes: r.likes || 0,
     authorRole: mapRole(r.authorRole),
-    authorBadges: r.authorBadges,
+    authorBadges: r.authorBadges || [],
   })),
-  moderationStatus: c.moderationStatus.toLowerCase(),
+  moderationStatus: (c.moderationStatus || 'PENDING').toLowerCase(),
   moderatedBy: c.moderatedBy,
   moderationReason: c.moderationReason,
-  createdAt: c.createdAt.toISOString(),
+  createdAt: c.createdAt ? c.createdAt.toISOString() : new Date().toISOString(),
   authorId: c.authorId,
   greyAreaFlags: c.greyAreaFlags || [],
   reviewPriority: c.reviewPriority,
@@ -493,15 +493,19 @@ app.get('/api/auth/me', authenticate, async (req: AuthRequest, res, next) => {
 // ------------------------------
 
 app.get('/api/conversations', optionalAuth, async (req: AuthRequest, res, next) => {
+  console.log('📄 Getting conversations...');
   try {
     const isMod = req.userRole === 'MODERATOR' || req.userRole === 'TUCO_TEAM';
+    console.log('👤 User role:', req.userRole, 'Is mod:', isMod);
     const conversations = await prisma.conversation.findMany({
       where: isMod ? undefined : { moderationStatus: 'APPROVED' },
       include: { replies: { orderBy: { id: 'asc' } } },
       orderBy: [{ isPinned: 'desc' }, { createdAt: 'desc' }],
     });
+    console.log('✅ Found', conversations.length, 'conversations');
     res.status(200).json(conversations.map(formatConversation));
   } catch (error) {
+    console.error('❌ Error getting conversations:', error);
     next(error);
   }
 });
