@@ -546,7 +546,17 @@ app.post('/api/conversations', authenticate, async (req: AuthRequest, res, next)
       return res.status(404).json({ error: 'User not found' });
     }
 
-    const { title, category, city, text, image, moderationStatus, greyAreaFlags, reviewPriority } = parsed.data;
+    const isMod = req.userRole === 'MODERATOR' || req.userRole === 'TUCO_TEAM';
+    const accountAgeMs = Date.now() - user.createdAt.getTime();
+    if (!isMod && accountAgeMs < 24 * 60 * 60 * 1000) {
+      const hoursRemaining = Math.ceil((24 * 60 * 60 * 1000 - accountAgeMs) / (60 * 60 * 1000));
+      return res.status(403).json({
+        error: `New members have a 24-hour cooling period before posting. Please try again in ${hoursRemaining} hour(s).`,
+      });
+    }
+
+    const { title, category, city, text, image, greyAreaFlags, reviewPriority } = parsed.data;
+    const status = isMod ? (parsed.data.moderationStatus?.toUpperCase() as any) || 'PENDING' : 'PENDING';
 
     console.log('💾 Creating conversation in database...');
     const conversation = await prisma.conversation.create({
@@ -561,7 +571,7 @@ app.post('/api/conversations', authenticate, async (req: AuthRequest, res, next)
         opAuthorRole: user.role,
         opAuthorBadges: (user.badges as any[] || []).map((b: any) => b.type),
         authorId: user.id,
-        moderationStatus: (moderationStatus?.toUpperCase() as any) || 'PENDING',
+        moderationStatus: status,
         greyAreaFlags: greyAreaFlags || [],
         reviewPriority,
         votes: 1,
