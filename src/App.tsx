@@ -131,33 +131,8 @@ export default function App() {
         const apiConversations = await api.getConversations();
         const apiUsers = await api.getUsers();
 
-        const categoryIds = Object.keys(CATEGORIES);
-        const hasAllCategories = categoryIds.every(catId => 
-          apiConversations.some(c => c.category === catId)
-        );
-        if (apiConversations.length < 100 || !hasAllCategories) {
-          const seeded = enrichConversations(mergeSeedWithExisting(apiConversations, 100));
-          // Create conversations in the backend
-          for (const conv of seeded) {
-            try {
-              await api.createConversation({
-                title: conv.title,
-                category: conv.category,
-                city: conv.op.city,
-                text: conv.op.text,
-                image: conv.op.image,
-                moderationStatus: conv.moderationStatus,
-                greyAreaFlags: conv.greyAreaFlags,
-                reviewPriority: conv.reviewPriority,
-              });
-            } catch (error) {
-              console.error('Failed to create conversation:', error);
-            }
-          }
-          setConversations(seeded);
-        } else {
-          setConversations(apiConversations);
-        }
+        // Just use existing conversations instead of trying to seed new ones (which requires auth)
+        setConversations(apiConversations);
 
         if (Object.keys(apiUsers).length === 0) {
           // Seed users if empty
