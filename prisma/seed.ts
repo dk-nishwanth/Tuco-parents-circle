@@ -96,8 +96,8 @@ async function main() {
     console.log(`✅ Seeded product: ${prod.name}`);
   }
 
-  // Seed initial user if none
-  let seedUser = await prisma.user.findFirst();
+  // Seed demo user if none
+  let seedUser = await prisma.user.findUnique({ where: { email: 'demo@tucokids.com' } });
   if (!seedUser) {
     const passwordHash = await bcrypt.hash('password123', 12);
     seedUser = await prisma.user.create({
@@ -140,12 +140,71 @@ async function main() {
   const existingConversations = await prisma.conversation.count();
   if (existingConversations === 0) {
     const INITIAL_CONVERSATIONS = [
-      { id: 1, title: 'Best sunscreen for outdoor cricket this summer?', category: 'skincare', isPinned: true, isHot: true, votes: 142, views: 1856, op: { author: 'Priya_Rao', city: 'Mumbai', time: '2 days ago', text: 'My 8-year-old son plays cricket outdoors every single evening and on weekends it\'s 4+ hours of direct sun. I\'ve been using a random adult sunscreen on him but I\'m not confident it\'s safe. Which sunscreen actually works for Indian kids in this heat? He sweats a lot so worried it wipes off too quickly. SPF 30 or 50? Mineral or chemical?' }, replies: [{ id: 1, author: 'AnanyaK', city: 'Bangalore', time: '2 days ago', text: 'Same exact situation with my 9-year-old! We\'ve been through 5–6 sunscreens. The key for sporty kids is water/sweat resistance. We now use Tuco\'s Daily Shield SPF 50 — it\'s specifically made for Indian kids, non-greasy, and actually stays on through a full practice session. Mineral-based so no chemicals to worry about.', tucoRec: 'sunscreen', likes: 12 }, { id: 2, author: 'MeeraSingh', city: 'Pune', time: '2 days ago', text: 'SPF 50 is definitely better for sustained outdoor play. SPF 30 filters about 97% UVB, SPF 50 filters 98%+ — sounds small but for 4 hours of sun it matters. Also reapplication every 2 hours is non-negotiable regardless of which brand you use.', likes: 8 }] },
-      { id: 2, title: 'My 5-year-old has dry flaky patches on cheeks — mild eczema or something else?', category: 'skincare', isPinned: false, isHot: true, votes: 89, views: 1200, op: { author: 'SnehaVerma', city: 'Delhi', time: '3 days ago', text: 'My 5-year-old daughter has these dry, slightly flaky patches on her cheeks — especially after bathing. They\'ve been there since winter and now in summer they haven\'t gone away. The skin isn\'t red or itchy but it looks rough. Our paediatrician said it\'s mild eczema-prone skin. What moisturiser should I be using? Should I be bathing her less frequently?' }, replies: [{ id: 1, author: 'DeepikaSharma', city: 'Jaipur', time: '3 days ago', text: 'My son had the exact same thing! Dermat explained that bath water (especially hard water) strips natural oils from kids\' skin. The key is: lukewarm water, not hot; 5–7 minute baths max; pat dry — never rub; and moisturiser within 3 minutes of bath while skin is still slightly damp. That window is crucial.', likes: 10 }, { id: 2, author: 'AnanyaK', city: 'Bangalore', time: '2 days ago', text: 'We use Tuco\'s Nourish Night Moisturiser on my daughter\'s cheeks — it was recommended by our paed dermat for eczema-prone kids. Fragrance-free, no parabens. Within 2 weeks the flakiness reduced noticeably. It has ceramides which help repair the skin barrier.', tucoRec: 'moisturizer', likes: 14 }] },
+      {
+        title: 'Best sunscreen for outdoor cricket this summer?',
+        category: 'skincare',
+        isPinned: true,
+        isHot: true,
+        votes: 142,
+        views: 1856,
+        op: {
+          author: 'Priya_Rao',
+          city: 'Mumbai',
+          time: '2 days ago',
+          text: 'My 8-year-old son plays cricket outdoors every single evening and on weekends it\'s 4+ hours of direct sun. I\'ve been using a random adult sunscreen on him but I\'m not confident it\'s safe. Which sunscreen actually works for Indian kids in this heat? He sweats a lot so worried it wipes off too quickly. SPF 30 or 50? Mineral or chemical?',
+        },
+        replies: [
+          {
+            author: 'AnanyaK',
+            city: 'Bangalore',
+            time: '2 days ago',
+            text: 'Same exact situation with my 9-year-old! We\'ve been through 5–6 sunscreens. The key for sporty kids is water/sweat resistance. We now use Tuco\'s Daily Shield SPF 50 — it\'s specifically made for Indian kids, non-greasy, and actually stays on through a full practice session. Mineral-based so no chemicals to worry about.',
+            tucoRec: 'sunscreen',
+            likes: 12,
+          },
+          {
+            author: 'MeeraSingh',
+            city: 'Pune',
+            time: '2 days ago',
+            text: 'SPF 50 is definitely better for sustained outdoor play. SPF 30 filters about 97% UVB, SPF 50 filters 98%+ — sounds small but for 4 hours of sun it matters. Also reapplication every 2 hours is non-negotiable regardless of which brand you use.',
+            likes: 8,
+          },
+        ],
+      },
+      {
+        title: 'My 5-year-old has dry flaky patches on cheeks — mild eczema or something else?',
+        category: 'skincare',
+        isPinned: false,
+        isHot: true,
+        votes: 89,
+        views: 1200,
+        op: {
+          author: 'SnehaVerma',
+          city: 'Delhi',
+          time: '3 days ago',
+          text: 'My 5-year-old daughter has these dry, slightly flaky patches on her cheeks — especially after bathing. They\'ve been there since winter and now in summer they haven\'t gone away. The skin isn\'t red or itchy but it looks rough. Our paediatrician said it\'s mild eczema-prone skin. What moisturiser should I be using? Should I be bathing her less frequently?',
+        },
+        replies: [
+          {
+            author: 'DeepikaSharma',
+            city: 'Jaipur',
+            time: '3 days ago',
+            text: 'My son had the exact same thing! Dermat explained that bath water (especially hard water) strips natural oils from kids\' skin. The key is: lukewarm water, not hot; 5–7 minute baths max; pat dry — never rub; and moisturiser within 3 minutes of bath while skin is still slightly damp. That window is crucial.',
+            likes: 10,
+          },
+          {
+            author: 'AnanyaK',
+            city: 'Bangalore',
+            time: '2 days ago',
+            text: 'We use Tuco\'s Nourish Night Moisturiser on my daughter\'s cheeks — it was recommended by our paed dermat for eczema-prone kids. Fragrance-free, no parabens. Within 2 weeks the flakiness reduced noticeably. It has ceramides which help repair the skin barrier.',
+            tucoRec: 'moisturizer',
+            likes: 14,
+          },
+        ],
+      },
     ];
 
-    // First create all the conversations
-    const conversationMap = new Map();
+    const conversationMap = new Map<string, number>();
     for (const conv of INITIAL_CONVERSATIONS) {
       const createdConv = await prisma.conversation.create({
         data: {
@@ -153,28 +212,29 @@ async function main() {
           category: conv.category,
           isPinned: conv.isPinned,
           isHot: conv.isHot,
-          isFeatured: conv.isFeatured || false,
-          featuredLabel: conv.featuredLabel || null,
+          isFeatured: false,
+          featuredLabel: null,
           votes: conv.votes,
           views: conv.views,
           opAuthor: conv.op.author,
           opCity: conv.op.city,
           opTime: conv.op.time,
           opText: conv.op.text,
+          opImage: null,
           opAuthorRole: 'MEMBER',
-          opAuthorBadges: conv.op.authorBadges || [],
+          opAuthorBadges: [],
           moderationStatus: 'APPROVED',
           authorId: seedUser.id,
-          tags: []
-        }
+          greyAreaFlags: [],
+          reviewPriority: 50,
+        },
       });
-      conversationMap.set(conv.id, createdConv.id);
+      conversationMap.set(conv.title, createdConv.id);
       console.log(`✅ Seeded conversation: ${conv.title}`);
     }
 
-    // Now create the replies for this conversation
     for (const conv of INITIAL_CONVERSATIONS) {
-      const dbConvId = conversationMap.get(conv.id);
+      const dbConvId = conversationMap.get(conv.title)!;
       for (const reply of conv.replies) {
         await prisma.reply.create({
           data: {
@@ -185,12 +245,12 @@ async function main() {
             time: reply.time,
             text: reply.text,
             image: null,
-            videoUrl: null,
             tucoRec: reply.tucoRec || null,
             likes: reply.likes,
             authorRole: 'MEMBER',
-            authorBadges: []
-          }
+            authorBadges: [],
+            moderationStatus: 'APPROVED',
+          },
         });
       }
     }
