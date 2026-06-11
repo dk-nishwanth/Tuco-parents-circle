@@ -30,7 +30,7 @@ export function RightSidebar({
     <aside className={isCarousel ? "relative w-full" : "rsidebar"}>
       <div className={containerClasses}>
         {/* Card 1: Welcome */}
-        <div className={`${itemClasses} bg-[#C4EEFF] border border-neutral-200 rounded-2xl p-5 shadow-sm`}>
+        <div className={`${itemClasses} bg-[#E7F9FF] border border-neutral-200 rounded-2xl p-5 shadow-sm`}>
           <div className="flex items-center gap-3 mb-3">
             <img src={mascot} alt="tuco Mascot" className="w-10 h-10 object-contain" />
             <h4 className="font-display font-bold text-lg text-[#4D4747]">
@@ -43,7 +43,7 @@ export function RightSidebar({
         </div>
 
         {/* Card 2: Member Spotlight */}
-        <div className={`${itemClasses} bg-[#C4EEFF] border border-neutral-200 rounded-2xl p-5 shadow-sm`}>
+        <div className={`${itemClasses} bg-[#E7F9FF] border border-neutral-200 rounded-2xl p-5 shadow-sm`}>
           <div className="flex items-center gap-2 mb-3">
             <Sparkles className="w-4 h-4 text-[#4D4747]" strokeWidth={2} />
             <h4 className="font-display font-bold text-xs text-[#4D4747] uppercase">
@@ -70,26 +70,8 @@ export function RightSidebar({
           </div>
         </div>
 
-        {/* Card 3: Live Stats */}
-        <div className={`${itemClasses} bg-[#C4EEFF] border border-neutral-200 rounded-2xl p-5 shadow-sm`}>
-          <h4 className="font-display font-bold text-xs text-[#4D4747] uppercase mb-4">
-            LIVE STATS
-          </h4>
-          <div className="flex flex-col gap-3">
-            <div className="flex flex-col gap-1">
-              <span className="font-display font-bold text-lg text-[#4D4747]">14.2k</span>
-              <span className="text-[11px] text-neutral-500 font-medium">Active Parents</span>
-            </div>
-            <div className="flex flex-col gap-1">
-              <span className="font-display font-bold text-lg text-[#4D4747]">3.8k</span>
-              <span className="text-[11px] text-neutral-500 font-medium">Safe Answers</span>
-            </div>
-            <p className="text-[11px] text-neutral-500 font-medium">+24 Today</p>
-          </div>
-        </div>
-
-        {/* Card 4: Trending Now */}
-        <div className={`${itemClasses} bg-[#C4EEFF] border border-neutral-200 rounded-2xl p-5 shadow-sm`}>
+        {/* Card 3: Trending Now */}
+        <div className={`${itemClasses} bg-[#E7F9FF] border border-neutral-200 rounded-2xl p-5 shadow-sm`}>
           <div className="flex items-center gap-2 mb-4">
             <Flame className="w-4 h-4 text-[#4D4747]" strokeWidth={2} />
             <h4 className="font-display font-bold text-xs text-[#4D4747] uppercase">
