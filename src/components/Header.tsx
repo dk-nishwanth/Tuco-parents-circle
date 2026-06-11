@@ -85,8 +85,8 @@ function SearchInput({
         />
       </div>
       {showSuggestions && suggestions.length > 0 && (
-        <div className={`${compact ? 'fixed left-4 right-4 top-[72px]' : 'absolute top-full left-0 right-0'} mt-2 bg-white border border-neutral-200 rounded-2xl shadow-xl z-[60] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200`}>
-          <div className="py-2">
+        <div className={`${compact ? 'fixed left-4 right-4 top-[72px]' : 'absolute top-full left-0 right-0'} mt-2 bg-white border border-neutral-200 rounded-xl shadow-xl z-[60] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200`}>
+          <div className="py-1">
             {suggestions.map(thread => (
               <button
                 key={thread.id}
@@ -95,9 +95,9 @@ function SearchInput({
                   onSuggestionSelect?.(thread.id);
                   setShowSuggestions(false);
                 }}
-                className="w-full text-left px-4 py-3 hover:bg-tuco-cyan/5 flex flex-col gap-0.5 border-b border-neutral-50 last:border-0 transition-colors"
+                className="w-full text-left px-3 py-2 hover:bg-tuco-cyan/5 flex flex-col gap-0.5 border-b border-neutral-50 last:border-0 transition-colors"
               >
-                <p className={`font-display font-bold ${compact ? 'text-sm' : 'text-xs'} text-[#4D4747] line-clamp-2`}>
+                <p className={`font-display font-bold ${compact ? 'text-sm' : 'text-xs'} text-[#4D4747] line-clamp-1`}>
                   {thread.title}
                 </p>
                 <div className="flex items-center gap-2">
