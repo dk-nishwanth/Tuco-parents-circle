@@ -19,6 +19,7 @@ interface HeaderProps {
   onOpenCategories?: () => void;
   notifications?: Notification[];
   onMarkAsRead?: (id: number) => void;
+  onClearNotifications?: () => void;
   onThreadOpen?: (id: number) => void;
 }
 
@@ -132,6 +133,7 @@ export function Header({
   onOpenCategories,
   notifications = [],
   onMarkAsRead,
+  onClearNotifications,
   onThreadOpen,
 }: HeaderProps) {
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -204,11 +206,26 @@ export function Header({
               <div className="fixed md:absolute top-[64px] md:top-full left-4 right-4 md:left-auto md:right-0 md:mt-2 md:w-80 bg-white border border-neutral-200 rounded-2xl shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
                 <div className="px-4 py-3 border-b border-neutral-50 bg-neutral-50/50 flex items-center justify-between">
                   <h3 className="font-display font-bold text-sm text-[#4D4747]">Notifications</h3>
-                  {unreadCount > 0 && (
-                    <span className="bg-tuco-cyan/10 text-tuco-cyan text-[10px] font-bold px-2 py-0.5 rounded-full">
-                      {unreadCount} new
-                    </span>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {unreadCount > 0 && (
+                      <span className="bg-tuco-cyan/10 text-tuco-cyan text-[10px] font-bold px-2 py-0.5 rounded-full">
+                        {unreadCount} new
+                      </span>
+                    )}
+                    {notifications.length > 0 && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onClearNotifications?.();
+                          setShowNotificationsDropdown(false);
+                        }}
+                        className="flex items-center gap-1 text-[10px] font-bold text-neutral-500 hover:text-red-600 transition-colors"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        Clear All
+                      </button>
+                    )}
+                  </div>
                 </div>
                 
                 <div className="max-h-[400px] overflow-y-auto">

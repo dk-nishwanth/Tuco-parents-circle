@@ -1061,6 +1061,15 @@ app.patch('/api/notifications/:id/read', authenticate, async (req: AuthRequest, 
   }
 });
 
+app.delete('/api/notifications', authenticate, async (req: AuthRequest, res, next) => {
+  try {
+    await prisma.notification.deleteMany({ where: { userId: req.userId } });
+    res.status(200).json({ success: true });
+  } catch (error) {
+    next(error);
+  }
+});
+
 // ------------------------------
 // USER PROFILE
 // ------------------------------

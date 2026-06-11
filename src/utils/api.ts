@@ -211,6 +211,14 @@ export const api = {
     await handleResponse<any>(res);
   },
 
+  async clearNotifications(): Promise<void> {
+    const res = await fetch(`${API_BASE_URL}/notifications`, {
+      method: 'DELETE',
+      headers: authHeaders(),
+    });
+    await handleResponse<any>(res);
+  },
+
   // ── User profile ────────────────────────────────────────────────────────────
 
   async updateMe(data: Partial<User>): Promise<User> {

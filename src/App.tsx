@@ -291,6 +291,15 @@ function AppContent() {
     localStorage.setItem('tuco_notifications_v1', JSON.stringify(updated));
   };
 
+  const clearNotifications = async () => {
+    try {
+      await api.clearNotifications();
+      setNotifications([]);
+    } catch (error) {
+      console.error('Failed to clear notifications:', error);
+    }
+  };
+
   const toggleSavedPost = (threadId: number) => {
     if (!currentUser) {
       setIsAuthOpen(true);
@@ -1157,6 +1166,7 @@ function AppContent() {
             console.error('Failed to mark notification as read:', error);
           }
         }}
+        onClearNotifications={clearNotifications}
         onThreadOpen={handleThreadOpen}
       />
 
