@@ -37,10 +37,10 @@ export const CATEGORIES: Record<string, Category> = {
   },
 };
 export const CATEGORY_COLORS: Record<string, CategoryColor> = {
-  skincare: { bg: '#FFF0E8', text: '#D84315', border: '#FFD8C2' },
-  school: { bg: '#FEE8F4', text: '#880E4F', border: '#FDBBDD' },
-  kids_growth: { bg: '#EAF7F0', text: '#1B5E20', border: '#C7EED8' },
-  active_kids: { bg: '#E8F3FF', text: '#0D47A1', border: '#C4E1FF' },
-  parenting_hacks: { bg: '#F1F9F1', text: '#2E7D32', border: '#D3ECD5' },
+  skincare: { bg: '#FFE259', text: '#4D4747', border: '#FED018' },
+  school: { bg: '#FFE259', text: '#4D4747', border: '#FED018' },
+  kids_growth: { bg: '#FFE259', text: '#4D4747', border: '#FED018' },
+  active_kids: { bg: '#FFE259', text: '#4D4747', border: '#FED018' },
+  parenting_hacks: { bg: '#FFE259', text: '#4D4747', border: '#FED018' },
 };
 export type CategoryId = keyof typeof CATEGORIES;

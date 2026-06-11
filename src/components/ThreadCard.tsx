@@ -91,9 +91,18 @@ export function ThreadCard({
         <div className="flex-1 min-w-0">
           {/* Category Tag (Top) */}
           <div className="flex justify-start mb-2.5">
-            <div className="flex items-center gap-2 px-4 py-1 rounded-full bg-[#FFF5F0] border border-[#EB3200]/10 shadow-sm">
+            <div 
+              className="flex items-center gap-2 px-4 py-1 rounded-full border shadow-sm"
+              style={{ 
+                backgroundColor: catColor.bg, 
+                borderColor: `${catColor.border}80`,
+              }}
+            >
               <span className="text-[12px]">{category.icon}</span>
-              <span className="text-[11px] font-sans font-medium text-[#EB3200] tracking-tight">
+              <span 
+                className="text-[11px] font-sans font-medium tracking-tight"
+                style={{ color: catColor.text }}
+              >
                 {category.label}
               </span>
             </div>
@@ -120,7 +129,7 @@ export function ThreadCard({
             <div className="flex items-center gap-1.5">
               <span className="text-[12px] font-sans font-medium text-[#4D4747]">By {thread.op.author}</span>
               <AuthorBadges badges={opBadges} role={opRole} />
-              <span className="bg-[#FFF5F0] text-[10px] text-[#EB3200] font-sans font-medium uppercase px-2.5 py-0.5 rounded-md border border-[#EB3200]/10 shadow-sm">
+              <span className="bg-[#FFE259] text-[10px] text-[#4D4747] font-sans font-medium uppercase px-2.5 py-0.5 rounded-md border border-[#FED018]/50 shadow-sm">
                 {thread.op.city}
               </span>
             </div>
