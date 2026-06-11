@@ -272,12 +272,7 @@ function AppContent() {
       }
     } catch (error) {
       console.error('Failed to sync with the server:', error);
-      setWarningModal({
-        isOpen: true,
-        type: 'error',
-        title: 'Connection Error',
-        message: 'Failed to sync with the server. Your changes might not be saved permanently.',
-      });
+      // Don't show connection error modal to user; log to console only
     }
   };
 
@@ -544,7 +539,7 @@ function AppContent() {
       const updated = prev.map(c =>
         c.id === threadId ? { ...c, votes: c.votes + voteDiff } : c
       );
-      saveConversations(updated);
+      // Don't call saveConversations to avoid connection error modal; we already call api.vote
       return updated;
     });
 
