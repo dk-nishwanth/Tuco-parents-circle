@@ -121,7 +121,7 @@ export function ThreadCard({
               <span className="text-[12px] font-sans font-medium text-[#4D4747]">By {thread.op.author}</span>
               <AuthorBadges badges={opBadges} role={opRole} />
               <span className="bg-[#E7F9FF] text-[10px] text-[#4D4747] font-sans font-medium uppercase px-2.5 py-0.5 rounded-md border border-[#E7F9FF]/10 shadow-sm cursor-pointer hover:bg-[#35B5EC] hover:text-white transition-colors">
-                Click here
+                Join now
               </span>
             </div>
           </div>

@@ -353,7 +353,7 @@ export function MainContent({
                       </div>
                       <span className="text-[11px] font-sans font-medium text-[#4D4747]">By {thread.op.author}</span>
                       <span className="bg-[#E7F9FF] text-[10px] text-[#4D4747] font-sans font-medium uppercase px-2.5 py-0.5 rounded-md border border-[#E7F9FF]/10 shadow-sm cursor-pointer hover:bg-[#35B5EC] hover:text-white transition-colors">
-                        Click here
+                        Join now
                       </span>
                     </div>
                   </div>
