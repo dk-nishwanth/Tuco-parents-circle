@@ -516,9 +516,15 @@ app.get('/api/conversations', optionalAuth, async (req: AuthRequest, res, next) 
   try {
     const isMod = req.userRole === 'MODERATOR' || req.userRole === 'TUCO_TEAM';
     console.log('👤 User role:', req.userRole, 'Is mod:', isMod);
+    // Fetch all conversations with ALL replies (including nested ones)
     const conversations = await prisma.conversation.findMany({
       where: isMod ? undefined : { moderationStatus: 'APPROVED' },
-      include: { replies: { orderBy: { id: 'asc' } } },
+      // We need to fetch all replies for the conversation, not just top-level
+      include: {
+        replies: {
+          orderBy: { id: 'asc' },
+        },
+      },
       orderBy: [{ isPinned: 'desc' }, { createdAt: 'desc' }],
     });
     console.log('✅ Found', conversations.length, 'conversations');
