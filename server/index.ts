@@ -355,8 +355,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const distPath = path.join(__dirname, '..', 'dist');
 
-app.use(express.static(distPath));
-
 // ------------------------------
 // HEALTH CHECKS
 // ------------------------------
@@ -1076,11 +1074,26 @@ app.get('/apps/community', verifyShopifyProxy, (req, res) => {
 // FRONTEND FALLBACK
 // ------------------------------
 
+// Mount the static files at /community
+app.use('/community', express.static(distPath));
+
+// Fallback for SPA routing - all /community/* paths go to index.html
+app.get('/community/*', (req, res) => {
+  res.sendFile(path.join(distPath, 'index.html'));
+});
+
+// Also handle root redirect if needed
+app.get('/', (req, res) => {
+  res.redirect('/community');
+});
+
+// 404 for API/app paths
 app.get('*', (req, res) => {
   if (req.path.startsWith('/api') || req.path.startsWith('/apps')) {
     return res.status(404).json({ error: 'Not found' });
   }
-  res.sendFile(path.join(distPath, 'index.html'));
+  // If someone accesses root, redirect to community
+  res.redirect('/community');
 });
 
 // ------------------------------

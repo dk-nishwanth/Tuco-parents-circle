@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { Routes, Route, useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Header } from './components/Header';
 import { LeftSidebar } from './components/LeftSidebar';
 import { MainContent } from './components/MainContent';
@@ -73,9 +74,13 @@ const DEMO_MODERATOR: User = {
   emailNotifications: true,
   savedPosts: [],
 };
-export default function App() {
+function AppContent() {
+  const { category } = useParams<{ category?: string }>();
+  const navigate = useNavigate();
+  const location = useLocation();
+  
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [activeCategory, setActiveCategory] = useState<string>('all');
+  const activeCategory = category || 'all';
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [searchCategoryFilter, setSearchCategoryFilter] = useState<string>('all');
   const [searchDateFilter, setSearchDateFilter] = useState<DateFilter>('all');
@@ -955,23 +960,37 @@ export default function App() {
     setVotedThreads({});
     setLikedReplies({});
     setSavedPosts([]);
-    setActiveCategory('all');
+    navigate('/');
     setSearchTerm('');
     setSelectedThreadId(null);
     setIsModalOpen(false);
     setCurrentUser(null);
     setUsers({ [DEMO_MODERATOR.id]: DEMO_MODERATOR });
   };
+  
+  const handleCategoryChange = (catId: string) => {
+    if (catId === 'all' || catId === 'saved') {
+      navigate('/');
+    } else if (catId === 'sidebar-open') {
+      // Handle sidebar open state locally without changing URL
+    } else {
+      navigate(`/${catId}`);
+    }
+  };
+
   const openNewPost = () => {
     if (!currentUser) setIsAuthOpen(true);
     else setIsNewPostOpen(true);
   };
+
   const relatedForReview = pendingReview
     ? getRelatedThreads(conversations, pendingReview.category, pendingReview.threadId)
     : [];
+
   if (!isAppReady) {
     return <LoadingScreen />;
   }
+
   return (
     <div className="min-h-screen bg-[#FAFAFA] flex flex-col font-sans text-neutral-800">
       <Header
@@ -986,9 +1005,9 @@ export default function App() {
         onAdminClick={() => setIsAdminOpen(true)}
         onProfileClick={() => setIsProfileOpen(true)}
         onNotificationsClick={() => {}}
-        onOpenCategories={() =>
-          setActiveCategory(activeCategory === 'sidebar-open' ? 'all' : 'sidebar-open')
-        }
+        onOpenCategories={() => {
+          // Toggle sidebar open without changing URL
+        }}
         onSuggestionSelect={id => {
           setSearchTerm(''); // Clear search term after selection
           handleThreadOpen(id);
@@ -1001,70 +1020,59 @@ export default function App() {
         onThreadOpen={handleThreadOpen}
       />
       <div className="layout flex-1 w-full mx-auto px-3 sm:px-4 md:px-8 py-4 sm:py-8">
-        {activeCategory === 'sidebar-open' ? (
-          <div className="lg:hidden space-y-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] lg:grid-cols-[252px_1fr_280px] gap-4 md:gap-8">
+          <div className="hidden md:block">
             <LeftSidebar
               activeCategory={activeCategory}
-              onCategoryChange={setActiveCategory}
+              onCategoryChange={handleCategoryChange}
               conversations={conversations}
               savedPosts={savedPosts}
             />
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] lg:grid-cols-[252px_1fr_280px] gap-4 md:gap-8">
-            <div className="hidden md:block">
-              <LeftSidebar
+          <div className="min-w-0">
+            {isSearchMode ? (
+              <SearchResults
+                results={searchResults}
+                query={searchTerm}
+                onThreadOpen={handleThreadOpen}
+                onVote={handleVote}
+                votedThreads={votedThreads}
+                categoryFilter={searchCategoryFilter}
+                dateFilter={searchDateFilter}
+                onCategoryFilterChange={setSearchCategoryFilter}
+                onDateFilterChange={setSearchDateFilter}
+                onStartDiscussion={openNewPost}
+                users={users}
+              />
+            ) : (
+              <MainContent
                 activeCategory={activeCategory}
-                onCategoryChange={setActiveCategory}
+                searchTerm={searchTerm}
                 conversations={conversations}
+                onThreadOpen={handleThreadOpen}
+                onVote={handleVote}
+                onSavePost={toggleSavedPost}
                 savedPosts={savedPosts}
-              />
-            </div>
-            <div className="min-w-0">
-              {isSearchMode ? (
-                <SearchResults
-                  results={searchResults}
-                  query={searchTerm}
-                  onThreadOpen={handleThreadOpen}
-                  onVote={handleVote}
-                  votedThreads={votedThreads}
-                  categoryFilter={searchCategoryFilter}
-                  dateFilter={searchDateFilter}
-                  onCategoryFilterChange={setSearchCategoryFilter}
-                  onDateFilterChange={setSearchDateFilter}
-                  onStartDiscussion={openNewPost}
-                  users={users}
-                />
-              ) : (
-                <MainContent
-                  activeCategory={activeCategory}
-                  searchTerm={searchTerm}
-                  conversations={conversations}
-                  onThreadOpen={handleThreadOpen}
-                  onVote={handleVote}
-                  onSavePost={toggleSavedPost}
-                  savedPosts={savedPosts}
-                  votedThreads={votedThreads}
-                  onResetToDefault={handleResetToDefault}
-                  onStartDiscussion={openNewPost}
-                  users={users}
-                  featuredThreads={featuredThreads}
-                  onCategoryChange={setActiveCategory}
-                  onOpenRightSidebar={() => setIsRightSidebarOpen(true)}
-                />
-              )}
-            </div>
-            {/* Right Sidebar - Desktop Only */}
-            <div className="hidden lg:block">
-              <RightSidebar
-                onTrendingClick={handleThreadOpen}
+                votedThreads={votedThreads}
+                onResetToDefault={handleResetToDefault}
+                onStartDiscussion={openNewPost}
+                users={users}
                 featuredThreads={featuredThreads}
-                onFeaturedClick={handleThreadOpen}
-                variant="sidebar"
+                onCategoryChange={handleCategoryChange}
+                onOpenRightSidebar={() => setIsRightSidebarOpen(true)}
               />
-            </div>
+            )}
           </div>
-        )}
+          {/* Right Sidebar - Desktop Only */}
+          <div className="hidden lg:block">
+            <RightSidebar
+              onTrendingClick={handleThreadOpen}
+              featuredThreads={featuredThreads}
+              onFeaturedClick={handleThreadOpen}
+              variant="sidebar"
+            />
+          </div>
+        </div>
       </div>
       <footer className="bg-white border-t border-neutral-200/90 py-10 px-4 mt-12 text-center text-xs text-neutral-400 font-bold font-sans">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
@@ -1107,9 +1115,7 @@ export default function App() {
         onAdminClick={() => setIsAdminOpen(true)}
         onProfileClick={() => setIsProfileOpen(true)}
         onNotificationsClick={() => {}}
-        onOpenCategories={() =>
-          setActiveCategory(activeCategory === 'sidebar-open' ? 'all' : 'sidebar-open')
-        }
+        onOpenCategories={() => {}}
         notifications={notifications}
         onMarkAsRead={(id) => {
           const updated = notifications.map(n => (n.id === id ? { ...n, read: true } : n));
@@ -1121,9 +1127,7 @@ export default function App() {
         }}
         onThreadOpen={handleThreadOpen}
         activeCategory={activeCategory}
-        onCategoryChange={(catId) => {
-          setActiveCategory(catId);
-        }}
+        onCategoryChange={handleCategoryChange}
       />
       <NewPostModal
         isOpen={isNewPostOpen}
@@ -1237,5 +1241,14 @@ export default function App() {
         type={reportTarget?.type || 'reply'}
       />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<AppContent />} />
+      <Route path="/:category" element={<AppContent />} />
+    </Routes>
   );
 }
