@@ -33,14 +33,11 @@ export function RightSidebar({
           <div className="flex items-center gap-2 mb-3">
             <span className="text-2xl">👋</span>
             <h4 className="font-display font-bold text-lg text-[#4D4747]">
-              HELLO!
+              Welcome!
             </h4>
           </div>
-          <p className="font-sans text-[13px] text-[#4D4747] font-medium leading-relaxed mb-3">
-            tuco Circle is your safe, judgment-free space to share and support.
-          </p>
-          <p className="font-sans text-[12px] text-neutral-500 font-medium">
-            Hindi & English Welcome
+          <p className="font-sans text-[13px] text-[#4D4747] font-medium leading-relaxed">
+            Welcome to the tuco Parents Circle—a community where parents come together to share experiences, ask questions, and learn from one another. Whether you're looking for parenting tips, advice for new moms, or guidance on choosing the right products for your child, you'll find support from parents who understand the journey.
           </p>
         </div>
 
