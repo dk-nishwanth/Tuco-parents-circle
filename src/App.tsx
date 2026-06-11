@@ -115,6 +115,19 @@ function AppContent() {
   }>({ isOpen: false, title: '', message: '' });
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState<boolean>(false);
   const [isMobileLeftSidebarOpen, setIsMobileLeftSidebarOpen] = useState<boolean>(false);
+
+  // Prevent body scroll when any modal/overlay is open
+  useEffect(() => {
+    const anyModalOpen = isModalOpen || isNewPostOpen || isAuthOpen || isModerationOpen || isAdminOpen || isReportOpen || isProfileOpen || isMobileLeftSidebarOpen || isRightSidebarOpen;
+    if (anyModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, [isModalOpen, isNewPostOpen, isAuthOpen, isModerationOpen, isAdminOpen, isReportOpen, isProfileOpen, isMobileLeftSidebarOpen, isRightSidebarOpen]);
   useEffect(() => {
     async function initData() {
       try {
