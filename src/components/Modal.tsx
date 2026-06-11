@@ -44,6 +44,8 @@ interface ModalProps {
   onCategoryChange?: (categoryId: string) => void;
   activeReplyTo?: { threadId: number; replyId: number } | null;
   setActiveReplyTo?: (val: { threadId: number; replyId: number } | null) => void;
+  onSavePostClick?: (threadId: number) => void;
+  savedPosts?: number[];
 }
 
 // Recursive Reply Component
@@ -307,6 +309,8 @@ export function Modal({
   onThreadOpen,
   activeCategory = 'all',
   onCategoryChange,
+  onSavePostClick,
+  savedPosts = [],
 }: ModalProps) {
   const [replyText, setReplyText] = useState('');
   const [replyImage, setReplyImage] = useState<string | undefined>(undefined);
@@ -700,10 +704,20 @@ export function Modal({
           </p>
 
           <div className="flex items-center justify-end gap-5 pt-5 border-t border-neutral-100">
-            <Bookmark className="w-5 h-5 text-[#4D4747] cursor-pointer hover:text-neutral-500 transition-colors" strokeWidth={1.5} />
+            <Bookmark 
+              className={`w-5 h-5 cursor-pointer transition-colors ${savedPosts.includes(thread.id) ? 'text-[#EB3200] fill-current' : 'text-[#4D4747] hover:text-neutral-500'}`} 
+              strokeWidth={1.5} 
+              onClick={() => {
+                if (!currentUser) {
+                  onLoginClick?.();
+                } else {
+                  onSavePostClick?.(thread.id);
+                }
+              }}
+            />
             <div className="flex items-center gap-1.5 text-[#4D4747]">
               <Eye className="w-5 h-5 text-[#4D4747]" strokeWidth={1.5} />
-              <span className="text-[13px] font-medium">{thread.views || 691} Views</span>
+              <span className="text-[13px] font-medium">{thread.views || 0} Views</span>
             </div>
           </div>
         </div>

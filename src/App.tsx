@@ -480,14 +480,24 @@ function AppContent() {
       ),
     [conversations]
   );
-  const handleThreadOpen = (threadId: number) => {
+  const handleThreadOpen = async (threadId: number) => {
+    const updatedThread = conversations.find(c => c.id === threadId);
+    const newViews = (updatedThread?.views || 0) + 1;
+    
     setConversations(prev => {
-      const updated = prev.map(c => (c.id === threadId ? { ...c, views: c.views + 1 } : c));
-      // We don't save view counts to backend every time to save bandwidth
-      return updated;
+      return prev.map(c => (c.id === threadId ? { ...c, views: newViews } : c));
     });
+    
     setSelectedThreadId(threadId);
     setIsModalOpen(true);
+    
+    // Save to backend
+    try {
+      await api.updateConversation(threadId, { views: newViews });
+    } catch (error) {
+      console.error('Failed to update view count:', error);
+    }
+    
     // Push to browser history so back button closes modal
     window.history.pushState({ threadId }, '', `#thread-${threadId}`);
   };
@@ -1301,6 +1311,8 @@ function AppContent() {
         onThreadOpen={handleThreadOpen}
         activeCategory={activeCategory}
         onCategoryChange={handleCategoryChange}
+        onSavePostClick={toggleSavedPost}
+        savedPosts={savedPosts}
       />
       <NewPostModal
         isOpen={isNewPostOpen}
