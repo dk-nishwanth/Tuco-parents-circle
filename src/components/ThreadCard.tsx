@@ -91,18 +91,9 @@ export function ThreadCard({
         <div className="flex-1 min-w-0">
           {/* Category Tag (Top) */}
           <div className="flex justify-start mb-2.5">
-            <div 
-              className="flex items-center gap-2 px-4 py-1 rounded-full border shadow-sm"
-              style={{ 
-                backgroundColor: catColor.bg, 
-                borderColor: `${catColor.border}80`,
-              }}
-            >
+            <div className="flex items-center gap-2 px-4 py-1 rounded-full shadow-sm" style={{ backgroundColor: catColor.bg, color: catColor.text, borderColor: catColor.border }}>
               <span className="text-[12px]">{category.icon}</span>
-              <span 
-                className="text-[11px] font-sans font-medium tracking-tight"
-                style={{ color: catColor.text }}
-              >
+              <span className="text-[11px] font-sans font-medium tracking-tight">
                 {category.label}
               </span>
             </div>
@@ -129,8 +120,8 @@ export function ThreadCard({
             <div className="flex items-center gap-1.5">
               <span className="text-[12px] font-sans font-medium text-[#4D4747]">By {thread.op.author}</span>
               <AuthorBadges badges={opBadges} role={opRole} />
-              <span className="bg-[#FFE259] text-[10px] text-[#4D4747] font-sans font-medium uppercase px-2.5 py-0.5 rounded-md border border-[#FED018]/50 shadow-sm">
-                {thread.op.city}
+              <span className="bg-[#E7F9FF] text-[10px] text-[#4D4747] font-sans font-medium uppercase px-2.5 py-0.5 rounded-md border border-[#E7F9FF]/10 shadow-sm cursor-pointer hover:bg-[#35B5EC] hover:text-white transition-colors">
+                Click here
               </span>
             </div>
           </div>
