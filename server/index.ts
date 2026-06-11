@@ -810,6 +810,12 @@ app.post('/api/votes', authenticate, async (req: AuthRequest, res, next) => {
       },
     });
 
+    // Get user for notifications
+    const user = await prisma.user.findUnique({ where: { id: req.userId! } });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
     if (existingVote) {
       if (existingVote.type === type) {
         // Same vote = remove it (toggle off)
@@ -849,6 +855,36 @@ app.post('/api/votes', authenticate, async (req: AuthRequest, res, next) => {
         where: { id: conversationId },
         data: { votes: { increment: type === 'UP' ? 1 : -1 } },
       });
+
+      // Notify conversation author about new like
+      const conversation = await prisma.conversation.findUnique({ where: { id: conversationId } });
+      if (conversation && conversation.authorId !== req.userId && type === 'UP') {
+        await prisma.notification.create({
+          data: {
+            userId: conversation.authorId,
+            type: 'LIKE',
+            title: 'Your thread got a like!',
+            description: `${user.username} liked your thread "${conversation.title}"`,
+            time: 'Just now',
+            threadId: conversationId,
+          },
+        });
+      }
+    } else if (replyId) {
+      // Notify reply author about new like
+      const reply = await prisma.reply.findUnique({ where: { id: replyId } });
+      if (reply && reply.authorId !== req.userId && type === 'UP') {
+        await prisma.notification.create({
+          data: {
+            userId: reply.authorId,
+            type: 'LIKE',
+            title: 'Your reply got a like!',
+            description: `${user.username} liked your reply`,
+            time: 'Just now',
+            threadId: reply.conversationId,
+          },
+        });
+      }
     }
 
     res.status(201).json({ action: 'added', type });

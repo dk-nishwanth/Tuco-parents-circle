@@ -150,9 +150,6 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin }: AuthModalProps
               >
                 {loading ? 'Signing in...' : 'Sign In'}
               </button>
-              <p className="text-xs text-neutral-500 text-center">
-                Demo: use any email and any password to sign in
-              </p>
             </form>
           )}
           {mode === 'signup' && (

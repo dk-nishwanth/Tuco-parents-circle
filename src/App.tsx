@@ -141,6 +141,28 @@ function AppContent() {
             if (user.savedPosts) {
               setSavedPosts(user.savedPosts);
             }
+
+            // Load user's votes from API
+            try {
+              const apiVotes = await api.getMyVotes();
+              const voteMap: Record<number, 'up' | 'down' | null> = {};
+              apiVotes.forEach((vote: any) => {
+                if (vote.conversationId) {
+                  voteMap[vote.conversationId] = vote.type === 'UP' ? 'up' : 'down';
+                }
+              });
+              setVotedThreads(voteMap);
+            } catch (error) {
+              console.error('Failed to load votes:', error);
+            }
+
+            // Load user's notifications from API
+            try {
+              const apiNotifications = await api.getNotifications();
+              setNotifications(apiNotifications);
+            } catch (error) {
+              console.error('Failed to load notifications:', error);
+            }
           } catch (error) {
             console.error('Failed to restore session:', error);
             tokenStore.clear();
@@ -166,26 +188,6 @@ function AppContent() {
         // Fallback to local seed if API fails
         setConversations(enrichConversations(INITIAL_CONVERSATIONS));
         setUsers({ [DEMO_MODERATOR.id]: DEMO_MODERATOR });
-      }
-
-      // Local storage still used for session-specific or personal data
-      const cachedVotes = localStorage.getItem('tuco_votes_v1');
-      if (cachedVotes) {
-        try {
-          setVotedThreads(JSON.parse(cachedVotes));
-        } catch {}
-      }
-      const cachedLikes = localStorage.getItem('tuco_reply_likes_v1');
-      if (cachedLikes) {
-        try {
-          setLikedReplies(JSON.parse(cachedLikes));
-        } catch {}
-      }
-      const cachedNotifications = localStorage.getItem('tuco_notifications_v1');
-      if (cachedNotifications) {
-        try {
-          setNotifications(JSON.parse(cachedNotifications));
-        } catch {}
       }
 
       const minDisplayMs = 1200;
@@ -1027,9 +1029,15 @@ function AppContent() {
           handleThreadOpen(id);
         }}
         notifications={notifications}
-        onMarkAsRead={id => {
+        onMarkAsRead={async id => {
           const updated = notifications.map(n => (n.id === id ? { ...n, read: true } : n));
           setNotifications(updated);
+          // Mark notification as read via API
+          try {
+            await api.markNotificationRead(id);
+          } catch (error) {
+            console.error('Failed to mark notification as read:', error);
+          }
         }}
         onThreadOpen={handleThreadOpen}
       />
