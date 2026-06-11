@@ -79,12 +79,15 @@ model Reply {
   time              String
   text              String
   image             String?
-  tucoRec           String?
   likes             Int               @default(0)
   authorRole        UserRole          @default(MEMBER)
   authorBadges      String[]
   moderationStatus  ModerationStatus  @default(PENDING)
-  votesRelation     Vote[] @relation("VoteToReply")
+  votesRelation     Vote[]            @relation("VoteToReply")
+  parentId          Int?              // ID of the parent reply for nested comments
+  parent            Reply?            @relation("ReplyToReply", fields: [parentId], references: [id], onDelete: Cascade)
+  replies           Reply[]           @relation("ReplyToReply")
+  createdAt         DateTime          @default(now())
 }
 
 // --- Votes & Likes Table ---

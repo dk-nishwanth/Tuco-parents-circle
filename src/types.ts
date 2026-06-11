@@ -16,11 +16,12 @@ export interface Reply {
   time: string;
   text: string;
   image?: string;
-  tucoRec?: string;
   likes: number;
   authorRole?: UserRole;
   authorBadges?: BadgeType[];
   createdAt?: string;
+  parentId?: number; // ID of the parent reply for nested replies
+  replies?: Reply[]; // Array of nested replies
 }
 export type DateFilter = 'all' | 'today' | 'week' | 'month' | 'year';
 export interface Conversation {

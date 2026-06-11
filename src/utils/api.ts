@@ -149,7 +149,7 @@ export const api = {
 
   async addReply(
     conversationId: number,
-    data: { text: string; city: string; image?: string; tucoRec?: string }
+    data: { text: string; city: string; image?: string; parentId?: number }
   ) {
     const res = await fetch(`${API_BASE_URL}/conversations/${conversationId}/replies`, {
       method: 'POST',

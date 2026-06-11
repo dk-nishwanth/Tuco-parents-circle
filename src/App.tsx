@@ -116,6 +116,7 @@ function AppContent() {
   }>({ isOpen: false, title: '', message: '' });
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState<boolean>(false);
   const [isMobileLeftSidebarOpen, setIsMobileLeftSidebarOpen] = useState<boolean>(false);
+  const [activeReplyTo, setActiveReplyTo] = useState<{ threadId: number; replyId: number } | null>(null);
 
   // Prevent body scroll when any modal/overlay is open
   useEffect(() => {
@@ -580,12 +581,50 @@ function AppContent() {
     if (/shampoo|hair|scalp|lice|conditioning/.test(raw)) return 'shampoo';
     return undefined;
   };
+  // Helper to add a nested reply recursively
+  const addNestedReply = (replies: Reply[], parentId: number, newReply: Reply): Reply[] => {
+    return replies.map(r => {
+      if (r.id === parentId) {
+        return { ...r, replies: [...(r.replies || []), newReply] };
+      }
+      if (r.replies && r.replies.length > 0) {
+        return { ...r, replies: addNestedReply(r.replies, parentId, newReply) };
+      }
+      return r;
+    });
+  };
+
+  // Helper to update a nested reply recursively
+  const updateNestedReply = (replies: Reply[], replyId: number, newText: string): Reply[] => {
+    return replies.map(r => {
+      if (r.id === replyId) {
+        return { ...r, text: newText };
+      }
+      if (r.replies && r.replies.length > 0) {
+        return { ...r, replies: updateNestedReply(r.replies, replyId, newText) };
+      }
+      return r;
+    });
+  };
+
+  // Helper to delete a nested reply recursively
+  const deleteNestedReply = (replies: Reply[], replyId: number): Reply[] => {
+    return replies.filter(r => {
+      if (r.id === replyId) return false;
+      if (r.replies && r.replies.length > 0) {
+        r.replies = deleteNestedReply(r.replies, replyId);
+      }
+      return true;
+    });
+  };
+
   const handleAddReply = async (
     threadId: number,
     name: string,
     city: string,
     text: string,
-    image?: string
+    image?: string,
+    parentId?: number
   ) => {
     if (!currentUser) {
       setIsAuthOpen(true);
@@ -606,14 +645,12 @@ function AppContent() {
     }
 
     try {
-      const tucoRec = detectProductRecommendation(text);
-      
       // Create reply via API
       const createdReply = await api.addReply(threadId, {
         text: analysis.civilityReminder ? `${text}\n\n---\n💛 ${analysis.civilityReminder}` : text,
         city,
         image,
-        tucoRec,
+        parentId,
       });
 
       const newReply: Reply = {
@@ -623,25 +660,37 @@ function AppContent() {
         time: 'Just now',
         text: analysis.civilityReminder ? `${text}\n\n---\n💛 ${analysis.civilityReminder}` : text,
         image,
-        tucoRec,
         likes: 0,
         authorRole: currentUser.role,
         authorBadges: currentUser.badges.map(b => b.type),
+        parentId,
       };
 
       setConversations(prev => {
         const thread = prev.find(c => c.id === threadId);
-        const updated = prev.map(c =>
-          c.id === threadId ? { ...c, replies: [...c.replies, newReply] } : c
-        );
+        let updated;
+
+        if (parentId) {
+          // Add nested reply
+          updated = prev.map(c =>
+            c.id === threadId
+              ? { ...c, replies: addNestedReply(c.replies, parentId, newReply) }
+              : c
+          );
+        } else {
+          // Add root reply
+          updated = prev.map(c =>
+            c.id === threadId ? { ...c, replies: [...c.replies, newReply] } : c
+          );
+        }
 
         // Add notification for the thread author
         if (thread && thread.authorId && thread.authorId !== currentUser.id) {
           const newNotif: Notification = {
             id: Date.now() + Math.random(),
             type: 'reply',
-            title: 'New reply to your thread',
-            description: `${currentUser.username} replied to "${thread.title}"`,
+            title: parentId ? 'New reply to your comment' : 'New reply to your thread',
+            description: `${currentUser.username} replied ${parentId ? 'to your comment' : `to "${thread.title}"`}`,
             time: 'Just now',
             read: false,
             threadId: thread.id,
@@ -655,6 +704,7 @@ function AppContent() {
       const updatedUser = { ...currentUser, replyCount: currentUser.replyCount + 1 };
       saveUser(updatedUser);
       checkAndAwardBadges(updatedUser);
+      setActiveReplyTo(null);
     } catch (error) {
       console.error('Failed to add reply:', error);
       setWarningModal({
@@ -713,12 +763,7 @@ function AppContent() {
       
       const updated = conversations.map(c => {
         if (c.id === threadId) {
-          const updatedReplies = c.replies.map(r => {
-            if (r.id === replyId) {
-              return { ...r, text: newText };
-            }
-            return r;
-          });
+          const updatedReplies = updateNestedReply(c.replies, replyId, newText);
           return { ...c, replies: updatedReplies };
         }
         return c;
@@ -753,7 +798,7 @@ function AppContent() {
       
       const updated = conversations.map(c => {
         if (c.id === threadId) {
-          return { ...c, replies: c.replies.filter(r => r.id !== replyId) };
+          return { ...c, replies: deleteNestedReply(c.replies, replyId) };
         }
         return c;
       });
@@ -1147,9 +1192,12 @@ function AppContent() {
         onClose={() => {
           setIsModalOpen(false);
           setSelectedThreadId(null);
+          setActiveReplyTo(null);
         }}
         onAddReply={handleAddReply}
         onLikeReply={handleLikeReply}
+        activeReplyTo={activeReplyTo}
+        setActiveReplyTo={setActiveReplyTo}
         onReportReply={handleReportReply}
         onEditReply={handleEditReply}
         onDeleteReply={handleDeleteReply}

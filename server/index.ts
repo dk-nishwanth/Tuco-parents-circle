@@ -287,48 +287,59 @@ const formatUser = (u: any) => ({
   savedPosts: u.savedPosts || [],
 });
 
-// Convert Prisma conversation to frontend Conversation shape
-const formatConversation = (c: any) => ({
-  id: c.id,
-  title: c.title,
-  category: c.category,
-  isPinned: c.isPinned || false,
-  isHot: c.isHot || false,
-  isFeatured: c.isFeatured || false,
-  featuredLabel: c.featuredLabel,
-  votes: c.votes || 0,
-  views: c.views || 0,
-  op: {
-    author: c.opAuthor,
-    city: c.opCity,
-    time: c.opTime,
-    text: c.opText,
-    image: c.opImage,
-    authorRole: mapRole(c.opAuthorRole),
-    authorBadges: c.opAuthorBadges || [],
-  },
-  replies: (c.replies || []).map((r: any) => ({
-    id: r.id,
-    author: r.author,
-    authorId: r.authorId,
-    city: r.city,
-    time: r.time,
-    text: r.text,
-    image: r.image,
-    tucoRec: r.tucoRec,
-    likes: r.likes || 0,
-    authorRole: mapRole(r.authorRole),
-    authorBadges: r.authorBadges || [],
-    createdAt: r.createdAt ? r.createdAt.toISOString() : new Date().toISOString(),
-  })),
-  moderationStatus: (c.moderationStatus || 'PENDING').toLowerCase(),
-  moderatedBy: c.moderatedBy,
-  moderationReason: c.moderationReason,
-  createdAt: c.createdAt ? c.createdAt.toISOString() : new Date().toISOString(),
-  authorId: c.authorId,
-  greyAreaFlags: c.greyAreaFlags || [],
-  reviewPriority: c.reviewPriority,
+// Recursively format replies including nested ones
+const formatReply = (r: any, allReplies: any[]): any => ({
+  id: r.id,
+  author: r.author,
+  authorId: r.authorId,
+  city: r.city,
+  time: r.time,
+  text: r.text,
+  image: r.image,
+  likes: r.likes || 0,
+  authorRole: mapRole(r.authorRole),
+  authorBadges: r.authorBadges || [],
+  createdAt: r.createdAt ? r.createdAt.toISOString() : new Date().toISOString(),
+  parentId: r.parentId,
+  // Find all children of this reply
+  replies: allReplies.filter((child: any) => child.parentId === r.id).map((child: any) => formatReply(child, allReplies)),
 });
+
+// Convert Prisma conversation to frontend Conversation shape
+const formatConversation = (c: any) => {
+  const allReplies = c.replies || [];
+  // Root replies are those without parent
+  const rootReplies = allReplies.filter((r: any) => !r.parentId);
+
+  return {
+    id: c.id,
+    title: c.title,
+    category: c.category,
+    isPinned: c.isPinned || false,
+    isHot: c.isHot || false,
+    isFeatured: c.isFeatured || false,
+    featuredLabel: c.featuredLabel,
+    votes: c.votes || 0,
+    views: c.views || 0,
+    op: {
+      author: c.opAuthor,
+      city: c.opCity,
+      time: c.opTime,
+      text: c.opText,
+      image: c.opImage,
+      authorRole: mapRole(c.opAuthorRole),
+      authorBadges: c.opAuthorBadges || [],
+    },
+    replies: rootReplies.map((r: any) => formatReply(r, allReplies)),
+    moderationStatus: (c.moderationStatus || 'PENDING').toLowerCase(),
+    moderatedBy: c.moderatedBy,
+    moderationReason: c.moderationReason,
+    createdAt: c.createdAt ? c.createdAt.toISOString() : new Date().toISOString(),
+    authorId: c.authorId,
+    greyAreaFlags: c.greyAreaFlags || [],
+    reviewPriority: c.reviewPriority,
+  };
+};
 
 async function sendEmail(to: string, subject: string, html: string): Promise<boolean> {
   if (!resend) {
@@ -665,7 +676,7 @@ const replySchema = z.object({
   text: z.string().min(1).max(3000),
   city: z.string(),
   image: z.string().optional(),
-  tucoRec: z.string().optional(),
+  parentId: z.number().optional(),
 });
 
 app.post('/api/conversations/:id/replies', authenticate, async (req: AuthRequest, res, next) => {
@@ -687,7 +698,7 @@ app.post('/api/conversations/:id/replies', authenticate, async (req: AuthRequest
       return res.status(404).json({ error: 'User not found' });
     }
 
-    const { text, city, image, tucoRec } = parsed.data;
+    const { text, city, image, parentId } = parsed.data;
 
     console.log('💾 Creating reply in database...');
     const reply = await prisma.reply.create({
@@ -699,7 +710,7 @@ app.post('/api/conversations/:id/replies', authenticate, async (req: AuthRequest
         time: 'Just now',
         text,
         image,
-        tucoRec,
+        parentId,
         authorRole: user.role,
         authorBadges: (user.badges as any[] || []).map((b: any) => b.type),
       },
@@ -728,6 +739,24 @@ app.post('/api/conversations/:id/replies', authenticate, async (req: AuthRequest
           threadId: conversationId,
         },
       });
+    }
+
+    // Notify parent reply author if it's a nested reply
+    if (parentId) {
+      const parentReply = await prisma.reply.findUnique({ where: { id: parentId } });
+      if (parentReply && parentReply.authorId !== req.userId) {
+        console.log('🔔 Creating notification for parent reply author...');
+        await prisma.notification.create({
+          data: {
+            userId: parentReply.authorId,
+            type: 'REPLY',
+            title: 'New reply to your comment',
+            description: `${user.username} replied to your comment`,
+            time: 'Just now',
+            threadId: conversationId,
+          },
+        });
+      }
     }
 
     console.log('✅ Reply added successfully!');

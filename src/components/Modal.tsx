@@ -1,7 +1,7 @@
 import React, { useState, FormEvent, useRef, useEffect } from 'react';
 import { CATEGORIES } from '../data/categories';
 import { PRODUCTS } from '../data/products';
-import { Conversation, User as UserType, Notification } from '../types';
+import { Conversation, User as UserType, Notification, Reply } from '../types';
 import { getAvatarColor, getInitials, searchThreadsWithRanking, formatTimeAgo } from '../utils/helpers';
 import { Heart, MessageSquare, X, Eye, Bookmark, ChevronDown, Search, Bell, ArrowLeft, Menu, User, LogOut, Users } from 'lucide-react';
 import tucoLogo from '../assets/tuco-logo.webp';
@@ -15,7 +15,8 @@ interface ModalProps {
     name: string,
     city: string,
     text: string,
-    image?: string
+    image?: string,
+    parentId?: number
   ) => void;
   onLikeReply?: (threadId: number, replyId: number) => void;
   onReportReply?: (threadId: number, replyId: number) => void;
@@ -41,13 +42,248 @@ interface ModalProps {
   onThreadOpen?: (id: number) => void;
   activeCategory?: string;
   onCategoryChange?: (categoryId: string) => void;
+  activeReplyTo?: { threadId: number; replyId: number } | null;
+  setActiveReplyTo?: (val: { threadId: number; replyId: number } | null) => void;
 }
+
+// Recursive Reply Component
+const ReplyComponent = ({
+  reply,
+  threadId,
+  onAddReply,
+  onLikeReply,
+  onReportReply,
+  onEditReply,
+  onDeleteReply,
+  currentUser,
+  likedReplies,
+  activeReplyTo,
+  setActiveReplyTo,
+}: {
+  reply: Reply;
+  threadId: number;
+  onAddReply: (
+    threadId: number,
+    name: string,
+    city: string,
+    text: string,
+    image?: string,
+    parentId?: number
+  ) => void;
+  onLikeReply?: (threadId: number, replyId: number) => void;
+  onReportReply?: (threadId: number, replyId: number) => void;
+  onEditReply?: (threadId: number, replyId: number, newText: string) => void;
+  onDeleteReply?: (threadId: number, replyId: number) => void;
+  currentUser?: UserType | null;
+  likedReplies?: Record<number, boolean>;
+  activeReplyTo?: { threadId: number; replyId: number } | null;
+  setActiveReplyTo?: (val: { threadId: number; replyId: number } | null) => void;
+}) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editText, setEditText] = useState(reply.text);
+  const [isReplying, setIsReplying] = useState(false);
+  const [replyText, setReplyText] = useState('');
+  const replyInputRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (isReplying && replyInputRef.current) {
+      replyInputRef.current.focus();
+    }
+  }, [isReplying]);
+
+  const handleSubmitNestedReply = (e: FormEvent) => {
+    e.preventDefault();
+    if (replyText.trim() && currentUser) {
+      onAddReply(threadId, currentUser.username, currentUser.city, replyText, undefined, reply.id);
+      setReplyText('');
+      setIsReplying(false);
+      if (setActiveReplyTo) setActiveReplyTo(null);
+    }
+  };
+
+  const handleEditSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    if (editText.trim() && onEditReply) {
+      onEditReply(threadId, reply.id, editText);
+      setIsEditing(false);
+    }
+  };
+
+  const isOwnReply = currentUser && currentUser.username === reply.author;
+  const isMod = currentUser && (currentUser.role === 'MODERATOR' || currentUser.role === 'TUCO_TEAM');
+
+  return (
+    <div key={reply.id} className="bg-white border border-neutral-200 rounded-[24px] p-6 shadow-sm relative overflow-hidden">
+      <div className="flex items-start justify-between mb-5">
+        <div className="flex items-center gap-3">
+          <div
+            className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-[15px]"
+            style={{ backgroundColor: getAvatarColor(reply.author), color: '#4D4747' }}
+          >
+            {getInitials(reply.author)}
+          </div>
+          <div>
+            <h4 className="font-bold text-[15px] text-[#4D4747] leading-none mb-1">
+              {reply.author}
+            </h4>
+            <p className="text-[12px] text-neutral-400 font-medium leading-none">
+              {reply.city}
+            </p>
+          </div>
+        </div>
+        <span className="text-[12px] text-neutral-400 font-medium">
+          {formatTimeAgo(reply.createdAt)}
+        </span>
+      </div>
+
+      {isEditing ? (
+        <form onSubmit={handleEditSubmit} className="mb-6">
+          <textarea
+            value={editText}
+            onChange={(e) => setEditText(e.target.value)}
+            className="w-full bg-neutral-50 border border-neutral-200 rounded-xl py-3 px-4 text-sm text-neutral-800 placeholder-neutral-400 outline-none focus:border-[#FED018] focus:ring-2 focus:ring-[#FED018]/20 transition-all resize-none"
+            rows={3}
+            autoFocus
+          />
+          <div className="flex gap-2 mt-2">
+            <button
+              type="submit"
+              className="bg-[#FED018] hover:bg-[#fccb0a] text-neutral-800 px-4 py-2 rounded-full text-sm font-bold transition-colors"
+            >
+              Save
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setIsEditing(false);
+                setEditText(reply.text);
+              }}
+              className="bg-neutral-100 hover:bg-neutral-200 text-neutral-800 px-4 py-2 rounded-full text-sm font-bold transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      ) : (
+        <p className="text-[14.5px] text-[#4D4747] leading-relaxed font-normal mb-6">
+          {reply.text}
+        </p>
+      )}
+
+      <div className="flex items-center justify-end gap-4 mb-4">
+        {!isEditing && (
+          <>
+            <button
+              onClick={() => onLikeReply && threadId && onLikeReply(threadId, reply.id)}
+              className="flex items-center gap-2 hover:scale-110 transition-transform"
+            >
+              <Heart
+                className={`w-4 h-4 stroke-[1.5] ${likedReplies && likedReplies[reply.id] ? 'text-red-500 fill-red-500' : 'text-[#4D4747] hover:text-red-500'}`}
+              />
+              <span className={`text-[13px] font-medium ${likedReplies && likedReplies[reply.id] ? 'text-red-500' : 'text-[#4D4747]'}`}>
+                {reply.likes} Helpful
+              </span>
+            </button>
+            <button
+              onClick={() => {
+                if (setActiveReplyTo) {
+                  setActiveReplyTo({ threadId, replyId: reply.id });
+                  setIsReplying(true);
+                } else {
+                  setIsReplying(!isReplying);
+                }
+              }}
+              className="flex items-center gap-2 hover:scale-110 transition-transform text-[#4D4747]"
+            >
+              <MessageSquare className="w-4 h-4" />
+              <span className="text-[13px] font-medium">Reply</span>
+            </button>
+            {isOwnReply && (
+              <button
+                onClick={() => setIsEditing(true)}
+                className="flex items-center gap-2 hover:scale-110 transition-transform text-[#4D4747]"
+              >
+                <span className="text-[13px] font-medium">Edit</span>
+              </button>
+            )}
+            {(isOwnReply || isMod) && onDeleteReply && (
+              <button
+                onClick={() => onDeleteReply(threadId, reply.id)}
+                className="flex items-center gap-2 hover:scale-110 transition-transform text-red-500"
+              >
+                <span className="text-[13px] font-medium">Delete</span>
+              </button>
+            )}
+          </>
+        )}
+      </div>
+
+      {isReplying && (
+        <form onSubmit={handleSubmitNestedReply} className="mb-4">
+          <textarea
+            ref={replyInputRef}
+            value={replyText}
+            onChange={(e) => setReplyText(e.target.value)}
+            placeholder={`Reply to ${reply.author}...`}
+            className="w-full bg-neutral-50 border border-neutral-200 rounded-xl py-3 px-4 text-sm text-neutral-800 placeholder-neutral-400 outline-none focus:border-[#FED018] focus:ring-2 focus:ring-[#FED018]/20 transition-all resize-none"
+            rows={2}
+          />
+          <div className="flex gap-2 mt-2">
+            <button
+              type="submit"
+              disabled={!replyText.trim()}
+              className="bg-[#FED018] hover:bg-[#fccb0a] disabled:opacity-50 disabled:cursor-not-allowed text-neutral-800 px-4 py-2 rounded-full text-sm font-bold transition-colors"
+            >
+              Reply
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setIsReplying(false);
+                setReplyText('');
+                if (setActiveReplyTo) setActiveReplyTo(null);
+              }}
+              className="bg-neutral-100 hover:bg-neutral-200 text-neutral-800 px-4 py-2 rounded-full text-sm font-bold transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      )}
+
+      {/* Render Nested Replies */}
+      {reply.replies && reply.replies.length > 0 && (
+        <div className="ml-8 mt-4 space-y-4">
+          {reply.replies.map((nestedReply) => (
+            <ReplyComponent
+              key={nestedReply.id}
+              reply={nestedReply}
+              threadId={threadId}
+              onAddReply={onAddReply}
+              onLikeReply={onLikeReply}
+              onReportReply={onReportReply}
+              onEditReply={onEditReply}
+              onDeleteReply={onDeleteReply}
+              currentUser={currentUser}
+              likedReplies={likedReplies}
+              activeReplyTo={activeReplyTo}
+              setActiveReplyTo={setActiveReplyTo}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 export function Modal({
   thread,
   isOpen,
   onClose,
   onAddReply,
   onLikeReply,
+  activeReplyTo,
+  setActiveReplyTo,
   onReportReply,
   onEditReply,
   onDeleteReply,
@@ -532,74 +768,22 @@ export function Modal({
 
         {/* Replies List */}
         <div className="space-y-6">
-          {thread.replies.map((reply) => {
-            const product = reply.tucoRec ? gettucoProduct(reply.tucoRec) : null;
-            return (
-              <div key={reply.id} className="bg-white border border-neutral-200 rounded-[24px] p-6 shadow-sm relative overflow-hidden">
-                {/* Branded Left Edge */}
-                <div className="absolute left-0 top-0 bottom-0 w-[6px] bg-[#FFE259] pointer-events-none opacity-30"></div>
-                
-                <div className="flex items-start justify-between mb-5">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-[15px]"
-                      style={{ backgroundColor: getAvatarColor(reply.author), color: '#4D4747' }}
-                    >
-                      {getInitials(reply.author)}
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-[15px] text-[#4D4747] leading-none mb-1">
-                        {reply.author}
-                      </h4>
-                      <p className="text-[12px] text-neutral-400 font-medium leading-none">
-                        {reply.city}
-                      </p>
-                    </div>
-                  </div>
-                  <span className="text-[12px] text-neutral-400 font-medium">
-                    {formatTimeAgo(reply.createdAt)}
-                  </span>
-                </div>
-
-                <p className="text-[14.5px] text-[#4D4747] leading-relaxed font-normal mb-6">
-                  {reply.text}
-                </p>
-
-                <div className="flex items-center justify-end gap-2 mb-6">
-                  <button
-                    onClick={() => onLikeReply && thread && onLikeReply(thread.id, reply.id)}
-                    className="flex items-center gap-2 hover:scale-110 transition-transform"
-                  >
-                    <Heart
-                      className={`w-4 h-4 stroke-[1.5] ${likedReplies[reply.id] ? 'text-red-500 fill-red-500' : 'text-[#4D4747] hover:text-red-500'}`}
-                    />
-                    <span className={`text-[13px] font-medium ${likedReplies[reply.id] ? 'text-red-500' : 'text-[#4D4747]'}`}>
-                      {reply.likes} Helpful
-                    </span>
-                  </button>
-                </div>
-
-                {product && (
-                  <div className="bg-white border border-neutral-100 rounded-[20px] overflow-hidden flex items-stretch shadow-sm">
-                    <div className="w-36 bg-[#FEF9C3] flex items-center justify-center p-7 shrink-0">
-                      <span className="text-6xl">{product.icon}</span>
-                    </div>
-                    <div className="flex-1 p-7 flex flex-col justify-center">
-                      <h5 className="font-bold text-[18px] text-[#4D4747] leading-snug mb-1">
-                        {product.name}
-                      </h5>
-                      <p className="text-[12px] text-neutral-400 font-medium mb-6">
-                        {product.tag}
-                      </p>
-                      <button className="bg-[#FED018] hover:bg-[#fccb0a] text-neutral-800 px-8 py-2 rounded-full text-[14px] font-bold w-fit transition-colors">
-                        add to cart
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })}
+          {thread.replies.map((reply) => (
+            <ReplyComponent
+              key={reply.id}
+              reply={reply}
+              threadId={thread.id}
+              onAddReply={onAddReply}
+              onLikeReply={onLikeReply}
+              onReportReply={onReportReply}
+              onEditReply={onEditReply}
+              onDeleteReply={onDeleteReply}
+              currentUser={currentUser}
+              likedReplies={likedReplies}
+              activeReplyTo={activeReplyTo}
+              setActiveReplyTo={setActiveReplyTo}
+            />
+          ))}
         </div>
       </div>
     </div>
