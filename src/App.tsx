@@ -114,6 +114,7 @@ function AppContent() {
     message: string;
   }>({ isOpen: false, title: '', message: '' });
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState<boolean>(false);
+  const [isMobileLeftSidebarOpen, setIsMobileLeftSidebarOpen] = useState<boolean>(false);
   useEffect(() => {
     async function initData() {
       try {
@@ -969,6 +970,7 @@ function AppContent() {
   };
   
   const handleCategoryChange = (catId: string) => {
+    setIsMobileLeftSidebarOpen(false);
     if (catId === 'all' || catId === 'saved') {
       navigate('/');
     } else if (catId === 'sidebar-open') {
@@ -1006,7 +1008,7 @@ function AppContent() {
         onProfileClick={() => setIsProfileOpen(true)}
         onNotificationsClick={() => {}}
         onOpenCategories={() => {
-          // Toggle sidebar open without changing URL
+          setIsMobileLeftSidebarOpen(!isMobileLeftSidebarOpen);
         }}
         onSuggestionSelect={id => {
           setSearchTerm(''); // Clear search term after selection
@@ -1019,6 +1021,39 @@ function AppContent() {
         }}
         onThreadOpen={handleThreadOpen}
       />
+
+      {/* Mobile Left Sidebar Overlay */}
+      {isMobileLeftSidebarOpen && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/20 z-40 md:hidden"
+            onClick={() => setIsMobileLeftSidebarOpen(false)}
+          ></div>
+          {/* Sidebar */}
+          <div className="fixed left-0 top-0 bottom-0 w-[280px] bg-white z-50 md:hidden overflow-y-auto border-r border-neutral-200 shadow-xl animate-in slide-in-from-left-2 duration-200">
+            <div className="p-4">
+              <div className="flex items-center justify-between mb-4">
+                <img src={tucoLogo} alt="tuco" className="h-8 w-auto" />
+                <button
+                  onClick={() => setIsMobileLeftSidebarOpen(false)}
+                  className="p-1 hover:bg-neutral-100 rounded-full"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 text-neutral-500">
+                    <path d="M18 6L6 18M6 6l12 12"/>
+                  </svg>
+                </button>
+              </div>
+              <LeftSidebar
+                activeCategory={activeCategory}
+                onCategoryChange={handleCategoryChange}
+                conversations={conversations}
+                savedPosts={savedPosts}
+              />
+            </div>
+          </div>
+        </>
+      )}
       <div className="layout flex-1 w-full mx-auto px-3 sm:px-4 md:px-8 py-4 sm:py-8">
         <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] lg:grid-cols-[252px_1fr_280px] gap-4 md:gap-8">
           <div className="hidden md:block">
@@ -1115,7 +1150,9 @@ function AppContent() {
         onAdminClick={() => setIsAdminOpen(true)}
         onProfileClick={() => setIsProfileOpen(true)}
         onNotificationsClick={() => {}}
-        onOpenCategories={() => {}}
+        onOpenCategories={() => {
+          setIsMobileLeftSidebarOpen(!isMobileLeftSidebarOpen);
+        }}
         notifications={notifications}
         onMarkAsRead={(id) => {
           const updated = notifications.map(n => (n.id === id ? { ...n, read: true } : n));
