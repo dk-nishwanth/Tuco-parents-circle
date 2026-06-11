@@ -8,8 +8,6 @@ interface NewPostModalProps {
   onSubmit: (
     title: string,
     category: string,
-    author: string,
-    city: string,
     text: string,
     image?: string
   ) => void;
@@ -18,8 +16,6 @@ interface NewPostModalProps {
 export function NewPostModal({ isOpen, onClose, onSubmit, istucoTeam }: NewPostModalProps) {
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('skincare');
-  const [author, setAuthor] = useState('');
-  const [city, setCity] = useState('');
   const [text, setText] = useState('');
   const [image, setImage] = useState<string | undefined>(undefined);
   const [errorMsg, setErrorMsg] = useState('');
@@ -50,23 +46,13 @@ export function NewPostModal({ isOpen, onClose, onSubmit, istucoTeam }: NewPostM
       setErrorMsg('Please specify a title or question.');
       return;
     }
-    if (!author.trim()) {
-      setErrorMsg('Please write a username or pen-name.');
-      return;
-    }
-    if (!city.trim()) {
-      setErrorMsg('Please write your home city.');
-      return;
-    }
     if (!text.trim() && !image) {
       setErrorMsg('Please write an explanation or upload an image.');
       return;
     }
-    onSubmit(title.trim(), category, author.trim(), city.trim(), text.trim(), image);
+    onSubmit(title.trim(), category, text.trim(), image);
     setTitle('');
     setCategory('skincare');
-    setAuthor('');
-    setCity('');
     setText('');
     setImage(undefined);
     setErrorMsg('');
@@ -130,34 +116,6 @@ export function NewPostModal({ isOpen, onClose, onSubmit, istucoTeam }: NewPostM
               value={title}
               onChange={(e: ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
             />
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-bold text-neutral-700 mb-1.5 text-left">
-                Your Pen-Name
-              </label>
-              <input
-                type="text"
-                required
-                placeholder="e.g. PriyasDad"
-                className="w-full bg-white border border-neutral-200 rounded-xl py-2 px-3 text-xs sm:text-sm text-neutral-700 outline-none font-sans font-medium focus:border-tuco-cyan"
-                value={author}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => setAuthor(e.target.value)}
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-neutral-700 mb-1.5 text-left">
-                Your City
-              </label>
-              <input
-                type="text"
-                required
-                placeholder="e.g. Hyderabad, Kochi"
-                className="w-full bg-white border border-neutral-200 rounded-xl py-2 px-3 text-xs sm:text-sm text-neutral-700 outline-none font-sans font-medium focus:border-tuco-cyan"
-                value={city}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => setCity(e.target.value)}
-              />
-            </div>
           </div>
           <div>
             <label className="block text-xs font-bold text-neutral-700 mb-1.5 text-left">

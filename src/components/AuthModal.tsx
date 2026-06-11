@@ -227,12 +227,20 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin }: AuthModalProps
                   onChange={e => setChildAge(e.target.value)}
                   className="w-full px-4 py-2.5 border border-neutral-200 rounded-lg outline-none text-sm focus:border-tuco-cyan focus:ring-2 focus:ring-tuco-cyan/10"
                 >
-                  <option value="">Select age range...</option>
-                  <option value="0-1">0-1 years (Baby)</option>
-                  <option value="1-3">1-3 years (Toddler)</option>
-                  <option value="3-6">3-6 years (Preschool)</option>
-                  <option value="6-12">6-12 years (School)</option>
-                  <option value="12+">12+ years (Teen)</option>
+                  <option value="">Select age...</option>
+                  <option value="3">3 years</option>
+                  <option value="4">4 years</option>
+                  <option value="5">5 years</option>
+                  <option value="6">6 years</option>
+                  <option value="7">7 years</option>
+                  <option value="8">8 years</option>
+                  <option value="9">9 years</option>
+                  <option value="10">10 years</option>
+                  <option value="11">11 years</option>
+                  <option value="12">12 years</option>
+                  <option value="13">13 years</option>
+                  <option value="14">14 years</option>
+                  <option value="15">15 years</option>
                 </select>
               </div>
               <button

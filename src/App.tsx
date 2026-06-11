@@ -477,55 +477,50 @@ function AppContent() {
       return;
     }
     
+    // Update local state first, then try API (optimistic UI)
+    const previousState = votedThreads[threadId] || null;
+    let voteDiff = 0;
+    let upvoteDiff = 0;
+    
+    if (previousState === type) {
+      voteDiff = type === 'up' ? -1 : 1;
+      upvoteDiff = type === 'up' ? -1 : 0;
+      const nextVotes = { ...votedThreads };
+      delete nextVotes[threadId];
+      saveVotes(nextVotes);
+    } else {
+      if (previousState === null) {
+        voteDiff = type === 'up' ? 1 : -1;
+        upvoteDiff = type === 'up' ? 1 : 0;
+      } else {
+        voteDiff = type === 'up' ? 2 : -2;
+        upvoteDiff = type === 'up' ? 1 : -1;
+      }
+      saveVotes({ ...votedThreads, [threadId]: type });
+    }
+    
+    setConversations(prev => {
+      const updated = prev.map(c =>
+        c.id === threadId ? { ...c, votes: c.votes + voteDiff } : c
+      );
+      saveConversations(updated);
+      return updated;
+    });
+
+    if (upvoteDiff !== 0 && currentUser) {
+      const updatedUser = { ...currentUser, totalUpvotes: currentUser.totalUpvotes + upvoteDiff };
+      saveUser(updatedUser);
+      checkAndAwardBadges(updatedUser);
+    }
+
+    // Try API, but don't show error if it fails
     try {
-      // Call API to register the vote
       await api.vote({
         conversationId: threadId,
         type: type.toUpperCase() as 'UP' | 'DOWN',
       });
-      
-      const previousState = votedThreads[threadId] || null;
-      let voteDiff = 0;
-      let upvoteDiff = 0;
-      
-      if (previousState === type) {
-        voteDiff = type === 'up' ? -1 : 1;
-        upvoteDiff = type === 'up' ? -1 : 0;
-        const nextVotes = { ...votedThreads };
-        delete nextVotes[threadId];
-        saveVotes(nextVotes);
-      } else {
-        if (previousState === null) {
-          voteDiff = type === 'up' ? 1 : -1;
-          upvoteDiff = type === 'up' ? 1 : 0;
-        } else {
-          voteDiff = type === 'up' ? 2 : -2;
-          upvoteDiff = type === 'up' ? 1 : -1;
-        }
-        saveVotes({ ...votedThreads, [threadId]: type });
-      }
-      
-      setConversations(prev => {
-        const updated = prev.map(c =>
-          c.id === threadId ? { ...c, votes: c.votes + voteDiff } : c
-        );
-        saveConversations(updated);
-        return updated;
-      });
-
-      if (upvoteDiff !== 0 && currentUser) {
-        const updatedUser = { ...currentUser, totalUpvotes: currentUser.totalUpvotes + upvoteDiff };
-        saveUser(updatedUser);
-        checkAndAwardBadges(updatedUser);
-      }
     } catch (error) {
-      console.error('Failed to vote:', error);
-      setWarningModal({
-        isOpen: true,
-        type: 'error',
-        title: 'Vote Failed',
-        message: 'Failed to register your vote. Please try again.',
-      });
+      console.error('Failed to sync vote with server:', error);
     }
   };
   const detectProductRecommendation = (text: string): string | undefined => {
@@ -786,8 +781,6 @@ function AppContent() {
   const handleCreateNewThread = async (
     title: string,
     category: string,
-    author: string,
-    city: string,
     text: string,
     image?: string
   ) => {
@@ -830,7 +823,7 @@ function AppContent() {
       const createdConv = await api.createConversation({
         title,
         category,
-        city,
+        city: currentUser.city,
         text: analysis.civilityReminder ? `${text}\n\n---\n💛 ${analysis.civilityReminder}` : text,
         image,
         moderationStatus,
@@ -860,8 +853,8 @@ function AppContent() {
         votes: 1,
         views: 0,
         op: {
-          author: currentUser.role === 'tuco_team' ? 'tuco Team' : author,
-          city,
+          author: currentUser.role === 'tuco_team' ? 'tuco Team' : currentUser.username,
+          city: currentUser.city,
           time: 'Just now',
           text: analysis.civilityReminder ? `${text}\n\n---\n💛 ${analysis.civilityReminder}` : text,
           image,
