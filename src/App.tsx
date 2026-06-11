@@ -971,14 +971,40 @@ function AppContent() {
       });
     }
   };
-  const handleApproveThread = (threadId: number) => {
+  // Helper function to refresh data from API
+  const refreshData = async () => {
+    try {
+      const [apiConversations, apiUsers, apiNotifications] = await Promise.all([
+        api.getConversations(),
+        api.getUsers(),
+        currentUser ? api.getNotifications() : Promise.resolve([]),
+      ]);
+      setConversations(apiConversations);
+      setUsers(apiUsers);
+      if (currentUser) {
+        setNotifications(apiNotifications);
+      }
+    } catch (error) {
+      console.error('Failed to refresh data:', error);
+    }
+  };
+
+  const handleApproveThread = async (threadId: number) => {
     const thread = conversations.find(c => c.id === threadId);
     const updated = conversations.map(c =>
       c.id === threadId
         ? { ...c, moderationStatus: 'approved' as ModerationStatus, moderatedBy: currentUser?.id }
         : c
     );
-    saveConversations(updated);
+    // Update local state first for optimistic UI
+    setConversations(updated);
+    // Call API to update
+    await api.updateConversation(threadId, {
+      moderationStatus: 'approved',
+      moderatedBy: currentUser?.id,
+    });
+    // Refresh notifications and data
+    await refreshData();
     if (thread?.authorId) {
       const author = users[thread.authorId];
       if (author?.email) {
@@ -992,7 +1018,8 @@ function AppContent() {
       message: 'Thread approved and is now live! Approval email sent.',
     });
   };
-  const handleRejectThread = (threadId: number, reason: string) => {
+  const handleRejectThread = async (threadId: number, reason: string) => {
+    const thread = conversations.find(c => c.id === threadId);
     const updated = conversations.map(c =>
       c.id === threadId
         ? {
@@ -1003,7 +1030,16 @@ function AppContent() {
           }
         : c
     );
-    saveConversations(updated);
+    // Update local state first for optimistic UI
+    setConversations(updated);
+    // Call API to update
+    await api.updateConversation(threadId, {
+      moderationStatus: 'rejected',
+      moderationReason: reason,
+      moderatedBy: currentUser?.id,
+    });
+    // Refresh notifications and data
+    await refreshData();
     setWarningModal({
       isOpen: true,
       type: 'error',
