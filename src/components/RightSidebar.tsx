@@ -1,6 +1,7 @@
 import { TRENDING } from '../data/products';
 import { Conversation } from '../types';
 import { Flame, Sparkles } from 'lucide-react';
+import mascot from '../assets/mascot.png';
 
 interface RightSidebarProps {
   onTrendingClick: (id: number) => void;
@@ -30,8 +31,8 @@ export function RightSidebar({
       <div className={containerClasses}>
         {/* Card 1: Welcome */}
         <div className={`${itemClasses} bg-white border border-neutral-200 rounded-2xl p-5 shadow-sm`}>
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-2xl">👋</span>
+          <div className="flex items-center gap-3 mb-3">
+            <img src={mascot} alt="tuco Mascot" className="w-10 h-10 object-contain" />
             <h4 className="font-display font-bold text-lg text-[#4D4747]">
               Welcome!
             </h4>
