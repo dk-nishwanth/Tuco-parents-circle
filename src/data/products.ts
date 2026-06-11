@@ -3,7 +3,7 @@ import { Product, Trending } from '../types';
 export const PRODUCTS: Product[] = [
   {
     id: 'sunscreen',
-    name: 'Tuco Kids Daily Shield Sunscreen SPF 50',
+    name: 'tuco Kids Daily Shield Sunscreen SPF 50',
     icon: '☀️',
     subtitle: '100% Mineral · Sweat & Water Resistant · Non-Greasy',
     tag: '⭐ Best Seller',
@@ -12,7 +12,7 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 'shampoo',
-    name: 'Tuco Kids Gentle Cleanse Shampoo',
+    name: 'tuco Kids Gentle Cleanse Shampoo',
     icon: '🧴',
     subtitle: 'With Coconut Oil & Aloe Vera · Tear-Free',
     tag: '🌿 dermatologist tested',
@@ -21,7 +21,7 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 'bodywash',
-    name: 'Tuco Kids Soft Skin Body Wash',
+    name: 'tuco Kids Soft Skin Body Wash',
     icon: '🫧',
     subtitle: 'With Oat Straw & Calendula · Hydrates & Calms Skin',
     tag: '💧 No Parabens',
@@ -30,7 +30,7 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 'moisturiser',
-    name: 'Tuco Kids Nourish Night Moisturiser',
+    name: 'tuco Kids Nourish Night Moisturiser',
     icon: '🌙',
     subtitle: 'With Shea Butter & Ceramides · Eczema Safe',
     tag: '✨ Eczema-Prone Safe',

@@ -135,7 +135,7 @@ export class ShopifyService {
     const mockProducts: ShopifyProduct[] = [
       {
         id: 'gid://shopify/Product/1',
-        title: 'Tuco Baby Sunscreen SPF 50+',
+        title: 'tuco Baby Sunscreen SPF 50+',
         description: 'Gentle mineral sunscreen for sensitive baby skin',
         handle: 'tuco-baby-sunscreen-spf-50',
         tags: ['sunscreen', 'baby', 'skincare'],
@@ -144,7 +144,7 @@ export class ShopifyService {
       },
       {
         id: 'gid://shopify/Product/2',
-        title: 'Tuco Kids Moisturizing Lotion',
+        title: 'tuco Kids Moisturizing Lotion',
         description: 'Nourishing lotion for daily use on kids',
         handle: 'tuco-kids-moisturizing-lotion',
         tags: ['moisturizer', 'kids', 'skincare'],

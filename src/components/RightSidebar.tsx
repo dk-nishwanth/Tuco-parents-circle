@@ -37,7 +37,7 @@ export function RightSidebar({
             </h4>
           </div>
           <p className="font-sans text-[13px] text-[#4D4747] font-medium leading-relaxed mb-3">
-            Tuco Circle is your safe, judgment-free space to share and support.
+            tuco Circle is your safe, judgment-free space to share and support.
           </p>
           <p className="font-sans text-[12px] text-neutral-500 font-medium">
             Hindi & English Welcome

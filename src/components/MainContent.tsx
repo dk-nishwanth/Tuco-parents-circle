@@ -270,7 +270,7 @@ export function MainContent({
         <div className="flex flex-row items-start justify-between gap-3">
           <div className="flex flex-col gap-1 min-w-0">
             <h2 className="font-display font-bold text-[20px] text-[#4D4747] tracking-[-0.05em] leading-[100%] flex items-center gap-2">
-              <span className="truncate">Tuco Parents Circle :)</span>
+              <span className="truncate">tuco Parents Circle :)</span>
             </h2>
             <p className="font-sans text-[11px] text-neutral-400 font-medium">
               {processedThreads.length} Discussions found

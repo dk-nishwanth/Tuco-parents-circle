@@ -1,4 +1,4 @@
-# Tuco Parents Circle - Deployment Checklist
+# tuco Parents Circle - Deployment Checklist
 
 ## ✅ Current Status: READY FOR DEPLOYMENT
 

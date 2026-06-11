@@ -29,7 +29,7 @@ import {
 } from './types';
 import {
   analyzeContent,
-  canTucoTeamPost,
+  cantucoTeamPost,
   getReviewPriority,
   shouldTriggerHumanReview,
 } from './utils/moderation';
@@ -781,7 +781,7 @@ function AppContent() {
       return;
     }
     if (currentUser.role === 'tuco_team') {
-      const teamCheck = canTucoTeamPost(category, title, text);
+      const teamCheck = cantucoTeamPost(category, title, text);
       if (!teamCheck.allowed) {
         setWarningModal({
           isOpen: true,
@@ -845,7 +845,7 @@ function AppContent() {
         votes: 1,
         views: 0,
         op: {
-          author: currentUser.role === 'tuco_team' ? 'Tuco Team' : author,
+          author: currentUser.role === 'tuco_team' ? 'tuco Team' : author,
           city,
           time: 'Just now',
           text: analysis.civilityReminder ? `${text}\n\n---\n💛 ${analysis.civilityReminder}` : text,
@@ -1077,13 +1077,13 @@ function AppContent() {
       <footer className="bg-white border-t border-neutral-200/90 py-10 px-4 mt-12 text-center text-xs text-neutral-400 font-bold font-sans">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
-            <img src={tucoLogo} alt="Tuco Kids Logo" className="h-8 w-auto" />
+            <img src={tucoLogo} alt="tuco Kids Logo" className="h-8 w-auto" />
             <strong className="text-neutral-700 font-display text-sm tracking-tight text-left leading-tight">
               Parents Circle
             </strong>
           </div>
           <p className="text-[10px] font-medium text-neutral-400">
-            © 2026 Tuco Parents Circle. A safe space for Indian parents.
+            © 2026 tuco Parents Circle. A safe space for Indian parents.
           </p>
         </div>
       </footer>
@@ -1133,7 +1133,7 @@ function AppContent() {
         isOpen={isNewPostOpen}
         onClose={() => setIsNewPostOpen(false)}
         onSubmit={handleCreateNewThread}
-        isTucoTeam={currentUser?.role === 'tuco_team'}
+        istucoTeam={currentUser?.role === 'tuco_team'}
       />
       <AuthModal
         isOpen={isAuthOpen}

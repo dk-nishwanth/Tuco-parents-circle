@@ -9,7 +9,7 @@ const fallbackRules: FallbackRule[] = [
   {
     pattern: /hi|hello|hey|greetings|good morning|good afternoon|good evening/i,
     responses: [
-      "Hello! 👋 I'm your Tuco Parenting Assistant. How can I help you today?",
+      "Hello! 👋 I'm your tuco Parenting Assistant. How can I help you today?",
       "Hi there! How are you and your little one doing today? 😊",
       "Greetings! I'm here to help with any parenting questions you have."
     ]
@@ -24,8 +24,8 @@ const fallbackRules: FallbackRule[] = [
   {
     pattern: /who are you|what are you/i,
     responses: [
-      "I am the Tuco Assistant, your friendly guide for all things parenting, skincare, and child development!",
-      "I'm a chatbot designed to help parents find answers, tips, and community support here at Tuco."
+      "I am the tuco Assistant, your friendly guide for all things parenting, skincare, and child development!",
+      "I'm a chatbot designed to help parents find answers, tips, and community support here at tuco."
     ]
   },
   {
@@ -85,7 +85,7 @@ const fallbackRules: FallbackRule[] = [
   {
     pattern: /sunscreen|spf|sun protection/i,
     responses: [
-      "Always use a mineral-based SPF 30+ for kids. Tuco's sunscreens are specially formulated to be safe and effective! Apply 15 mins before heading out."
+      "Always use a mineral-based SPF 30+ for kids. tuco's sunscreens are specially formulated to be safe and effective! Apply 15 mins before heading out."
     ]
   },
   {
@@ -97,7 +97,7 @@ const fallbackRules: FallbackRule[] = [
   {
     pattern: /eczema|dry skin|atopic dermatitis/i,
     responses: [
-      "Keep baths short and lukewarm. Use a thick, fragrance-free moisturizer immediately after. Tuco's barrier-repair lotions are great for sensitive skin!"
+      "Keep baths short and lukewarm. Use a thick, fragrance-free moisturizer immediately after. tuco's barrier-repair lotions are great for sensitive skin!"
     ]
   },
   {
@@ -725,7 +725,7 @@ const fallbackRules: FallbackRule[] = [
   {
     pattern: /tuco products|recommendations/i,
     responses: [
-      "Check out 'Recommended Picks' for products that parents in our community love and trust. Safe, natural, and Tuco-approved!"
+      "Check out 'Recommended Picks' for products that parents in our community love and trust. Safe, natural, and tuco-approved!"
     ]
   }
 ];

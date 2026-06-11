@@ -2,7 +2,7 @@ services:
   - type: web
     name: tuco-parents-circle
     runtime: node
-    repo: https://github.com/dk-nishwanth/Tuco-parents-circle.git
+    repo: https://github.com/dk-nishwanth/tuco-parents-circle.git
     plan: starter
     buildCommand: npm install && npx prisma generate && npm run build && npx prisma db push
     startCommand: npm start

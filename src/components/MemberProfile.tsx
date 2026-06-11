@@ -27,7 +27,7 @@ export function MemberProfile({
   );
   const trustLevelLabel =
     user.role === 'tuco_team'
-      ? 'Tuco Team'
+      ? 'tuco Team'
       : user.role === 'moderator'
         ? 'Moderator'
         : user.role === 'trusted'

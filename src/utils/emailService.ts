@@ -32,10 +32,10 @@ export function sendSimulatedEmail(
 }
 export function sendThreadApprovalEmail(user: User, threadTitle: string): EmailLogEntry {
   const body = `Hi ${user.username},
-Great news! Your post "${threadTitle}" has been approved and is now live on Tuco Parents Circle.
+Great news! Your post "${threadTitle}" has been approved and is now live on tuco Parents Circle.
 Parents in our community can now read and reply to your discussion.
 With warmth,
-The Tuco Parents Circle Team
+The tuco Parents Circle Team
 tucokids.com/community`;
   return sendSimulatedEmail(
     'approval',
@@ -60,7 +60,7 @@ ${user.badges.length > 0 ? `🏅 Badge progress: keep going — you're building 
 Join the conversation: tucokids.com/community
 Unsubscribe anytime in your profile settings.
 Warmly,
-Tuco Parents Circle`;
+tuco Parents Circle`;
   return {
     subject: `📬 Your weekly Parents Circle digest`,
     body,

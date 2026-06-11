@@ -93,7 +93,7 @@ async function seedOnStartup() {
   const products = [
     {
       id: 'sunscreen',
-      name: 'Tuco Mineral Sunscreen SPF 50+',
+      name: 'tuco Mineral Sunscreen SPF 50+',
       icon: '☀️',
       subtitle: 'Gentle for sensitive skin',
       tag: 'Trending',
@@ -102,7 +102,7 @@ async function seedOnStartup() {
     },
     {
       id: 'moisturizer',
-      name: 'Tuco Baby Moisturizer',
+      name: 'tuco Baby Moisturizer',
       icon: '🧴',
       subtitle: 'Dermatologist-tested',
       tag: 'Best Seller',
@@ -335,7 +335,7 @@ async function sendEmail(to: string, subject: string, html: string): Promise<boo
   }
   try {
     await resend.emails.send({
-      from: process.env.EMAIL_FROM || 'Tuco Parents Circle <noreply@tucokids.com>',
+      from: process.env.EMAIL_FROM || 'tuco Parents Circle <noreply@tucokids.com>',
       to,
       subject,
       html,
@@ -430,8 +430,8 @@ app.post('/api/auth/signup', authLimiter, async (req: AuthRequest, res, next) =>
     try {
       await sendEmail(
         user.email,
-        'Welcome to Tuco Parents Circle!',
-        `<h2>Welcome, ${user.username}!</h2><p>You've joined the Tuco Parents Circle community. Start sharing your parenting experiences today!</p><p><a href="${process.env.FRONTEND_URL || 'https://your-app.onrender.com'}">Visit the community</a></p>`
+        'Welcome to tuco Parents Circle!',
+        `<h2>Welcome, ${user.username}!</h2><p>You've joined the tuco Parents Circle community. Start sharing your parenting experiences today!</p><p><a href="${process.env.FRONTEND_URL || 'https://your-app.onrender.com'}">Visit the community</a></p>`
       );
     } catch (emailErr) {
       console.warn('⚠️ Welcome email failed, but signup successful:', emailErr);
@@ -628,7 +628,7 @@ app.patch('/api/conversations/:id', authenticate, async (req: AuthRequest, res, 
         await sendEmail(
           author.email,
           `✅ Your post is live: ${conversation.title.slice(0, 40)}`,
-          `<h2>Great news, ${author.username}!</h2><p>Your post "<strong>${conversation.title}</strong>" has been approved and is now live on Tuco Parents Circle.</p><p><a href="${process.env.FRONTEND_URL || ''}">View it in the community</a></p>`
+          `<h2>Great news, ${author.username}!</h2><p>Your post "<strong>${conversation.title}</strong>" has been approved and is now live on tuco Parents Circle.</p><p><a href="${process.env.FRONTEND_URL || ''}">View it in the community</a></p>`
         );
       }
     }
@@ -1003,7 +1003,7 @@ app.post('/api/chat', optionalAuth, async (req: AuthRequest, res, next) => {
     if (!client) {
       const userMessage = (messages[messages.length - 1]?.content || '').toLowerCase();
       let mockReply = "I'm currently in testing mode. How can I help you today?";
-      if (userMessage.match(/hi|hello|hey/)) mockReply = "Hello! 👋 I'm your Tuco Parenting Assistant. How can I help?";
+      if (userMessage.match(/hi|hello|hey/)) mockReply = "Hello! 👋 I'm your tuco Parenting Assistant. How can I help?";
       else if (userMessage.match(/sunscreen|spf|skin|rash|eczema|moisturizer/)) mockReply = "For skincare, we recommend natural, paraben-free products. Check the Skincare category in our forum!";
       else if (userMessage.match(/eat|food|tiffin|nutrition/)) mockReply = "Nutrition is key! Try involving kids in cooking. Check Parenting Hacks for tiffin ideas.";
       else if (userMessage.match(/sleep|bedtime|tantrum/)) mockReply = "A consistent bedtime routine helps. You'll find great tips in Kids & Growth.";
@@ -1015,7 +1015,7 @@ app.post('/api/chat', optionalAuth, async (req: AuthRequest, res, next) => {
       model: 'claude-3-haiku-20240307',
       max_tokens: 1024,
       messages,
-      system: `You are the Tuco Parenting Assistant for the "Tuco Parents Circle" community — a supportive forum for Indian parents to share advice on skincare, nutrition, activities, and general parenting. Be warm, concise, and helpful.`,
+      system: `You are the tuco Parenting Assistant for the "tuco Parents Circle" community — a supportive forum for Indian parents to share advice on skincare, nutrition, activities, and general parenting. Be warm, concise, and helpful.`,
     });
 
     const content = response.content[0].type === 'text' ? response.content[0].text : 'Sorry, I could not process that.';

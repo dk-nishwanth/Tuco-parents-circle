@@ -110,7 +110,7 @@ export function Modal({
   const category = CATEGORIES[thread.category] || { icon: '💬', label: 'General' };
   const categoryItem = CATEGORIES[activeCategory];
   
-  const getTucoProduct = (recId: string) => {
+  const gettucoProduct = (recId: string) => {
     return PRODUCTS.find(p => p.id === recId) || null;
   };
 
@@ -149,7 +149,7 @@ export function Modal({
               <ArrowLeft className="w-5 h-5 text-[#4D4747]" strokeWidth={2} />
             </button>
             <button onClick={onClose} className="hover:opacity-80 transition-opacity">
-              <img src={tucoLogo} alt="Tuco" className="h-6 w-auto" />
+              <img src={tucoLogo} alt="tuco" className="h-6 w-auto" />
             </button>
 
             {/* Category Dropdown (Desktop only) */}
@@ -533,7 +533,7 @@ export function Modal({
         {/* Replies List */}
         <div className="space-y-6">
           {thread.replies.map((reply) => {
-            const product = reply.tucoRec ? getTucoProduct(reply.tucoRec) : null;
+            const product = reply.tucoRec ? gettucoProduct(reply.tucoRec) : null;
             return (
               <div key={reply.id} className="bg-white border border-neutral-200 rounded-[24px] p-6 shadow-sm relative overflow-hidden">
                 {/* Branded Left Edge */}

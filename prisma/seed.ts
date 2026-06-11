@@ -69,7 +69,7 @@ async function main() {
   const products = [
     {
       id: 'sunscreen',
-      name: 'Tuco Mineral Sunscreen SPF 50+',
+      name: 'tuco Mineral Sunscreen SPF 50+',
       icon: '☀️',
       subtitle: 'Gentle for sensitive skin',
       tag: 'Trending',
@@ -78,7 +78,7 @@ async function main() {
     },
     {
       id: 'moisturizer',
-      name: 'Tuco Baby Moisturizer',
+      name: 'tuco Baby Moisturizer',
       icon: '🧴',
       subtitle: 'Dermatologist-tested',
       tag: 'Best Seller',
@@ -158,7 +158,7 @@ async function main() {
             author: 'AnanyaK',
             city: 'Bangalore',
             time: '2 days ago',
-            text: 'Same exact situation with my 9-year-old! We\'ve been through 5–6 sunscreens. The key for sporty kids is water/sweat resistance. We now use Tuco\'s Daily Shield SPF 50 — it\'s specifically made for Indian kids, non-greasy, and actually stays on through a full practice session. Mineral-based so no chemicals to worry about.',
+            text: 'Same exact situation with my 9-year-old! We\'ve been through 5–6 sunscreens. The key for sporty kids is water/sweat resistance. We now use tuco\'s Daily Shield SPF 50 — it\'s specifically made for Indian kids, non-greasy, and actually stays on through a full practice session. Mineral-based so no chemicals to worry about.',
             tucoRec: 'sunscreen',
             likes: 12,
           },
@@ -196,7 +196,7 @@ async function main() {
             author: 'AnanyaK',
             city: 'Bangalore',
             time: '2 days ago',
-            text: 'We use Tuco\'s Nourish Night Moisturiser on my daughter\'s cheeks — it was recommended by our paed dermat for eczema-prone kids. Fragrance-free, no parabens. Within 2 weeks the flakiness reduced noticeably. It has ceramides which help repair the skin barrier.',
+            text: 'We use tuco\'s Nourish Night Moisturiser on my daughter\'s cheeks — it was recommended by our paed dermat for eczema-prone kids. Fragrance-free, no parabens. Within 2 weeks the flakiness reduced noticeably. It has ceramides which help repair the skin barrier.',
             tucoRec: 'moisturizer',
             likes: 14,
           },

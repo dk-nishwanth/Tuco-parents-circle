@@ -414,7 +414,7 @@ export function getGreyAreaReminder(flags: GreyAreaFlag[]): string | undefined {
   }
   if (flags.includes('negative_tuco_review')) {
     reminders.push(
-      'Honest product feedback is allowed. Tuco Team cannot remove negative reviews or close threads for criticism.'
+      'Honest product feedback is allowed. tuco Team cannot remove negative reviews or close threads for criticism.'
     );
   }
   return reminders.length > 0 ? reminders.join(' ') : undefined;
@@ -529,7 +529,7 @@ export function getReviewPriority(
   return priority;
 }
 
-export function canTucoTeamPost(
+export function cantucoTeamPost(
   category: string,
   title: string,
   text: string
@@ -548,11 +548,11 @@ export function canTucoTeamPost(
   return {
     allowed: false,
     reason:
-      'Tuco Team posts are only allowed when directly and genuinely relevant to Tuco products, safety alerts, or community updates.',
+      'tuco Team posts are only allowed when directly and genuinely relevant to tuco products, safety alerts, or community updates.',
   };
 }
 
-export function canTucoTeamModerateAction(action: 'close_thread' | 'remove_negative'): boolean {
+export function cantucoTeamModerateAction(action: 'close_thread' | 'remove_negative'): boolean {
   return false;
 }
 
@@ -561,6 +561,6 @@ export const MODERATION_RULES = {
     RELIGIOUS_CULTURAL: 'Religious/Cultural parenting choices',
     MENTAL_HEALTH: 'Mental health & sensitivity',
     ENGLISH: 'English/Hindi/Regional languages',
-    NEGATIVE_TUCO: 'Negative Tuco feedback (allow)',
+    NEGATIVE_TUCO: 'Negative tuco feedback (allow)',
   },
 };

@@ -1,8 +1,8 @@
-# Tuco Parents Circle - Complete Hosting & Deployment Guide
+# tuco Parents Circle - Complete Hosting & Deployment Guide
 
 ## 📋 Project Overview
 
-**Project**: Tuco Parents Circle - Community Forum for Tuco Kids Ecommerce
+**Project**: tuco Parents Circle - Community Forum for tuco Kids Ecommerce
 **Type**: Enterprise forum website integrated with existing Shopify ecommerce platform
 **Tech Stack**: React + TypeScript (Frontend) | Node.js + Express (Backend) | PostgreSQL (Database)
 **Status**: ✅ FULLY READY FOR DEPLOYMENT
@@ -130,7 +130,7 @@ git push origin main
 ### Step 3: Create New Project
 1. Click "New Project"
 2. Select "Deploy from GitHub repo"
-3. Choose your `Tuco-parents-circle` repository
+3. Choose your `tuco-parents-circle` repository
 4. Railway auto-detects Node.js
 
 ### Step 4: Add PostgreSQL Database
@@ -402,7 +402,7 @@ Enterprise (50k+ users)
 
 ## ✨ Summary
 
-**Your Tuco Parents Circle forum is production-ready.**
+**Your tuco Parents Circle forum is production-ready.**
 
 **Recommended setup**:
 - Host on Railway ($15/month)

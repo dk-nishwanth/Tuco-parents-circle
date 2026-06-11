@@ -166,7 +166,7 @@ export function Header({
             className="flex items-center cursor-pointer select-none"
             onClick={clearSearch}
           >
-            <img src={tucoLogo} alt="Tuco" className="h-8 w-auto" />
+            <img src={tucoLogo} alt="tuco" className="h-8 w-auto" />
           </div>
         </div>
 

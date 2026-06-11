@@ -13,9 +13,9 @@ interface NewPostModalProps {
     text: string,
     image?: string
   ) => void;
-  isTucoTeam?: boolean;
+  istucoTeam?: boolean;
 }
-export function NewPostModal({ isOpen, onClose, onSubmit, isTucoTeam }: NewPostModalProps) {
+export function NewPostModal({ isOpen, onClose, onSubmit, istucoTeam }: NewPostModalProps) {
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('skincare');
   const [author, setAuthor] = useState('');
@@ -92,10 +92,10 @@ export function NewPostModal({ isOpen, onClose, onSubmit, isTucoTeam }: NewPostM
         </div>
         {}
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
-          {isTucoTeam && (
+          {istucoTeam && (
             <div className="text-xs bg-orange-50 border border-orange-200 text-orange-800 rounded-xl p-3 font-medium">
-              <strong>Tuco Team posting rules:</strong> Only post when directly and genuinely relevant
-              to Tuco products, safety alerts, or community updates. You cannot close threads or remove
+              <strong>tuco Team posting rules:</strong> Only post when directly and genuinely relevant
+              to tuco products, safety alerts, or community updates. You cannot close threads or remove
               negative feedback.
             </div>
           )}

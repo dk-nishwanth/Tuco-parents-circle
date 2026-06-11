@@ -13,7 +13,7 @@ export function ChatBot() {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'assistant', content: 'Hi! I am your Tuco Parenting Assistant. How can I help you today?' }
+    { role: 'assistant', content: 'Hi! I am your tuco Parenting Assistant. How can I help you today?' }
   ]);
   const [isLoading, setIsLoading] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
@@ -95,7 +95,7 @@ export function ChatBot() {
                 </motion.div>
                 <div>
                   <h3 className="font-display font-black text-base text-white tracking-tight flex items-center gap-2">
-                    Tuco Assistant
+                    tuco Assistant
                     <Sparkles className="w-3 h-3 text-yellow-300 animate-pulse" strokeWidth={1.5} />
                   </h3>
                   <div className="flex items-center gap-1.5">

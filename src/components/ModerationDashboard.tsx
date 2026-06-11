@@ -41,7 +41,7 @@ export function ModerationDashboard({
         <div className="flex items-start gap-2 bg-white/80 rounded-lg p-3 border border-orange-100 text-xs text-neutral-600">
           <Shield className="w-4 h-4 text-orange-600 shrink-0 mt-0.5" />
           <p>
-            <strong>Tuco Team rules:</strong> Cannot close threads or remove negative feedback.
+            <strong>tuco Team rules:</strong> Cannot close threads or remove negative feedback.
             English/Hindi posts are never auto-removed for language.
           </p>
         </div>
@@ -108,7 +108,7 @@ export function ModerationDashboard({
                   )}
                   {thread.greyAreaFlags?.includes('negative_tuco_review') && (
                     <p className="text-[10px] text-red-600 font-bold mb-2">
-                      ⚠ Negative Tuco review — allow; cannot remove
+                      ⚠ Negative tuco review — allow; cannot remove
                     </p>
                   )}
                   <div className="text-xs text-neutral-500 space-y-1">

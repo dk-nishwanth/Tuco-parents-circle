@@ -1,4 +1,4 @@
-# Tuco-parents-circle
+# tuco-parents-circle
 
 A safe, judgment-free community forum for Indian parents — built with React, Vite, and Tailwind CSS.
 

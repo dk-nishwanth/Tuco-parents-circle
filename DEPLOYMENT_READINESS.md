@@ -1,4 +1,4 @@
-# Tuco Parents Circle - Deployment Readiness Checklist
+# tuco Parents Circle - Deployment Readiness Checklist
 
 ## ✅ FULLY READY FOR PRODUCTION
 
@@ -7,7 +7,7 @@
 - ✅ User login with password hashing (bcryptjs)
 - ✅ JWT token system (30-day expiry)
 - ✅ User profiles (username, city, child age)
-- ✅ User roles (Guest, Member, Trusted, Moderator, Tuco_Team)
+- ✅ User roles (Guest, Member, Trusted, Moderator, tuco_Team)
 - ✅ Role-based access control
 - ✅ Password reset capability (backend ready)
 - ✅ User statistics (post count, reply count, upvotes, trust score)
