@@ -80,7 +80,8 @@ function AppContent() {
   const location = useLocation();
   
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const activeCategory = category || 'all';
+  const [isSavedActive, setIsSavedActive] = useState(false);
+  const activeCategory = isSavedActive ? 'saved' : (category || 'all');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [searchCategoryFilter, setSearchCategoryFilter] = useState<string>('all');
   const [searchDateFilter, setSearchDateFilter] = useState<DateFilter>('all');
@@ -984,11 +985,16 @@ function AppContent() {
   
   const handleCategoryChange = (catId: string) => {
     setIsMobileLeftSidebarOpen(false);
-    if (catId === 'all' || catId === 'saved') {
+    if (catId === 'saved') {
+      setIsSavedActive(true);
+      navigate('/');
+    } else if (catId === 'all') {
+      setIsSavedActive(false);
       navigate('/');
     } else if (catId === 'sidebar-open') {
       // Handle sidebar open state locally without changing URL
     } else {
+      setIsSavedActive(false);
       navigate(`/${catId}`);
     }
   };
