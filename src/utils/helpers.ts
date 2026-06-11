@@ -93,7 +93,7 @@ export function sortThreads(threads: Conversation[], sortType: string): Conversa
       return 0;
     });
   switch (sortType) {
-    case 'hot':
+    case 'trending':
       return pinFirst(sorted.sort((a, b) => b.votes - a.votes));
     case 'new':
       return pinFirst(
@@ -103,8 +103,6 @@ export function sortThreads(threads: Conversation[], sortType: string): Conversa
           return bTime - aTime;
         })
       );
-    case 'top':
-      return pinFirst(sorted.sort((a, b) => b.replies.length - a.replies.length));
     case 'unanswered':
       return pinFirst(sorted.sort((a, b) => a.replies.length - b.replies.length));
     default:

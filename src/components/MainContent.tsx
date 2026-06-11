@@ -39,7 +39,7 @@ export function MainContent({
   onCategoryChange,
   onOpenRightSidebar,
 }: MainContentProps) {
-  const [sortType, setSortType] = useState<string>('hot');
+  const [sortType, setSortType] = useState<string>('trending');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [isSortOpen, setIsSortOpen] = useState(false);
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
@@ -103,9 +103,8 @@ export function MainContent({
   };
 
   const sortOptions = [
-    { key: 'hot', label: 'Hot', icon: '🔥', desc: 'Highest Votes' },
+    { key: 'trending', label: 'Trending', icon: '🔥', desc: 'Highest Votes' },
     { key: 'new', label: 'New', icon: '✨', desc: 'Recent Posts' },
-    { key: 'top', label: 'Top', icon: '💬', desc: 'Most Replies' },
     { key: 'unanswered', label: 'Unanswered', icon: '❓', desc: 'Needs Support' },
   ];
 
