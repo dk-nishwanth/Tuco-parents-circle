@@ -30,7 +30,7 @@ export function ModerationDashboard({
 }: ModerationDashboardProps) {
   const [moderationLogs, setModerationLogs] = useState<ModerationLogEntry[]>([]);
   const [activeTab, setActiveTab] = useState<'queue' | 'logs'>('queue');
-  const [selectedThreadId, setSelectedThreadId] = useState<number | null>(null);
+  const [expandedThreadId, setExpandedThreadId] = useState<number | null>(null);
 
   const sortedPending = useMemo(() => {
     return [...pendingThreads].sort((a, b) => (b.reviewPriority ?? 50) - (a.reviewPriority ?? 50));
@@ -164,7 +164,15 @@ export function ModerationDashboard({
                         ))}
                       </div>
                       <h4 className="font-display font-black text-neutral-800 mb-2">{thread.title}</h4>
-                      <p className="text-sm text-neutral-600 line-clamp-2 mb-3">{thread.op.text}</p>
+                      <div className={`text-sm text-neutral-600 mb-3 ${expandedThreadId === thread.id ? '' : 'line-clamp-2'}`}>
+                        {thread.op.text}
+                      </div>
+                      <button
+                        onClick={() => setExpandedThreadId(expandedThreadId === thread.id ? null : thread.id)}
+                        className="text-xs text-orange-600 font-bold hover:text-orange-800 mb-3"
+                      >
+                        {expandedThreadId === thread.id ? 'Show less' : 'Show more'}
+                      </button>
                       {reminder && (
                         <div className="text-xs bg-amber-50 border border-amber-200 text-amber-800 rounded-lg p-3 mb-3 font-medium">
                           💛 {reminder}
