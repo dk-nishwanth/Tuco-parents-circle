@@ -873,16 +873,8 @@ function AppContent() {
     }
     const accountAgeDays =
       (Date.now() - new Date(currentUser.createdAt).getTime()) / (1000 * 60 * 60 * 24);
-    if (currentUser.role === 'member' && accountAgeDays < 1) {
-      const hoursRemaining = Math.ceil((1 - accountAgeDays) * 24);
-      setWarningModal({
-        isOpen: true,
-        type: 'warning',
-        title: '24-Hour Cooling Period',
-        message: `New members have a 24-hour cooling period before posting. You can post again in ${hoursRemaining} hours.`,
-      });
-      return;
-    }
+    const isInCoolingPeriod = currentUser.role === 'member' && accountAgeDays < 1;
+    
     const analysis = analyzeContent(text + ' ' + title, category);
     let moderationStatus: ModerationStatus = 'pending';
     if (analysis.outcome === 'CLEAR_VIOLATION') {
@@ -937,7 +929,7 @@ function AppContent() {
         authorId: currentUser.id,
         createdAt: new Date().toISOString(),
         greyAreaFlags: analysis.greyAreaFlags,
-        reviewPriority: getReviewPriority(
+        reviewPriority: isInCoolingPeriod ? 100 : getReviewPriority(
           currentUser.role,
           currentUser.trustScore,
           analysis.greyAreaFlags
@@ -951,7 +943,15 @@ function AppContent() {
       checkAndAwardBadges(updatedUser);
       setIsNewPostOpen(false);
       
-      if (moderationStatus === 'pending') {
+      if (isInCoolingPeriod) {
+        const hoursRemaining = Math.ceil((1 - accountAgeDays) * 24);
+        setWarningModal({
+          isOpen: true,
+          type: 'info',
+          title: 'Post Submitted for Review',
+          message: `Your post has been submitted and is awaiting moderator review. As a new member, your posts will be reviewed before going live. You'll be able to post freely in ${hoursRemaining} hours!`,
+        });
+      } else if (moderationStatus === 'pending') {
         setPendingReview({
           threadId: newThread.id,
           title,
@@ -1336,6 +1336,7 @@ function AppContent() {
             </button>
             <ModerationDashboard
               pendingThreads={pendingThreads}
+              users={users}
               onApprove={handleApproveThread}
               onReject={handleRejectThread}
             />

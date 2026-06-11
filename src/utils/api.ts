@@ -236,7 +236,7 @@ export const api = {
     return handleResponse<{ savedPosts: number[] }>(res);
   },
 
-  // ── Reports ─────────────────────────────────────────────────────────────────
+  // ── Reports & Moderation Logs ───────────────────────────────────────────────
 
   async submitReport(data: {
     targetType: 'thread' | 'reply';
@@ -250,6 +250,19 @@ export const api = {
       body: JSON.stringify(data),
     });
     await handleResponse<any>(res);
+  },
+
+  async getModerationLogs(): Promise<Array<{
+    id: string;
+    moderatorId: string;
+    targetType: string;
+    targetId: number;
+    action: string;
+    reason: string | null;
+    timestamp: string;
+  }>> {
+    const res = await fetch(`${API_BASE_URL}/moderation-logs`, { headers: authHeaders() });
+    return handleResponse<any[]>(res);
   },
 
   // ── Chat ────────────────────────────────────────────────────────────────────

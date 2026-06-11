@@ -565,12 +565,7 @@ app.post('/api/conversations', authenticate, async (req: AuthRequest, res, next)
 
     const isMod = req.userRole === 'MODERATOR' || req.userRole === 'TUCO_TEAM';
     const accountAgeMs = Date.now() - user.createdAt.getTime();
-    if (!isMod && accountAgeMs < 24 * 60 * 60 * 1000) {
-      const hoursRemaining = Math.ceil((24 * 60 * 60 * 1000 - accountAgeMs) / (60 * 60 * 1000));
-      return res.status(403).json({
-        error: `New members have a 24-hour cooling period before posting. Please try again in ${hoursRemaining} hour(s).`,
-      });
-    }
+    const isInCoolingPeriod = !isMod && accountAgeMs < 24 * 60 * 60 * 1000;
 
     const { title, category, city, text, image, greyAreaFlags, reviewPriority } = parsed.data;
     const status = isMod ? (parsed.data.moderationStatus?.toUpperCase() as any) || 'PENDING' : 'PENDING';
@@ -590,7 +585,7 @@ app.post('/api/conversations', authenticate, async (req: AuthRequest, res, next)
         authorId: user.id,
         moderationStatus: status,
         greyAreaFlags: greyAreaFlags || [],
-        reviewPriority,
+        reviewPriority: isInCoolingPeriod ? 100 : reviewPriority, // Higher priority for cooling period posts
         votes: 1,
       },
       include: { replies: true },
@@ -603,6 +598,19 @@ app.post('/api/conversations', authenticate, async (req: AuthRequest, res, next)
       where: { id: req.userId },
       data: { postCount: { increment: 1 } },
     });
+
+    // If in cooling period, log to moderation log
+    if (isInCoolingPeriod) {
+      await prisma.moderationLog.create({
+        data: {
+          moderatorId: 'SYSTEM',
+          targetType: 'CONVERSATION',
+          targetId: conversation.id,
+          action: 'FLAGGED',
+          reason: 'New member cooling period - requires moderator review',
+        },
+      });
+    }
 
     console.log('✅ Conversation created successfully!');
     res.status(201).json(formatConversation(conversation));
@@ -639,6 +647,20 @@ app.patch('/api/conversations/:id', authenticate, async (req: AuthRequest, res, 
       data: updateData,
       include: { replies: true },
     });
+
+    // Log moderation action to ModerationLog table
+    if (moderationStatus && req.userId) {
+      const action = moderationStatus.toUpperCase() as any;
+      await prisma.moderationLog.create({
+        data: {
+          moderatorId: req.userId,
+          targetType: 'CONVERSATION',
+          targetId: id,
+          action,
+          reason: moderationReason || null,
+        },
+      });
+    }
 
     // If approved, send email to author
     if (moderationStatus === 'approved') {
@@ -787,7 +809,7 @@ app.post('/api/conversations/:id/replies', authenticate, async (req: AuthRequest
 app.patch('/api/replies/:id', authenticate, async (req: AuthRequest, res, next) => {
   try {
     const id = parseInt(req.params.id);
-    const { text, likes } = req.body;
+    const { text, likes, moderationStatus, moderationReason } = req.body;
 
     const reply = await prisma.reply.findUnique({ where: { id } });
     if (!reply) return res.status(404).json({ error: 'Reply not found' });
@@ -797,13 +819,29 @@ app.patch('/api/replies/:id', authenticate, async (req: AuthRequest, res, next) 
       return res.status(403).json({ error: 'Not authorized' });
     }
 
+    const updateData: any = {};
+    if (text !== undefined) updateData.text = text;
+    if (likes !== undefined) updateData.likes = likes;
+    if (moderationStatus && isMod) updateData.moderationStatus = moderationStatus.toUpperCase();
+
     const updated = await prisma.reply.update({
       where: { id },
-      data: {
-        ...(text !== undefined && { text }),
-        ...(likes !== undefined && { likes }),
-      },
+      data: updateData,
     });
+
+    // Log moderation action for replies
+    if (moderationStatus && isMod && req.userId) {
+      const action = moderationStatus.toUpperCase() as any;
+      await prisma.moderationLog.create({
+        data: {
+          moderatorId: req.userId,
+          targetType: 'REPLY',
+          targetId: id,
+          action,
+          reason: moderationReason || null,
+        },
+      });
+    }
 
     res.status(200).json(updated);
   } catch (error) {
@@ -1126,7 +1164,7 @@ app.post('/api/chat', optionalAuth, async (req: AuthRequest, res, next) => {
 });
 
 // ------------------------------
-// REPORTS
+// REPORTS & MODERATION LOGS
 // ------------------------------
 
 app.post('/api/reports', authenticate, async (req: AuthRequest, res, next) => {
@@ -1143,6 +1181,18 @@ app.post('/api/reports', authenticate, async (req: AuthRequest, res, next) => {
       },
     });
     res.status(200).json({ success: true });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get('/api/moderation-logs', authenticate, requireModerator, async (req: AuthRequest, res, next) => {
+  try {
+    const logs = await prisma.moderationLog.findMany({
+      orderBy: { timestamp: 'desc' },
+      take: 50
+    });
+    res.status(200).json(logs);
   } catch (error) {
     next(error);
   }
