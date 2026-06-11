@@ -1,10 +1,10 @@
 import { Conversation, DateFilter, User, BadgeType, UserRole } from '../types';
 const AVATAR_COLORS = [
-  '#D81B60', // Primary Magenta from image
-  '#C2185B',
-  '#D81B60', // Duplicate to increase frequency
-  '#B32D52',
-  '#D81B60',
+  '#FFE259',
+  '#FFE259',
+  '#FFE259',
+  '#FFE259',
+  '#FFE259',
 ];
 export function getAvatarColor(name: string): string {
   let hash = 0;

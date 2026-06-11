@@ -431,13 +431,13 @@ export function Modal({
         {/* Main Post Card */}
         <div className="bg-white border border-neutral-200 rounded-[24px] p-6 mb-4 shadow-sm relative overflow-hidden">
           {/* Branded Left Edge */}
-          <div className="absolute left-0 top-0 bottom-0 w-[6px] bg-[#EB3200] pointer-events-none"></div>
+          <div className="absolute left-0 top-0 bottom-0 w-[6px] bg-[#FFE259] pointer-events-none"></div>
           
           <div className="flex items-start justify-between mb-5">
             <div className="flex items-center gap-3">
               <div
-                className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-[15px]"
-                style={{ backgroundColor: getAvatarColor(thread.op.author), color: '#ffffff' }}
+                className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-[15px]"
+                style={{ backgroundColor: getAvatarColor(thread.op.author), color: '#4D4747' }}
               >
                 {getInitials(thread.op.author)}
               </div>
@@ -476,8 +476,8 @@ export function Modal({
         <div className="bg-white border border-neutral-200 rounded-[24px] p-6 mb-8 shadow-sm">
           <div className="flex gap-4">
             <div
-              className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-[15px] shrink-0"
-              style={{ backgroundColor: getAvatarColor(currentUser?.username || 'Guest'), color: '#ffffff' }}
+              className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-[15px] shrink-0"
+              style={{ backgroundColor: getAvatarColor(currentUser?.username || 'Guest'), color: '#4D4747' }}
             >
               {getInitials(currentUser?.username || 'Guest')}
             </div>
@@ -537,13 +537,13 @@ export function Modal({
             return (
               <div key={reply.id} className="bg-white border border-neutral-200 rounded-[24px] p-6 shadow-sm relative overflow-hidden">
                 {/* Branded Left Edge */}
-                <div className="absolute left-0 top-0 bottom-0 w-[6px] bg-[#EB3200] pointer-events-none opacity-30"></div>
+                <div className="absolute left-0 top-0 bottom-0 w-[6px] bg-[#FFE259] pointer-events-none opacity-30"></div>
                 
                 <div className="flex items-start justify-between mb-5">
                   <div className="flex items-center gap-3">
                     <div
-                      className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-[15px]"
-                      style={{ backgroundColor: getAvatarColor(reply.author), color: '#ffffff' }}
+                      className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-[15px]"
+                      style={{ backgroundColor: getAvatarColor(reply.author), color: '#4D4747' }}
                     >
                       {getInitials(reply.author)}
                     </div>

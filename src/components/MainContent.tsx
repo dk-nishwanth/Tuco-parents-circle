@@ -346,8 +346,8 @@ export function MainContent({
                     </p>
                     <div className="flex items-center gap-2">
                       <div 
-                        className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-sm" 
-                        style={{ backgroundColor: getAvatarColor(thread.op.author), color: '#ffffff' }}
+                        className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shadow-sm" 
+                        style={{ backgroundColor: getAvatarColor(thread.op.author), color: '#4D4747' }}
                       >
                         {thread.op.author[0].toUpperCase()}
                       </div>

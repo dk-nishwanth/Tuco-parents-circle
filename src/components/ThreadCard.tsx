@@ -57,7 +57,7 @@ export function ThreadCard({
       className={`tc w-full bg-white border border-neutral-200 rounded-[2rem] p-5 md:p-7 hover:shadow-md transition-all cursor-pointer flex gap-4 md:gap-6 text-left relative overflow-hidden group`}
     >
       {/* Branded Left Edge */}
-      <div className="absolute left-0 top-0 bottom-0 w-[6px] bg-tuco-orange pointer-events-none"></div>
+      <div className="absolute left-0 top-0 bottom-0 w-[6px] bg-[#FFE259] pointer-events-none"></div>
 
       {/* Vote Box (Left) */}
       <div 
@@ -112,8 +112,8 @@ export function ThreadCard({
           {/* User Info Row */}
           <div className="flex items-center gap-2.5 mb-5">
             <div
-              className="w-6 h-6 rounded-full flex items-center justify-center font-display font-bold text-[10px] text-white shadow-sm"
-              style={{ backgroundColor: getAvatarColor(thread.op.author), color: '#ffffff' }}
+              className="w-6 h-6 rounded-full flex items-center justify-center font-display font-bold text-[10px] shadow-sm"
+              style={{ backgroundColor: getAvatarColor(thread.op.author), color: '#4D4747' }}
             >
               {getInitials(thread.op.author)}
             </div>
