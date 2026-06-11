@@ -203,6 +203,21 @@ function AppContent() {
     initData();
   }, []);
 
+  // Handle initial hash
+  useEffect(() => {
+    if (conversations.length > 0) {
+      const hashMatch = window.location.hash.match(/^#thread-(\d+)$/);
+      if (hashMatch) {
+        const threadId = parseInt(hashMatch[1], 10);
+        const threadExists = conversations.some(c => c.id === threadId);
+        if (threadExists) {
+          setSelectedThreadId(threadId);
+          setIsModalOpen(true);
+        }
+      }
+    }
+  }, [conversations]);
+
   const saveConversations = async (updated: Conversation[]) => {
     // Ensure no duplicate IDs in the threads and their replies
     const uniqueThreads = updated
@@ -478,7 +493,25 @@ function AppContent() {
     });
     setSelectedThreadId(threadId);
     setIsModalOpen(true);
+    // Push to browser history so back button closes modal
+    window.history.pushState({ threadId }, '', `#thread-${threadId}`);
   };
+
+  // Listen for back button/history change to close modal
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      if (isModalOpen) {
+        setIsModalOpen(false);
+        setActiveReplyTo(null);
+        setTimeout(() => {
+          setSelectedThreadId(null);
+        }, 300);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [isModalOpen]);
   const handleVote = async (threadId: number, type: 'up' | 'down') => {
     if (!currentUser) {
       setIsAuthOpen(true);
@@ -1190,9 +1223,14 @@ function AppContent() {
         thread={selectedThread}
         isOpen={isModalOpen}
         onClose={() => {
-          setIsModalOpen(false);
-          setSelectedThreadId(null);
-          setActiveReplyTo(null);
+          // If we added a history entry, go back to remove it
+          if (window.location.hash.startsWith('#thread-')) {
+            window.history.back();
+          } else {
+            setIsModalOpen(false);
+            setSelectedThreadId(null);
+            setActiveReplyTo(null);
+          }
         }}
         onAddReply={handleAddReply}
         onLikeReply={handleLikeReply}
