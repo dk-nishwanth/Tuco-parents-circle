@@ -662,14 +662,35 @@ app.patch('/api/conversations/:id', authenticate, async (req: AuthRequest, res, 
       });
     }
 
-    // If approved, send email to author
-    if (moderationStatus === 'approved') {
+    // If approved or rejected, send notification and email to author
+    if (moderationStatus === 'approved' || moderationStatus === 'rejected') {
       const author = await prisma.user.findUnique({ where: { id: conversation.authorId } });
       if (author) {
+        // Create notification
+        await prisma.notification.create({
+          data: {
+            userId: author.id,
+            type: 'SYSTEM',
+            title: moderationStatus === 'approved' 
+              ? 'Your post is live!' 
+              : 'Your post was rejected',
+            description: moderationStatus === 'approved' 
+              ? `Your post "${conversation.title.slice(0, 40)}${conversation.title.length > 40 ? '...' : ''}" has been approved and is now live.` 
+              : `Your post "${conversation.title.slice(0, 40)}${conversation.title.length > 40 ? '...' : ''}" was rejected. Reason: ${moderationReason || 'Not specified'}`,
+            time: 'Just now',
+            threadId: id,
+          },
+        });
+
+        // Send email
         await sendEmail(
           author.email,
-          `✅ Your post is live: ${conversation.title.slice(0, 40)}`,
-          `<h2>Great news, ${author.username}!</h2><p>Your post "<strong>${conversation.title}</strong>" has been approved and is now live on tuco Parents Circle.</p><p><a href="${process.env.FRONTEND_URL || ''}">View it in the community</a></p>`
+          moderationStatus === 'approved' 
+            ? `✅ Your post is live: ${conversation.title.slice(0, 40)}`
+            : `❌ Your post was rejected: ${conversation.title.slice(0, 40)}`,
+          moderationStatus === 'approved' 
+            ? `<h2>Great news, ${author.username}!</h2><p>Your post "<strong>${conversation.title}</strong>" has been approved and is now live on tuco Parents Circle.</p><p><a href="${process.env.FRONTEND_URL || ''}">View it in the community</a></p>`
+            : `<h2>Hi ${author.username},</h2><p>Your post "<strong>${conversation.title}</strong>" has been rejected.</p><p><strong>Reason:</strong> ${moderationReason || 'Not specified'}</p><p>If you have questions, please contact our moderation team.</p>`
         );
       }
     }
