@@ -85,7 +85,7 @@ function SearchInput({
         />
       </div>
       {showSuggestions && suggestions.length > 0 && (
-        <div className={`${compact ? 'fixed left-4 right-4 top-[72px]' : 'absolute top-full left-0 right-0'} mt-2 bg-white border border-neutral-200 rounded-lg shadow-lg z-[60] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200`}>
+        <div className={`${compact ? 'fixed left-4 right-4 top-[72px]' : 'absolute top-full left-0 right-0'} mt-2 bg-white border border-neutral-200 rounded-lg shadow-lg z-[70] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200`} style={{ maxHeight: '40vh', overflowY: 'auto' }}>
           <div className="py-0.5">
             {suggestions.map(thread => (
               <button
