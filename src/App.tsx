@@ -1365,7 +1365,7 @@ function AppContent() {
         />
       )}
       {isModerationOpen && (
-        <div className="fixed inset-0 bg-neutral-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 overflow-y-auto">
+        <div className="fixed inset-0 bg-neutral-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-[70] overflow-y-auto">
           <div className="bg-white border border-neutral-200 rounded-3xl w-full max-w-3xl overflow-hidden shadow-xl relative">
             <button
               onClick={() => setIsModerationOpen(false)}
@@ -1383,7 +1383,7 @@ function AppContent() {
         </div>
       )}
       {isAdminOpen && (
-        <div className="fixed inset-0 bg-neutral-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 overflow-y-auto">
+        <div className="fixed inset-0 bg-neutral-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-[70] overflow-y-auto">
           <div className="w-full max-w-lg relative">
             <AdminToolsPanel
               conversations={conversations}

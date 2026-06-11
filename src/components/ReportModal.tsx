@@ -29,7 +29,7 @@ export function ReportModal({ isOpen, onClose, onSubmit, type }: ReportModalProp
   if (!isOpen) return null;
   return (
     <div
-      className="fixed inset-0 bg-neutral-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 overflow-y-auto"
+      className="fixed inset-0 bg-neutral-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-[70] overflow-y-auto"
       onClick={e => e.target === e.currentTarget && onClose()}
     >
       <div className="bg-white border border-neutral-200 rounded-3xl w-full max-w-md overflow-hidden shadow-xl animate-in fade-in-50 zoom-in-95 duration-200 relative my-auto">

@@ -59,7 +59,7 @@ export function NewPostModal({ isOpen, onClose, onSubmit, istucoTeam }: NewPostM
   };
   return (
     <div
-      className="fixed inset-0 bg-neutral-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 z-50 overflow-y-auto"
+      className="fixed inset-0 bg-neutral-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 z-[70] overflow-y-auto"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       {}
