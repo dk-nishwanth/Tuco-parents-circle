@@ -310,6 +310,7 @@ const formatConversation = (c: any) => ({
   replies: (c.replies || []).map((r: any) => ({
     id: r.id,
     author: r.author,
+    authorId: r.authorId,
     city: r.city,
     time: r.time,
     text: r.text,
@@ -318,6 +319,7 @@ const formatConversation = (c: any) => ({
     likes: r.likes || 0,
     authorRole: mapRole(r.authorRole),
     authorBadges: r.authorBadges || [],
+    createdAt: r.createdAt ? r.createdAt.toISOString() : new Date().toISOString(),
   })),
   moderationStatus: (c.moderationStatus || 'PENDING').toLowerCase(),
   moderatedBy: c.moderatedBy,
@@ -825,6 +827,12 @@ app.post('/api/votes', authenticate, async (req: AuthRequest, res, next) => {
             where: { id: conversationId },
             data: { votes: { increment: type === 'UP' ? -1 : 1 } },
           });
+        } else if (replyId && type === 'UP') {
+          // If it was an UP vote, decrement reply likes
+          await prisma.reply.update({
+            where: { id: replyId },
+            data: { likes: { decrement: 1 } },
+          });
         }
         return res.status(200).json({ action: 'removed', type });
       } else {
@@ -835,6 +843,21 @@ app.post('/api/votes', authenticate, async (req: AuthRequest, res, next) => {
             where: { id: conversationId },
             data: { votes: { increment: type === 'UP' ? 2 : -2 } },
           });
+        } else if (replyId) {
+          // Flip reply likes count if needed
+          const oldTypeWasUp = existingVote.type === 'UP';
+          const newTypeIsUp = type === 'UP';
+          if (oldTypeWasUp && !newTypeIsUp) {
+            await prisma.reply.update({
+              where: { id: replyId },
+              data: { likes: { decrement: 1 } },
+            });
+          } else if (!oldTypeWasUp && newTypeIsUp) {
+            await prisma.reply.update({
+              where: { id: replyId },
+              data: { likes: { increment: 1 } },
+            });
+          }
         }
         return res.status(200).json({ action: 'flipped', type });
       }
@@ -871,6 +894,12 @@ app.post('/api/votes', authenticate, async (req: AuthRequest, res, next) => {
         });
       }
     } else if (replyId) {
+      if (type === 'UP') {
+        await prisma.reply.update({
+          where: { id: replyId },
+          data: { likes: { increment: 1 } },
+        });
+      }
       // Notify reply author about new like
       const reply = await prisma.reply.findUnique({ where: { id: replyId } });
       if (reply && reply.authorId !== req.userId && type === 'UP') {

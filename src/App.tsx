@@ -146,12 +146,17 @@ function AppContent() {
             try {
               const apiVotes = await api.getMyVotes();
               const voteMap: Record<number, 'up' | 'down' | null> = {};
+              const replyLikesMap: Record<number, boolean> = {};
               apiVotes.forEach((vote: any) => {
                 if (vote.conversationId) {
                   voteMap[vote.conversationId] = vote.type === 'UP' ? 'up' : 'down';
                 }
+                if (vote.replyId && vote.type === 'UP') {
+                  replyLikesMap[vote.replyId] = true;
+                }
               });
               setVotedThreads(voteMap);
+              setLikedReplies(replyLikesMap);
             } catch (error) {
               console.error('Failed to load votes:', error);
             }
@@ -525,6 +530,48 @@ function AppContent() {
       console.error('Failed to sync vote with server:', error);
     }
   };
+
+  const handleLikeReply = async (threadId: number, replyId: number) => {
+    if (!currentUser) {
+      setIsAuthOpen(true);
+      return;
+    }
+
+    // Optimistic UI update first
+    const isLiked = likedReplies[replyId];
+    const nextLikedReplies = { ...likedReplies };
+    if (isLiked) {
+      delete nextLikedReplies[replyId];
+    } else {
+      nextLikedReplies[replyId] = true;
+    }
+    setLikedReplies(nextLikedReplies);
+
+    // Update conversation locally
+    setConversations(prev => prev.map(c => {
+      if (c.id === threadId) {
+        return {
+          ...c,
+          replies: c.replies.map(r => 
+            r.id === replyId 
+              ? { ...r, likes: isLiked ? r.likes - 1 : r.likes + 1 } 
+              : r
+          )
+        };
+      }
+      return c;
+    }));
+
+    // Update via API
+    try {
+      await api.vote({
+        replyId,
+        type: 'UP',
+      });
+    } catch (error) {
+      console.error('Failed to sync reply like with server:', error);
+    }
+  };
   const detectProductRecommendation = (text: string): string | undefined => {
     const raw = text.toLowerCase();
     if (/sunscreen|sunblock|spf|cricket|tan|outdoor/.test(raw)) return 'sunscreen';
@@ -728,58 +775,7 @@ function AppContent() {
       });
     }
   };
-  const handleLikeReply = (threadId: number, replyId: number) => {
-    if (!currentUser) {
-      setIsAuthOpen(true);
-      return;
-    }
 
-    const isLiked = likedReplies[replyId] || false;
-    const newLikedState = !isLiked;
-    
-    // Update local tracking
-    const updatedLikes = { ...likedReplies };
-    if (newLikedState) {
-      updatedLikes[replyId] = true;
-    } else {
-      delete updatedLikes[replyId];
-    }
-    saveReplyLikes(updatedLikes);
-
-    // Add notification for the reply author
-    if (newLikedState) {
-      const thread = conversations.find(c => c.id === threadId);
-      const reply = thread?.replies.find(r => r.id === replyId);
-      if (reply && reply.author !== currentUser.username) {
-        const newNotif: Notification = {
-          id: Date.now(),
-          type: 'like',
-          title: 'Your reply was liked',
-          description: `${currentUser.username} liked your helpful advice in "${thread?.title}"`,
-          time: 'Just now',
-          read: false,
-          threadId: thread?.id,
-        };
-        saveNotifications([newNotif, ...notifications]);
-      }
-    }
-
-    // Update conversation data
-    const updated = conversations.map(c => {
-      if (c.id === threadId) {
-        return {
-          ...c,
-          replies: c.replies.map(r => 
-            r.id === replyId 
-              ? { ...r, likes: (r.likes || 0) + (newLikedState ? 1 : -1) } 
-              : r
-          ),
-        };
-      }
-      return c;
-    });
-    saveConversations(updated);
-  };
   const handleCreateNewThread = async (
     title: string,
     category: string,

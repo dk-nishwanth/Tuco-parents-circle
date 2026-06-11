@@ -222,7 +222,7 @@ export function MainContent({
             <button
               onClick={() => setActiveTab('about')}
               className={`px-5 py-1.5 rounded-full text-[15px] font-display font-bold transition-all ${
-                activeTab === 'about' ? 'bg-[#FFE259] text-[#4D4747] shadow-sm' : 'bg-[#E7F9FF] text-[#4D4747] shadow-sm hover:bg-[#FFE259]'
+                activeTab === 'about' ? 'bg-[#FFE259] text-[#4D4747] shadow-sm' : 'bg-white text-[#4D4747] shadow-sm hover:bg-[#FFE259]'
               }`}
             >
               about

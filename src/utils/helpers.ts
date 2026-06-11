@@ -130,6 +130,20 @@ export function getFeaturedThreads(threads: Conversation[]): Conversation[] {
     .filter(t => t.isFeatured && (!t.moderationStatus || t.moderationStatus === 'approved'))
     .slice(0, 3);
 }
+export function formatTimeAgo(dateString: string | undefined): string {
+  if (!dateString) return '1 day ago';
+  const date = new Date(dateString);
+  const now = new Date();
+  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+  
+  if (seconds < 60) return 'Just now';
+  if (seconds < 3600) return `${Math.floor(seconds / 60)} min ago`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
+  if (seconds < 2592000) return `${Math.floor(seconds / 86400)} days ago`;
+  if (seconds < 31536000) return `${Math.floor(seconds / 2592000)} months ago`;
+  return `${Math.floor(seconds / 31536000)} years ago`;
+}
+
 export function searchThreadsWithRanking(
   threads: Conversation[],
   query: string,

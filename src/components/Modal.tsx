@@ -2,7 +2,7 @@ import React, { useState, FormEvent, useRef, useEffect } from 'react';
 import { CATEGORIES } from '../data/categories';
 import { PRODUCTS } from '../data/products';
 import { Conversation, User as UserType, Notification } from '../types';
-import { getAvatarColor, getInitials, searchThreadsWithRanking } from '../utils/helpers';
+import { getAvatarColor, getInitials, searchThreadsWithRanking, formatTimeAgo } from '../utils/helpers';
 import { Heart, MessageSquare, X, Eye, Bookmark, ChevronDown, Search, Bell, ArrowLeft, Menu, User, LogOut, Users } from 'lucide-react';
 import tucoLogo from '../assets/tuco-logo.webp';
 
@@ -451,7 +451,7 @@ export function Modal({
               </div>
             </div>
             <span className="text-[12px] text-neutral-400 font-medium">
-              1 day ago
+              {formatTimeAgo(thread.createdAt)}
             </span>
           </div>
 
@@ -557,7 +557,7 @@ export function Modal({
                     </div>
                   </div>
                   <span className="text-[12px] text-neutral-400 font-medium">
-                    1 day ago
+                    {formatTimeAgo(reply.createdAt)}
                   </span>
                 </div>
 
@@ -566,8 +566,17 @@ export function Modal({
                 </p>
 
                 <div className="flex items-center justify-end gap-2 mb-6">
-                  <Heart className="w-4 h-4 text-[#4D4747]" strokeWidth={1.5} />
-                  <span className="text-[13px] font-medium text-[#4D4747]">12 Helpful</span>
+                  <button
+                    onClick={() => onLikeReply && thread && onLikeReply(thread.id, reply.id)}
+                    className="flex items-center gap-2 hover:scale-110 transition-transform"
+                  >
+                    <Heart
+                      className={`w-4 h-4 stroke-[1.5] ${likedReplies[reply.id] ? 'text-red-500 fill-red-500' : 'text-[#4D4747] hover:text-red-500'}`}
+                    />
+                    <span className={`text-[13px] font-medium ${likedReplies[reply.id] ? 'text-red-500' : 'text-[#4D4747]'}`}>
+                      {reply.likes} Helpful
+                    </span>
+                  </button>
                 </div>
 
                 {product && (

@@ -11,14 +11,16 @@ export interface Op {
 export interface Reply {
   id: number;
   author: string;
+  authorId?: string;
   city: string;
   time: string;
   text: string;
   image?: string;
   tucoRec?: string;
-  likes?: number;
+  likes: number;
   authorRole?: UserRole;
   authorBadges?: BadgeType[];
+  createdAt?: string;
 }
 export type DateFilter = 'all' | 'today' | 'week' | 'month' | 'year';
 export interface Conversation {
