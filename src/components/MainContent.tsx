@@ -215,7 +215,7 @@ export function MainContent({
             <button
               onClick={() => setActiveTab('feed')}
               className={`px-5 py-1.5 rounded-full text-[15px] font-display font-bold transition-all ${
-                activeTab === 'feed' ? 'bg-[#35B5EC] text-white shadow-sm' : 'bg-[#FFE259] text-[#4D4747] shadow-sm hover:bg-[#35B5EC] hover:text-white'
+                activeTab === 'feed' ? 'bg-[#FFE259] text-[#4D4747] shadow-sm' : 'bg-[#E7F9FF] text-[#4D4747] shadow-sm hover:bg-[#FFE259]'
               }`}
             >
               feed
@@ -223,7 +223,7 @@ export function MainContent({
             <button
               onClick={() => setActiveTab('about')}
               className={`px-5 py-1.5 rounded-full text-[15px] font-display font-bold transition-all ${
-                activeTab === 'about' ? 'bg-[#35B5EC] text-white shadow-sm' : 'bg-[#FFE259] text-[#4D4747] shadow-sm hover:bg-[#35B5EC] hover:text-white'
+                activeTab === 'about' ? 'bg-[#FFE259] text-[#4D4747] shadow-sm' : 'bg-[#E7F9FF] text-[#4D4747] shadow-sm hover:bg-[#FFE259]'
               }`}
             >
               about
