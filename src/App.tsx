@@ -549,12 +549,14 @@ function AppContent() {
       checkAndAwardBadges(updatedUser);
     }
 
-    // Try API, but don't show error if it fails
+    // Try API, then refresh data
     try {
       await api.vote({
         conversationId: threadId,
         type: type.toUpperCase() as 'UP' | 'DOWN',
       });
+      // Refresh data from server to ensure consistency
+      await refreshData();
     } catch (error) {
       console.error('Failed to sync vote with server:', error);
     }
@@ -591,12 +593,13 @@ function AppContent() {
       return c;
     }));
 
-    // Update via API
+    // Update via API and refresh data
     try {
       await api.vote({
         replyId,
         type: 'UP',
       });
+      await refreshData();
     } catch (error) {
       console.error('Failed to sync reply like with server:', error);
     }
