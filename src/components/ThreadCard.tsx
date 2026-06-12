@@ -21,6 +21,8 @@ interface ThreadCardProps {
   isSaved?: boolean;
   votedState?: 'up' | 'down' | null;
   users?: Record<string, User>;
+  onJoinClick?: () => void;
+  isLoggedIn?: boolean;
 }
 
 export function ThreadCard({
@@ -31,6 +33,8 @@ export function ThreadCard({
   isSaved,
   votedState,
   users = {},
+  onJoinClick,
+  isLoggedIn = false,
 }: ThreadCardProps) {
   const category = CATEGORIES[thread.category] || { icon: '💬', label: 'General', id: 'general' };
   const catColor = CATEGORY_COLORS[thread.category] || {
@@ -120,9 +124,14 @@ export function ThreadCard({
             <div className="flex items-center gap-1.5">
               <span className="text-[12px] font-sans font-medium text-[#4D4747]">By {thread.op.author}</span>
               <AuthorBadges badges={opBadges} role={opRole} />
-              <span className="bg-[#E7F9FF] text-[10px] text-[#4D4747] font-sans font-medium uppercase px-2.5 py-0.5 rounded-md border border-[#E7F9FF]/10 shadow-sm cursor-pointer hover:bg-[#35B5EC] hover:text-white transition-colors">
-                Join now
-              </span>
+              {!isLoggedIn && (
+                <span
+                  onClick={e => { e.stopPropagation(); onJoinClick?.(); }}
+                  className="bg-[#E7F9FF] text-[10px] text-[#4D4747] font-sans font-medium uppercase px-2.5 py-0.5 rounded-md border border-[#E7F9FF]/10 shadow-sm cursor-pointer hover:bg-[#35B5EC] hover:text-white transition-colors"
+                >
+                  Join now
+                </span>
+              )}
             </div>
           </div>
 

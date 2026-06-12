@@ -16,6 +16,7 @@ import { LoadingScreen } from './components/LoadingScreen';
 import { ProfileModal } from './components/ProfileModal';
 import { WarningModal } from './components/WarningModal';
 import { ReportModal } from './components/ReportModal';
+import { NotificationsPage } from './components/NotificationsPage';
 import { INITIAL_CONVERSATIONS } from './data/conversations';
 import { CATEGORIES } from './data/categories';
 import {
@@ -116,6 +117,7 @@ function AppContent() {
   }>({ isOpen: false, title: '', message: '' });
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState<boolean>(false);
   const [isMobileLeftSidebarOpen, setIsMobileLeftSidebarOpen] = useState<boolean>(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState<boolean>(false);
   const [activeReplyTo, setActiveReplyTo] = useState<{ threadId: number; replyId: number } | null>(null);
 
   // Prevent body scroll when any modal/overlay is open
@@ -202,6 +204,20 @@ function AppContent() {
 
     initData();
   }, []);
+
+  // Poll for notifications every 30 seconds when user is logged in
+  useEffect(() => {
+    if (!currentUser) return;
+    const interval = setInterval(async () => {
+      try {
+        const apiNotifications = await api.getNotifications();
+        setNotifications(apiNotifications);
+      } catch {
+        // silent — don't break the app if polling fails
+      }
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [currentUser]);
 
   // Handle initial hash
   useEffect(() => {
@@ -462,26 +478,33 @@ function AppContent() {
   };
   const selectedThread = conversations.find(c => c.id === selectedThreadId) || null;
   const isSearchMode = searchTerm.trim().length > 0;
-  const searchResults = useMemo(() => {
-    const ranked = searchThreadsWithRanking(conversations, searchTerm, 50);
-    return filterThreads(ranked, '', searchCategoryFilter, searchDateFilter);
-  }, [conversations, searchTerm, searchCategoryFilter, searchDateFilter]);
+  // All conversations the current user is allowed to see (used for sidebar counts and trending)
+  const visibleConversations = useMemo(() => {
+    const canSeePending = currentUser?.role === 'moderator' || currentUser?.role === 'tuco_team';
+    return conversations.filter(c =>
+      c.moderationStatus === 'approved' ||
+      (canSeePending && c.moderationStatus === 'pending') ||
+      c.authorId === currentUser?.id
+    );
+  }, [conversations, currentUser]);
+
+  // Conversations filtered further by active category/saved (passed to MainContent)
   const filteredConversations = useMemo(() => {
-    let filtered = conversations;
+    let filtered = visibleConversations;
 
     if (activeCategory === 'saved') {
-      filtered = conversations.filter(c => savedPosts.includes(c.id));
+      filtered = visibleConversations.filter(c => savedPosts.includes(c.id));
     } else if (activeCategory !== 'all' && activeCategory !== 'sidebar-open') {
-      filtered = conversations.filter(c => c.category === activeCategory);
+      filtered = visibleConversations.filter(c => c.category === activeCategory);
     }
 
-    // Always show approved posts, or pending posts if user is a moderator
-    return filtered.filter(c => 
-      c.moderationStatus === 'approved' || 
-      (currentUser?.role === 'moderator' && c.moderationStatus === 'pending')
-    );
-  }, [conversations, activeCategory, savedPosts, currentUser]);
-  const featuredThreads = useMemo(() => getFeaturedThreads(conversations), [conversations]);
+    return filtered;
+  }, [visibleConversations, activeCategory, savedPosts]);
+  const searchResults = useMemo(() => {
+    const ranked = searchThreadsWithRanking(visibleConversations, searchTerm, 50);
+    return filterThreads(ranked, '', searchCategoryFilter, searchDateFilter);
+  }, [visibleConversations, searchTerm, searchCategoryFilter, searchDateFilter]);
+  const featuredThreads = useMemo(() => getFeaturedThreads(visibleConversations), [visibleConversations]);
   const pendingThreads = useMemo(
     () =>
       [...conversations.filter(c => c.moderationStatus === 'pending')].sort(
@@ -622,14 +645,6 @@ function AppContent() {
     } catch (error) {
       console.error('Failed to sync reply like with server:', error);
     }
-  };
-  const detectProductRecommendation = (text: string): string | undefined => {
-    const raw = text.toLowerCase();
-    if (/sunscreen|sunblock|spf|cricket|tan|outdoor/.test(raw)) return 'sunscreen';
-    if (/moistur|dry|flake|eczema|cheeks|cream|lotion/.test(raw)) return 'moisturiser';
-    if (/bath|wash|soap|shower|bodywash|fragrance|gentle/.test(raw)) return 'bodywash';
-    if (/shampoo|hair|scalp|lice|conditioning/.test(raw)) return 'shampoo';
-    return undefined;
   };
   // Helper to add a nested reply recursively
   const addNestedReply = (replies: Reply[], parentId: number, newReply: Reply): Reply[] => {
@@ -1069,21 +1084,24 @@ function AppContent() {
       message: `Thread rejected. Reason: ${reason}`,
     });
   };
-  const handlePinThread = (threadId: number, pinned: boolean) => {
-    saveConversations(conversations.map(c => (c.id === threadId ? { ...c, isPinned: pinned } : c)));
+  const handlePinThread = async (threadId: number, pinned: boolean) => {
+    setConversations(prev => prev.map(c => c.id === threadId ? { ...c, isPinned: pinned } : c));
+    try {
+      await api.updateConversation(threadId, { isPinned: pinned });
+    } catch (error) {
+      console.error('Failed to pin thread:', error);
+    }
   };
-  const handleFeatureThread = (threadId: number, featured: boolean) => {
-    saveConversations(
-      conversations.map(c =>
-        c.id === threadId
-          ? {
-              ...c,
-              isFeatured: featured,
-              featuredLabel: featured ? 'Circle Mom of the Month' : undefined,
-            }
-          : c
-      )
-    );
+  const handleFeatureThread = async (threadId: number, featured: boolean) => {
+    const featuredLabel = featured ? 'Circle Mom of the Month' : undefined;
+    setConversations(prev => prev.map(c =>
+      c.id === threadId ? { ...c, isFeatured: featured, featuredLabel } : c
+    ));
+    try {
+      await api.updateConversation(threadId, { isFeatured: featured, featuredLabel });
+    } catch (error) {
+      console.error('Failed to feature thread:', error);
+    }
   };
   const handleResetToDefault = () => {
     localStorage.removeItem('tuco_conversations_v1');
@@ -1139,7 +1157,7 @@ function AppContent() {
       <Header
         searchTerm={searchTerm}
         onSearch={setSearchTerm}
-        conversations={conversations}
+        conversations={visibleConversations}
         onNewPostClick={openNewPost}
         currentUser={currentUser}
         onLogout={handleLogout}
@@ -1147,7 +1165,7 @@ function AppContent() {
         onModerationClick={() => setIsModerationOpen(true)}
         onAdminClick={() => setIsAdminOpen(true)}
         onProfileClick={() => setIsProfileOpen(true)}
-        onNotificationsClick={() => {}}
+        onNotificationsClick={() => setIsNotificationsOpen(true)}
         onOpenCategories={() => {
           setIsMobileLeftSidebarOpen(!isMobileLeftSidebarOpen);
         }}
@@ -1195,7 +1213,7 @@ function AppContent() {
               <LeftSidebar
                 activeCategory={activeCategory}
                 onCategoryChange={handleCategoryChange}
-                conversations={conversations}
+                conversations={visibleConversations}
                 savedPosts={savedPosts}
               />
             </div>
@@ -1208,7 +1226,7 @@ function AppContent() {
             <LeftSidebar
               activeCategory={activeCategory}
               onCategoryChange={handleCategoryChange}
-              conversations={conversations}
+              conversations={visibleConversations}
               savedPosts={savedPosts}
             />
           </div>
@@ -1231,7 +1249,7 @@ function AppContent() {
               <MainContent
                 activeCategory={activeCategory}
                 searchTerm={searchTerm}
-                conversations={conversations}
+                conversations={filteredConversations}
                 onThreadOpen={handleThreadOpen}
                 onVote={handleVote}
                 onSavePost={toggleSavedPost}
@@ -1243,6 +1261,8 @@ function AppContent() {
                 featuredThreads={featuredThreads}
                 onCategoryChange={handleCategoryChange}
                 onOpenRightSidebar={() => setIsRightSidebarOpen(true)}
+                isLoggedIn={!!currentUser}
+                onJoinClick={() => setIsAuthOpen(true)}
               />
             )}
           </div>
@@ -1253,6 +1273,7 @@ function AppContent() {
               featuredThreads={featuredThreads}
               onFeaturedClick={handleThreadOpen}
               variant="sidebar"
+              conversations={visibleConversations}
             />
           </div>
         </div>
@@ -1298,14 +1319,14 @@ function AppContent() {
         users={users}
         searchTerm={searchTerm}
         onSearch={setSearchTerm}
-        conversations={conversations}
+        conversations={visibleConversations}
         onNewPostClick={openNewPost}
         onLogout={handleLogout}
         onLoginClick={() => setIsAuthOpen(true)}
         onModerationClick={() => setIsModerationOpen(true)}
         onAdminClick={() => setIsAdminOpen(true)}
         onProfileClick={() => setIsProfileOpen(true)}
-        onNotificationsClick={() => {}}
+        onNotificationsClick={() => setIsNotificationsOpen(true)}
         onOpenCategories={() => {
           setIsMobileLeftSidebarOpen(!isMobileLeftSidebarOpen);
         }}
@@ -1340,10 +1361,9 @@ function AppContent() {
         <ProfileModal
           isOpen={isProfileOpen}
           user={currentUser}
-          conversations={conversations}
+          conversations={visibleConversations}
           onThreadOpen={handleThreadOpen}
           loginEmail={sessionCredentials?.email ?? currentUser.email}
-          loginPassword={sessionCredentials?.password}
           onClose={() => setIsProfileOpen(false)}
         />
       )}
@@ -1370,11 +1390,24 @@ function AppContent() {
                   setIsRightSidebarOpen(false);
                 }}
                 variant="sidebar"
+                conversations={conversations}
               />
             </div>
           </div>
         </div>
       )}
+      <NotificationsPage
+        isOpen={isNotificationsOpen}
+        notifications={notifications}
+        onMarkAsRead={async id => {
+          const updated = notifications.map(n => (n.id === id ? { ...n, read: true } : n));
+          setNotifications(updated);
+          try { await api.markNotificationRead(id); } catch {}
+        }}
+        onClearAll={clearNotifications}
+        onClose={() => setIsNotificationsOpen(false)}
+        onThreadOpen={id => { setIsNotificationsOpen(false); handleThreadOpen(id); }}
+      />
       {pendingReview && (
         <ThreadReviewConfirmation
           threadTitle={pendingReview.title}

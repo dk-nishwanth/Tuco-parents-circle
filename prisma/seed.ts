@@ -245,7 +245,6 @@ async function main() {
             time: reply.time,
             text: reply.text,
             image: null,
-            tucoRec: reply.tucoRec || null,
             likes: reply.likes,
             authorRole: 'MEMBER',
             authorBadges: [],

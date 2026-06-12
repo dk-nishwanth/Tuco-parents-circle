@@ -1,6 +1,9 @@
 interface ImportMetaEnv {
   readonly VITE_SHOPIFY_STORE_DOMAIN: string;
   readonly VITE_SHOPIFY_STOREFRONT_ACCESS_TOKEN: string;
+  readonly PROD: boolean;
+  readonly DEV: boolean;
+  readonly MODE: string;
 }
 
 interface ImportMeta {

@@ -1,6 +1,5 @@
 import React, { useState, FormEvent, useRef, useEffect } from 'react';
 import { CATEGORIES } from '../data/categories';
-import { PRODUCTS } from '../data/products';
 import { Conversation, User as UserType, Notification, Reply } from '../types';
 import { getAvatarColor, getInitials, searchThreadsWithRanking, formatTimeAgo } from '../utils/helpers';
 import { Heart, MessageSquare, X, Eye, Bookmark, ChevronDown, Search, Bell, ArrowLeft, Menu, User, LogOut, Users } from 'lucide-react';
@@ -112,7 +111,7 @@ const ReplyComponent = ({
   };
 
   const isOwnReply = currentUser && currentUser.username === reply.author;
-  const isMod = currentUser && (currentUser.role === 'MODERATOR' || currentUser.role === 'TUCO_TEAM');
+  const isMod = currentUser && (currentUser.role === 'moderator' || currentUser.role === 'tuco_team');
 
   return (
     <div key={reply.id} className="bg-white border border-neutral-200 rounded-[24px] p-6 shadow-sm relative overflow-hidden">
@@ -350,10 +349,6 @@ export function Modal({
   const category = CATEGORIES[thread.category] || { icon: '💬', label: 'General' };
   const categoryItem = CATEGORIES[activeCategory];
   
-  const gettucoProduct = (recId: string) => {
-    return PRODUCTS.find(p => p.id === recId) || null;
-  };
-
   const handleReplySubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!replyText.trim() && !replyImage) {

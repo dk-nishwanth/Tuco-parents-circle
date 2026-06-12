@@ -24,7 +24,6 @@ export const INITIAL_CONVERSATIONS: Conversation[] = [
         city: 'Bangalore',
         time: '2 days ago',
         text: "Same exact situation with my 9-year-old! We've been through 5–6 sunscreens. The key for sporty kids is water/sweat resistance. We now use tuco's Daily Shield SPF 50 — it's specifically made for Indian kids, non-greasy, and actually stays on through a full practice session. Mineral-based so no chemicals to worry about.",
-        tucoRec: 'sunscreen',
         likes: 12,
       },
       {
@@ -91,7 +90,6 @@ export const INITIAL_CONVERSATIONS: Conversation[] = [
         city: 'Bangalore',
         time: '2 days ago',
         text: "We use tuco's Nourish Night Moisturiser on my daughter's cheeks — it was recommended by our paediatric dermat for eczema-prone kids. Fragrance-free, no parabens. Within 2 weeks the flakiness reduced noticeably. It has ceramides which help repair the skin barrier.",
-        tucoRec: 'moisturiser',
         likes: 14,
       },
       {
@@ -375,7 +373,6 @@ export const INITIAL_CONVERSATIONS: Conversation[] = [
         city: 'Pune',
         time: '4 days ago',
         text: "Short term is probably fine, but regular use isn't ideal. tuco's Gentle Glow body lotion was recommended by my paed dermat specifically for toddlers — no sulfates, no parabens, light enough that it doesn't clog pores.",
-        tucoRec: 'body_lotion',
         likes: 11,
       },
     ],
@@ -504,7 +501,6 @@ export const INITIAL_CONVERSATIONS: Conversation[] = [
         city: 'Bangalore',
         time: '3 days ago',
         text: "This was our exact problem! tuco's Daily Shield SPF 50 has a tinted formula that blends into brown skin tones beautifully. My daughter actually likes how it looks — kind of evens out her complexion.",
-        tucoRec: 'sunscreen_tinted',
         likes: 22,
       },
       {

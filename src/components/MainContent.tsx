@@ -21,6 +21,8 @@ interface MainContentProps {
   featuredThreads?: Conversation[];
   onCategoryChange?: (categoryId: string) => void;
   onOpenRightSidebar?: () => void;
+  isLoggedIn?: boolean;
+  onJoinClick?: () => void;
 }
 
 export function MainContent({
@@ -38,6 +40,8 @@ export function MainContent({
   featuredThreads = [],
   onCategoryChange,
   onOpenRightSidebar,
+  isLoggedIn = false,
+  onJoinClick,
 }: MainContentProps) {
   const [sortType, setSortType] = useState<string>('trending');
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -351,9 +355,14 @@ export function MainContent({
                         {thread.op.author[0].toUpperCase()}
                       </div>
                       <span className="text-[11px] font-sans font-medium text-[#4D4747]">By {thread.op.author}</span>
-                      <span className="bg-[#E7F9FF] text-[10px] text-[#4D4747] font-sans font-medium uppercase px-2.5 py-0.5 rounded-md border border-[#E7F9FF]/10 shadow-sm cursor-pointer hover:bg-[#35B5EC] hover:text-white transition-colors">
-                        Join now
-                      </span>
+                      {!isLoggedIn && (
+                        <span
+                          onClick={e => { e.stopPropagation(); onJoinClick?.(); }}
+                          className="bg-[#E7F9FF] text-[10px] text-[#4D4747] font-sans font-medium uppercase px-2.5 py-0.5 rounded-md border border-[#E7F9FF]/10 shadow-sm cursor-pointer hover:bg-[#35B5EC] hover:text-white transition-colors"
+                        >
+                          Join now
+                        </span>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -379,6 +388,8 @@ export function MainContent({
                     isSaved={savedPosts.includes(thread.id)}
                     votedState={votedThreads[thread.id] || null}
                     users={users}
+                    isLoggedIn={isLoggedIn}
+                    onJoinClick={onJoinClick}
                   />
                 ))
               ) : (

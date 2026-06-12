@@ -10,14 +10,14 @@ import { fileURLToPath } from 'url';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, UserRole } from '@prisma/client';
 import Anthropic from '@anthropic-ai/sdk';
 import { Resend } from 'resend';
 
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3002;
+const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3002;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-in-production-please';
 
@@ -25,8 +25,10 @@ const prisma = new PrismaClient();
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 // ------------------------------
-// STARTUP SEEDING
+// STARTUP SEED
 // ------------------------------
+import { INITIAL_CONVERSATIONS } from '../src/data/conversations.js';
+
 async function seedOnStartup() {
   console.log('Checking database for seed data...');
   
@@ -120,19 +122,105 @@ async function seedOnStartup() {
     console.log(`✅ Seeded product: ${prod.name}`);
   }
 
-  console.log('✅ Database seed check complete!');
+  // Seed demo user if none
+  let seedUser = await prisma.user.findUnique({ where: { email: 'demo@tucokids.com' } });
+  if (!seedUser) {
+    const passwordHash = await bcrypt.hash('password123', 12);
+    seedUser = await prisma.user.create({
+      data: {
+        email: 'demo@tucokids.com',
+        passwordHash,
+        username: 'DemoParent',
+        city: 'Mumbai',
+        childAge: '5 years',
+        role: 'MEMBER',
+        isVerified: true,
+        trustScore: 50,
+        savedPosts: [],
+      },
+    });
+    console.log(`✅ Seeded user: ${seedUser.username}`);
+  }
+
+  // Seed initial conversations only if none exist
+  const existingConversations = await prisma.conversation.count();
+  if (existingConversations > 0) {
+    console.log(`✅ ${existingConversations} conversations already exist — skipping seed`);
+    return;
+  }
+
+  for (const conv of INITIAL_CONVERSATIONS) {
+    const createdConv = await prisma.conversation.create({
+      data: {
+        title: conv.title,
+        category: conv.category,
+        isPinned: conv.isPinned,
+        isHot: conv.isHot,
+        isFeatured: conv.isFeatured,
+        featuredLabel: conv.featuredLabel,
+        votes: conv.votes,
+        views: conv.views,
+        opAuthor: conv.op.author,
+        opCity: conv.op.city,
+        opTime: conv.op.time,
+        opText: conv.op.text,
+        opImage: conv.op.image,
+        opAuthorRole: (conv.op.authorRole || 'MEMBER').toUpperCase() as UserRole,
+        opAuthorBadges: conv.op.authorBadges || [],
+        moderationStatus: 'APPROVED',
+        authorId: seedUser.id,
+        greyAreaFlags: conv.greyAreaFlags || [],
+        reviewPriority: conv.reviewPriority || 50,
+      },
+    });
+    console.log(`✅ Seeded conversation: ${conv.title}`);
+
+    // Seed replies for this conversation
+    if (conv.replies && conv.replies.length > 0) {
+      for (const reply of conv.replies) {
+        await prisma.reply.create({
+          data: {
+            conversationId: createdConv.id,
+            author: reply.author,
+            authorId: seedUser.id,
+            city: reply.city,
+            time: reply.time,
+            text: reply.text,
+            image: reply.image,
+            likes: reply.likes || 0,
+            authorRole: (reply.authorRole || 'MEMBER').toUpperCase() as UserRole,
+            authorBadges: reply.authorBadges || [],
+            moderationStatus: 'APPROVED',
+          },
+        });
+      }
+    }
+  }
+
+  console.log('🎉 Database seed check complete!');
 }
 
 // Test Prisma connection and run seed on startup
 async function startup() {
-  try {
-    console.log('🔌 Connecting to database...');
-    await prisma.$connect();
-    console.log('✅ Database connected successfully!');
-    await seedOnStartup();
-  } catch (error) {
-    console.error('❌ Failed to connect to database or seed:', error);
-    process.exit(1);
+  const MAX_RETRIES = 5;
+  const RETRY_DELAY_MS = 5000;
+
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      console.log(`🔌 Connecting to database (attempt ${attempt}/${MAX_RETRIES})...`);
+      await prisma.$connect();
+      console.log('✅ Database connected successfully!');
+      await seedOnStartup();
+      return;
+    } catch (error) {
+      console.error(`❌ Database connection attempt ${attempt} failed:`, (error as Error).message);
+      if (attempt < MAX_RETRIES) {
+        console.log(`⏳ Retrying in ${RETRY_DELAY_MS / 1000}s...`);
+        await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS));
+      } else {
+        console.error('❌ All connection attempts failed. Server will continue without database.');
+      }
+    }
   }
 }
 
@@ -816,7 +904,6 @@ app.post('/api/conversations/:id/replies', authenticate, async (req: AuthRequest
       time: reply.time,
       text: reply.text,
       image: reply.image,
-      tucoRec: reply.tucoRec,
       likes: reply.likes || 0,
       authorRole: mapRole(reply.authorRole),
       authorBadges: reply.authorBadges || [],

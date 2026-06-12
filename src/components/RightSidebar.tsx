@@ -1,4 +1,3 @@
-import { TRENDING } from '../data/products';
 import { Conversation } from '../types';
 import { Flame, Sparkles } from 'lucide-react';
 import mascot from '../assets/mascot.png';
@@ -8,6 +7,7 @@ interface RightSidebarProps {
   featuredThreads?: Conversation[];
   onFeaturedClick?: (id: number) => void;
   variant?: 'sidebar' | 'carousel';
+  conversations?: Conversation[];
 }
 
 export function RightSidebar({
@@ -15,8 +15,20 @@ export function RightSidebar({
   featuredThreads = [],
   onFeaturedClick,
   variant = 'sidebar',
+  conversations = [],
 }: RightSidebarProps) {
   const isCarousel = variant === 'carousel';
+
+  const approvedConvs = conversations.filter(c => c.moderationStatus === 'approved');
+
+  const trendingThreads = [...approvedConvs]
+    .sort((a, b) => b.votes - a.votes)
+    .slice(0, 3);
+
+  const spotlightThreads = [...approvedConvs]
+    .filter(c => c.isFeatured || c.votes > 50)
+    .sort((a, b) => b.votes - a.votes)
+    .slice(0, 2);
 
   const containerClasses = isCarousel
     ? "flex overflow-x-auto pb-6 pt-2 gap-4 snap-x snap-mandatory scrollbar-hide -mx-4 px-4 items-stretch"
@@ -43,62 +55,63 @@ export function RightSidebar({
         </div>
 
         {/* Card 2: Member Spotlight */}
-        <div className={`${itemClasses} bg-[#E7F9FF] border border-neutral-200 rounded-2xl p-5 shadow-sm`}>
-          <div className="flex items-center gap-2 mb-3">
-            <Sparkles className="w-4 h-4 text-[#4D4747]" strokeWidth={2} />
-            <h4 className="font-display font-bold text-xs text-[#4D4747] uppercase">
-              MEMBER SPOTLIGHT
-            </h4>
+        {spotlightThreads.length > 0 && (
+          <div className={`${itemClasses} bg-[#E7F9FF] border border-neutral-200 rounded-2xl p-5 shadow-sm`}>
+            <div className="flex items-center gap-2 mb-3">
+              <Sparkles className="w-4 h-4 text-[#4D4747]" strokeWidth={2} />
+              <h4 className="font-display font-bold text-xs text-[#4D4747] uppercase">
+                MEMBER SPOTLIGHT
+              </h4>
+            </div>
+            <p className="text-[11px] text-neutral-500 font-medium mb-4">
+              Featured community voices
+            </p>
+            <div className="flex flex-col gap-4">
+              {spotlightThreads.map(item => (
+                <div
+                  key={item.id}
+                  className="flex flex-col gap-1 cursor-pointer"
+                  onClick={() => onTrendingClick(item.id)}
+                >
+                  <p className="font-display font-bold text-[12px] text-[#4D4747] leading-snug line-clamp-2">
+                    {item.title}
+                  </p>
+                  <p className="text-[11px] text-neutral-500 font-medium">
+                    By {item.op.author} 🌟
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
-          <p className="text-[11px] text-neutral-500 font-medium mb-4">
-            Featured community voices
-          </p>
-          <div className="flex flex-col gap-4">
-            {[
-              { author: "Sneha V.", title: "Dry flaky patches on 5yo?" },
-              { author: "Deepika S.", title: "Best summer spots in India?" }
-            ].map((item, i) => (
-              <div key={i} className="flex flex-col gap-1">
-                <p className="font-display font-bold text-[12px] text-[#4D4747] leading-snug">
-                  {item.title}
-                </p>
-                <p className="text-[11px] text-neutral-500 font-medium">
-                  By {item.author} Featured 🌟
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
+        )}
 
         {/* Card 3: Trending Now */}
-        <div className={`${itemClasses} bg-[#E7F9FF] border border-neutral-200 rounded-2xl p-5 shadow-sm`}>
-          <div className="flex items-center gap-2 mb-4">
-            <Flame className="w-4 h-4 text-[#4D4747]" strokeWidth={2} />
-            <h4 className="font-display font-bold text-xs text-[#4D4747] uppercase">
-              TRENDING NOW
-            </h4>
+        {trendingThreads.length > 0 && (
+          <div className={`${itemClasses} bg-[#E7F9FF] border border-neutral-200 rounded-2xl p-5 shadow-sm`}>
+            <div className="flex items-center gap-2 mb-4">
+              <Flame className="w-4 h-4 text-[#4D4747]" strokeWidth={2} />
+              <h4 className="font-display font-bold text-xs text-[#4D4747] uppercase">
+                TRENDING NOW
+              </h4>
+            </div>
+            <div className="space-y-4">
+              {trendingThreads.map((trend, idx) => (
+                <div
+                  key={trend.id}
+                  className="flex items-start gap-3 cursor-pointer"
+                  onClick={() => onTrendingClick(trend.id)}
+                >
+                  <span className="font-display font-bold text-sm text-[#4D4747] leading-none pt-0.5">
+                    #{idx + 1}
+                  </span>
+                  <p className="font-display font-bold text-[12px] text-[#4D4747] line-clamp-2 leading-snug">
+                    {trend.title}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="space-y-4">
-            {[
-              { id: 1, title: "Best sunscreen for outdoor cricket this summer?" },
-              { id: 2, title: "Toddler refuses all vegetables — help!" },
-              { id: 3, title: "4-year-old won't sleep before 11 PM" }
-            ].map((trend, idx) => (
-              <div
-                key={trend.id}
-                className="flex items-start gap-3 cursor-pointer"
-                onClick={() => onTrendingClick(trend.id)}
-              >
-                <span className="font-display font-bold text-sm text-[#4D4747] leading-none pt-0.5">
-                  #{idx + 1}
-                </span>
-                <p className="font-display font-bold text-[12px] text-[#4D4747] line-clamp-2 leading-snug">
-                  {trend.title}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
+        )}
       </div>
     </aside>
   );

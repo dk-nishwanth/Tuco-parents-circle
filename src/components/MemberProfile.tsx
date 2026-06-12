@@ -82,7 +82,7 @@ export function MemberProfile({
         {loginPassword !== undefined && (
           <div className="flex items-center gap-2 text-sm text-neutral-700">
             <Lock className="w-4 h-4 text-neutral-400 shrink-0" />
-            <span className="font-mono font-medium">{loginPassword || '—'}</span>
+            <span className="font-mono font-medium tracking-widest">••••••••</span>
           </div>
         )}
         {user.childAge && (

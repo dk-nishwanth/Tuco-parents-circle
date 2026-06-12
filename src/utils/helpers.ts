@@ -51,9 +51,6 @@ export function filterThreads(
   dateFilter: DateFilter = 'all'
 ): Conversation[] {
   return threads.filter(thread => {
-    if (thread.moderationStatus && thread.moderationStatus !== 'approved') {
-      return false;
-    }
     const term = searchTerm.trim().toLowerCase();
     const matchesSearch =
       !term ||
