@@ -918,6 +918,12 @@ function AppContent() {
       moderationStatus = 'rejected';
     }
     
+    const finalReviewPriority = isInCoolingPeriod ? 100 : getReviewPriority(
+      currentUser.role,
+      currentUser.trustScore,
+      analysis.greyAreaFlags
+    );
+
     try {
       // Create conversation via API
       const createdConv = await api.createConversation({
@@ -928,11 +934,7 @@ function AppContent() {
         image,
         moderationStatus,
         greyAreaFlags: analysis.greyAreaFlags,
-        reviewPriority: getReviewPriority(
-          currentUser.role,
-          currentUser.trustScore,
-          analysis.greyAreaFlags
-        ),
+        reviewPriority: finalReviewPriority,
       });
 
       if (moderationStatus === 'rejected') {
@@ -966,11 +968,7 @@ function AppContent() {
         authorId: currentUser.id,
         createdAt: new Date().toISOString(),
         greyAreaFlags: analysis.greyAreaFlags,
-        reviewPriority: isInCoolingPeriod ? 100 : getReviewPriority(
-          currentUser.role,
-          currentUser.trustScore,
-          analysis.greyAreaFlags
-        ),
+        reviewPriority: finalReviewPriority,
       };
 
       setConversations(prev => [newThread, ...prev]);

@@ -475,9 +475,9 @@ app.get('/api/health', (req, res) => {
 const signupSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
-  username: z.string().min(3).max(30),
-  city: z.string().optional(),
-  childAge: z.string().optional(),
+  username: z.string().min(3).max(30).regex(/^[a-zA-Z0-9_\-. ]+$/, 'Username can only contain letters, numbers, spaces, underscores, hyphens, and dots'),
+  city: z.string().max(100).optional(),
+  childAge: z.string().max(50).optional(),
 });
 
 app.post('/api/auth/signup', authLimiter, async (req: AuthRequest, res, next) => {
