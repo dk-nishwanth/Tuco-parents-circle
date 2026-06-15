@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Mail, Lock, MapPin, User, AlertCircle, CheckCircle } from 'lucide-react';
+import { X, Mail, Lock, MapPin, User, AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react';
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -15,6 +15,7 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin }: AuthModalProps
   const [childAge, setChildAge] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   if (!isOpen) return null;
   const handleSignupSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -135,12 +136,15 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin }: AuthModalProps
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 w-4 h-4 text-neutral-400" strokeWidth={1.5} />
                   <input
-                    type="password"
+                    type={showPassword ? 'text' : 'password'}
                     placeholder="••••••••"
                     value={password}
                     onChange={e => setPassword(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 border border-neutral-200 rounded-lg outline-none text-sm focus:border-tuco-cyan focus:ring-2 focus:ring-tuco-cyan/10"
+                    className="w-full pl-10 pr-10 py-2.5 border border-neutral-200 rounded-lg outline-none text-sm focus:border-tuco-cyan focus:ring-2 focus:ring-tuco-cyan/10"
                   />
+                  <button type="button" onClick={() => setShowPassword(p => !p)} className="absolute right-3 top-3 text-neutral-400 hover:text-neutral-600">
+                    {showPassword ? <EyeOff className="w-4 h-4" strokeWidth={1.5} /> : <Eye className="w-4 h-4" strokeWidth={1.5} />}
+                  </button>
                 </div>
               </div>
               <button
@@ -176,12 +180,15 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin }: AuthModalProps
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 w-4 h-4 text-neutral-400" strokeWidth={1.5} />
                   <input
-                    type="password"
+                    type={showPassword ? 'text' : 'password'}
                     placeholder="At least 6 characters"
                     value={password}
                     onChange={e => setPassword(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 border border-neutral-200 rounded-lg outline-none text-sm focus:border-tuco-cyan focus:ring-2 focus:ring-tuco-cyan/10"
+                    className="w-full pl-10 pr-10 py-2.5 border border-neutral-200 rounded-lg outline-none text-sm focus:border-tuco-cyan focus:ring-2 focus:ring-tuco-cyan/10"
                   />
+                  <button type="button" onClick={() => setShowPassword(p => !p)} className="absolute right-3 top-3 text-neutral-400 hover:text-neutral-600">
+                    {showPassword ? <EyeOff className="w-4 h-4" strokeWidth={1.5} /> : <Eye className="w-4 h-4" strokeWidth={1.5} />}
+                  </button>
                 </div>
               </div>
               <div>
