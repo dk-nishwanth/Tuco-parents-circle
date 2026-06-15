@@ -1540,7 +1540,7 @@ app.get('/thread/:id', async (req, res, next) => {
     if (!thread || thread.moderationStatus !== 'APPROVED') return next();
 
     const title = thread.title || 'Discussion';
-    const desc = (thread.text || '').replace(/<[^>]+>/g, '').slice(0, 200).trim();
+    const desc = (thread.opText || '').replace(/<[^>]+>/g, '').slice(0, 200).trim();
     const repliesHtml = thread.replies
       .map(r => `<div class="reply"><p>${(r.text || '').replace(/<[^>]+>/g, '').slice(0, 500)}</p></div>`)
       .join('\n');
@@ -1586,7 +1586,7 @@ app.get('/', async (req, res, next) => {
       where: { moderationStatus: 'APPROVED' },
       orderBy: { createdAt: 'desc' },
       take: 50,
-      select: { id: true, title: true, text: true, category: true },
+      select: { id: true, title: true, opText: true, category: true },
     });
 
     const linksHtml = threads
