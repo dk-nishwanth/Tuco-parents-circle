@@ -91,9 +91,26 @@ export function MemberProfile({
             <span className="font-medium">Child age: {user.childAge}</span>
           </div>
         )}
-        <div className="flex items-center gap-2 text-sm text-neutral-700">
-          <Shield className="w-4 h-4 text-neutral-400 shrink-0" />
-          <span className="font-medium">Trust score: {Math.round(user.trustScore * 100)}%</span>
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center justify-between text-sm text-neutral-700">
+            <div className="flex items-center gap-2">
+              <Shield className="w-4 h-4 text-neutral-400 shrink-0" />
+              <span className="font-medium">Trust Score</span>
+            </div>
+            <span className="font-bold text-tuco-cyan">{Math.round(user.trustScore * 100)}/100</span>
+          </div>
+          <div className="w-full bg-neutral-200 rounded-full h-2">
+            <div
+              className="h-2 rounded-full transition-all duration-500"
+              style={{
+                width: `${Math.round(user.trustScore * 100)}%`,
+                background: user.trustScore >= 0.85 ? '#10b981' : user.trustScore >= 0.5 ? '#06b6d4' : '#f59e0b',
+              }}
+            />
+          </div>
+          <p className="text-[10px] text-neutral-400">
+            Based on upvotes, reply likes, engagement on your posts &amp; activity
+          </p>
         </div>
         <p className="text-[10px] text-neutral-400 font-medium pt-1 border-t border-neutral-200">
           User ID: <span className="font-mono">{user.id}</span>

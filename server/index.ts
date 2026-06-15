@@ -605,6 +605,8 @@ app.post('/api/auth/login', authLimiter, async (req: AuthRequest, res, next) => 
 
 app.get('/api/auth/me', authenticate, async (req: AuthRequest, res, next) => {
   try {
+    // Refresh trust score on login so the profile always shows current value
+    await recalculateTrustScore(req.userId!);
     const user = await prisma.user.findUnique({ where: { id: req.userId } });
     if (!user) return res.status(404).json({ error: 'User not found' });
     res.status(200).json(formatUser(user));
@@ -1036,6 +1038,10 @@ app.post('/api/conversations/:id/replies', authenticate, async (req: AuthRequest
       }
     }
 
+    // Recalculate trust score for conversation author (engagement signal) and replier (reply count signal)
+    if (conversation) recalculateTrustScore(conversation.authorId);
+    recalculateTrustScore(req.userId!);
+
     console.log('✅ Reply added successfully!');
     res.status(201).json({
       id: reply.id,
@@ -1155,6 +1161,14 @@ app.post('/api/votes', authenticate, async (req: AuthRequest, res, next) => {
             data: { likes: { decrement: 1 } },
           });
         }
+        // Recalculate trust for author after un-vote
+        if (conversationId) {
+          const conv = await prisma.conversation.findUnique({ where: { id: conversationId }, select: { authorId: true } });
+          if (conv) recalculateTrustScore(conv.authorId);
+        } else if (replyId) {
+          const reply = await prisma.reply.findUnique({ where: { id: replyId }, select: { authorId: true } });
+          if (reply) recalculateTrustScore(reply.authorId);
+        }
         return res.status(200).json({ action: 'removed', type });
       } else {
         // Different vote = flip it
@@ -1165,20 +1179,21 @@ app.post('/api/votes', authenticate, async (req: AuthRequest, res, next) => {
             data: { votes: { increment: type === 'UP' ? 2 : -2 } },
           });
         } else if (replyId) {
-          // Flip reply likes count if needed
           const oldTypeWasUp = existingVote.type === 'UP';
           const newTypeIsUp = type === 'UP';
           if (oldTypeWasUp && !newTypeIsUp) {
-            await prisma.reply.update({
-              where: { id: replyId },
-              data: { likes: { decrement: 1 } },
-            });
+            await prisma.reply.update({ where: { id: replyId }, data: { likes: { decrement: 1 } } });
           } else if (!oldTypeWasUp && newTypeIsUp) {
-            await prisma.reply.update({
-              where: { id: replyId },
-              data: { likes: { increment: 1 } },
-            });
+            await prisma.reply.update({ where: { id: replyId }, data: { likes: { increment: 1 } } });
           }
+        }
+        // Recalculate trust for author after flip
+        if (conversationId) {
+          const conv = await prisma.conversation.findUnique({ where: { id: conversationId }, select: { authorId: true } });
+          if (conv) recalculateTrustScore(conv.authorId);
+        } else if (replyId) {
+          const reply = await prisma.reply.findUnique({ where: { id: replyId }, select: { authorId: true } });
+          if (reply) recalculateTrustScore(reply.authorId);
         }
         return res.status(200).json({ action: 'flipped', type });
       }
@@ -1234,6 +1249,17 @@ app.post('/api/votes', authenticate, async (req: AuthRequest, res, next) => {
             threadId: reply.conversationId,
           },
         });
+      }
+    }
+
+    // Recalculate trust score for the content author (fire-and-forget)
+    if (type === 'UP') {
+      if (conversationId) {
+        const conv = await prisma.conversation.findUnique({ where: { id: conversationId }, select: { authorId: true } });
+        if (conv) recalculateTrustScore(conv.authorId);
+      } else if (replyId) {
+        const reply = await prisma.reply.findUnique({ where: { id: replyId }, select: { authorId: true } });
+        if (reply) recalculateTrustScore(reply.authorId);
       }
     }
 
@@ -1533,6 +1559,74 @@ app.get('/sitemap.xml', async (req, res) => {
     res.status(500).send('<?xml version="1.0"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>');
   }
 });
+
+// ── Trust score recalculation ───────────────────────────────────────────────
+// Score breakdown (0–100):
+//   upvotes on posts          × 2   capped at 25
+//   likes on replies          × 1.5 capped at 20
+//   replies received on posts × 1   capped at 20
+//   approved post count       × 3   capped at 15
+//   own reply count           × 0.5 capped at 10
+//   account age (days/30 × 2)       capped at 10
+async function recalculateTrustScore(userId: string): Promise<void> {
+  try {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) return;
+
+    // Upvotes on conversations
+    const postUpvotes = await prisma.vote.count({
+      where: {
+        type: 'UP',
+        conversation: { authorId: userId },
+        userId: { not: userId },
+      },
+    });
+
+    // Likes on replies
+    const replyLikes = await prisma.reply.aggregate({
+      where: { authorId: userId },
+      _sum: { likes: true },
+    });
+    const totalReplyLikes = replyLikes._sum.likes || 0;
+
+    // Replies received on user's posts (by others)
+    const repliesReceived = await prisma.reply.count({
+      where: {
+        conversation: { authorId: userId },
+        authorId: { not: userId },
+        parentId: null,
+      },
+    });
+
+    // Approved post count
+    const approvedPosts = await prisma.conversation.count({
+      where: { authorId: userId, moderationStatus: 'APPROVED' },
+    });
+
+    // Own reply count
+    const ownReplies = user.replyCount || 0;
+
+    // Account age in days
+    const ageDays = (Date.now() - new Date(user.createdAt).getTime()) / (1000 * 60 * 60 * 24);
+
+    const score =
+      Math.min(postUpvotes * 2, 25) +
+      Math.min(totalReplyLikes * 1.5, 20) +
+      Math.min(repliesReceived * 1, 20) +
+      Math.min(approvedPosts * 3, 15) +
+      Math.min(ownReplies * 0.5, 10) +
+      Math.min((ageDays / 30) * 2, 10);
+
+    const newScore = Math.min(Math.round(score), 100);
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { trustScore: newScore },
+    });
+  } catch {
+    // non-critical — do not surface to caller
+  }
+}
 
 // ── HTML entity encoder for SSR templates ──────────────────────────────────
 function esc(s: string): string {
