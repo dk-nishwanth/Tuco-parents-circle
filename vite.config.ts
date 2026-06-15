@@ -6,7 +6,7 @@ import {defineConfig} from 'vite';
 export default defineConfig(({ mode }) => {
   return {
     plugins: [react(), tailwindcss()],
-    base: mode === 'production' ? '/community/' : '/',
+    base: '/',
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),
