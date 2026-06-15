@@ -43,7 +43,7 @@ export function MainContent({
   isLoggedIn = false,
   onJoinClick,
 }: MainContentProps) {
-  const [sortType, setSortType] = useState<string>('trending');
+  const [sortType, setSortType] = useState<string>('new');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [isSortOpen, setIsSortOpen] = useState(false);
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);

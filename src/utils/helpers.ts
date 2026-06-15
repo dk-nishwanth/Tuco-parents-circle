@@ -89,9 +89,17 @@ export function sortThreads(threads: Conversation[], sortType: string): Conversa
       if (!a.isPinned && b.isPinned) return 1;
       return 0;
     });
+  const trendingScore = (c: Conversation) => {
+    const ageHours = c.createdAt
+      ? (Date.now() - new Date(c.createdAt).getTime()) / (1000 * 60 * 60)
+      : 999;
+    const recencyBoost = Math.max(0, 1 - ageHours / 168);
+    return (c.votes || 0) * 2 + (c.replies?.length || 0) * 3 + (c.views || 0) * 0.1 + recencyBoost * 20;
+  };
+
   switch (sortType) {
     case 'trending':
-      return pinFirst(sorted.sort((a, b) => b.votes - a.votes));
+      return pinFirst(sorted.sort((a, b) => trendingScore(b) - trendingScore(a)));
     case 'new':
       return pinFirst(
         sorted.sort((a, b) => {
@@ -101,9 +109,13 @@ export function sortThreads(threads: Conversation[], sortType: string): Conversa
         })
       );
     case 'unanswered':
-      return pinFirst(sorted.sort((a, b) => a.replies.length - b.replies.length));
+      return pinFirst(sorted.sort((a, b) => (a.replies?.length || 0) - (b.replies?.length || 0)));
     default:
-      return pinFirst(sorted);
+      return pinFirst(sorted.sort((a, b) => {
+        const aTime = a.createdAt ? new Date(a.createdAt).getTime() : a.id;
+        const bTime = b.createdAt ? new Date(b.createdAt).getTime() : b.id;
+        return bTime - aTime;
+      }));
   }
 }
 export function getRelatedThreads(
