@@ -48,7 +48,6 @@ import {
 } from './utils/emailService';
 import { mergeSeedWithExisting } from './utils/seedContent';
 import { api, tokenStore } from './utils/api';
-import { ChatBot } from './components/ChatBot';
 import tucoLogo from './assets/tuco-logo.webp';
 function enrichConversations(threads: Conversation[]): Conversation[] {
   return threads.map((c, i) => ({
@@ -1466,8 +1465,7 @@ function AppContent() {
         onClose={() => setWarningModal({ ...warningModal, isOpen: false })}
       />
 
-      <ChatBot />
-      <ReportModal
+<ReportModal
         isOpen={isReportOpen}
         onClose={() => {
           setIsReportOpen(false);
