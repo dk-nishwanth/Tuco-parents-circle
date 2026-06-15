@@ -322,6 +322,7 @@ export function MainContent({
             featuredThreads={featuredThreads}
             onFeaturedClick={onThreadOpen}
             variant="sidebar"
+            conversations={conversations}
           />
         </div>
       ) : (
