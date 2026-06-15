@@ -12,6 +12,18 @@ export default defineConfig(({ mode }) => {
         '@': path.resolve(__dirname, '.'),
       },
     },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+            'ui-vendor': ['lucide-react'],
+            'utils': ['zod', 'date-fns'],
+          },
+        },
+      },
+      chunkSizeWarningLimit: 600,
+    },
     server: {
       port: process.env.PORT ? parseInt(process.env.PORT) : 3000,
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
