@@ -472,12 +472,7 @@ function AppContent() {
       });
     } catch (error) {
       console.error('Login failed:', error);
-      setWarningModal({
-        isOpen: true,
-        type: 'error',
-        title: 'Login Failed',
-        message: error instanceof Error ? error.message : 'Invalid email or password. Please try again.',
-      });
+      throw error; // let AuthModal show inline error
     }
   };
   const handleLogout = () => {

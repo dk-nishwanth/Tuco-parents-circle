@@ -538,7 +538,7 @@ app.post('/api/auth/signup', authLimiter, async (req: AuthRequest, res, next) =>
       await sendEmail(
         user.email,
         'Welcome to tuco Parents Circle!',
-        `<h2>Welcome, ${user.username}!</h2><p>You've joined the tuco Parents Circle community. Start sharing your parenting experiences today!</p><p><a href="${process.env.FRONTEND_URL || 'https://your-app.onrender.com'}">Visit the community</a></p>`
+        `<h2>Welcome, ${user.username}!</h2><p>You've joined the tuco Parents Circle community. Start sharing your parenting experiences today!</p><p><a href="${process.env.FRONTEND_URL || 'https://community.tucokids.com'}">Visit the community</a></p>`
       );
     } catch (emailErr) {
       console.warn('⚠️ Welcome email failed, but signup successful:', emailErr);
@@ -634,6 +634,7 @@ app.get('/api/auth/google/callback', async (req, res, next) => {
           email,
           passwordHash: await bcrypt.hash(googleId + JWT_SECRET, 10),
           username,
+          city: 'India',
           isVerified: true,
           trustScore: 50,
           savedPosts: [],
@@ -768,7 +769,7 @@ app.post('/api/conversations', authenticate, async (req: AuthRequest, res, next)
   }
 });
 
-app.patch('/api/conversations/:id', authenticate, async (req: AuthRequest, res, next) => {
+app.patch('/api/conversations/:id', optionalAuth, async (req: AuthRequest, res, next) => {
   try {
     const id = parseInt(req.params.id);
     const { votes, views, isPinned, isFeatured, featuredLabel, moderationStatus, moderationReason, moderatedBy } = req.body;
@@ -781,7 +782,7 @@ app.patch('/api/conversations/:id', authenticate, async (req: AuthRequest, res, 
     }
 
     const updateData: any = {};
-    if (votes !== undefined) updateData.votes = votes;
+    if (votes !== undefined && isMod) updateData.votes = votes; // only mods can set raw vote count
     if (views !== undefined) updateData.views = views;
     if (isPinned !== undefined) updateData.isPinned = isPinned;
     if (isFeatured !== undefined) updateData.isFeatured = isFeatured;

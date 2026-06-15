@@ -53,9 +53,14 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin }: AuthModalProps
       setLoading(false);
       return;
     }
-    onLogin(email, password);
-    setLoading(false);
-    onClose();
+    try {
+      await onLogin(email, password);
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Login failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
   return (
     <div
