@@ -82,7 +82,7 @@ function AppContent() {
   
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [isSavedActive, setIsSavedActive] = useState(false);
-  const activeCategory = isSavedActive ? 'saved' : (category || 'all');
+  const activeCategory = isSavedActive ? 'saved' : (category === 'community' || !category ? 'all' : category);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [searchCategoryFilter, setSearchCategoryFilter] = useState<string>('all');
   const [searchDateFilter, setSearchDateFilter] = useState<DateFilter>('all');
