@@ -16,6 +16,7 @@ interface NewPostModalProps {
 export function NewPostModal({ isOpen, onClose, onSubmit, istucoTeam }: NewPostModalProps) {
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('skincare');
+  const [customCategory, setCustomCategory] = useState('');
   const [text, setText] = useState('');
   const [image, setImage] = useState<string | undefined>(undefined);
   const [errorMsg, setErrorMsg] = useState('');
@@ -50,9 +51,11 @@ export function NewPostModal({ isOpen, onClose, onSubmit, istucoTeam }: NewPostM
       setErrorMsg('Please write an explanation or upload an image.');
       return;
     }
-    onSubmit(title.trim(), category, text.trim(), image);
+    const finalCategory = category === 'other' ? (customCategory.trim().toLowerCase().replace(/\s+/g, '-') || 'other') : category;
+    onSubmit(title.trim(), finalCategory, text.trim(), image);
     setTitle('');
     setCategory('skincare');
+    setCustomCategory('');
     setText('');
     setImage(undefined);
     setErrorMsg('');
@@ -95,14 +98,29 @@ export function NewPostModal({ isOpen, onClose, onSubmit, istucoTeam }: NewPostM
             <select
               className="w-full bg-neutral-50 border border-neutral-200 rounded-xl py-2 px-3 text-xs sm:text-sm text-neutral-700 outline-none font-display font-bold"
               value={category}
-              onChange={(e: ChangeEvent<HTMLSelectElement>) => setCategory(e.target.value)}
+              onChange={(e: ChangeEvent<HTMLSelectElement>) => { setCategory(e.target.value); setCustomCategory(''); }}
             >
               {Object.values(CATEGORIES).map((cat) => (
                 <option key={cat.id} value={cat.id}>
                   {cat.icon} {cat.label}
                 </option>
               ))}
+              <option value="other">✏️ Other (custom)</option>
             </select>
+            {category === 'other' && (
+              <div className="mt-2">
+                <input
+                  type="text"
+                  maxLength={40}
+                  placeholder="e.g. sleep training, screen time, travel…"
+                  className="w-full bg-white border border-tuco-cyan rounded-xl py-2.5 px-3 text-xs sm:text-sm text-neutral-700 outline-none font-sans font-medium placeholder-neutral-400 focus:border-tuco-cyan"
+                  value={customCategory}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => setCustomCategory(e.target.value)}
+                  autoFocus
+                />
+                <p className="text-[10px] text-neutral-400 mt-1">Your custom category will appear on the post.</p>
+              </div>
+            )}
           </div>
           <div>
             <label className="block text-xs font-bold text-neutral-700 mb-1.5 text-left">
