@@ -251,6 +251,7 @@ const apiLimiter = rateLimit({
   limit: NODE_ENV === 'production' ? 500 : 1000,
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
   message: { error: 'Too many requests, please try again later.' },
   handler: (req, res) => {
     console.warn('⚠️ API rate limit hit for IP:', req.ip);
@@ -264,6 +265,7 @@ const authLimiter = rateLimit({
   limit: 100,
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
   message: { error: 'Too many auth attempts, please try again later.' },
   handler: (req, res) => {
     console.warn('⚠️ Auth rate limit hit for IP:', req.ip);
