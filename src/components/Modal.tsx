@@ -141,8 +141,8 @@ const ReplyComponent = ({
         <form onSubmit={handleEditSubmit} className="mb-6">
           <textarea
             value={editText}
-            onChange={(e) => setEditText(e.target.value)}
-            className="w-full bg-neutral-50 border border-neutral-200 rounded-xl py-3 px-4 text-sm text-neutral-800 placeholder-neutral-400 outline-none focus:border-[#FED018] focus:ring-2 focus:ring-[#FED018]/20 transition-all resize-none"
+            onChange={(e) => { setEditText(e.target.value); e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px'; }}
+            className="w-full bg-neutral-50 border border-neutral-200 rounded-xl py-3 px-4 text-sm text-neutral-800 placeholder-neutral-400 outline-none focus:border-[#FED018] focus:ring-2 focus:ring-[#FED018]/20 transition-all resize-none overflow-hidden"
             rows={3}
             autoFocus
           />
@@ -224,9 +224,9 @@ const ReplyComponent = ({
           <textarea
             ref={replyInputRef}
             value={replyText}
-            onChange={(e) => setReplyText(e.target.value)}
+            onChange={(e) => { setReplyText(e.target.value); e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px'; }}
             placeholder={`Reply to ${reply.author}...`}
-            className="w-full bg-neutral-50 border border-neutral-200 rounded-xl py-3 px-4 text-sm text-neutral-800 placeholder-neutral-400 outline-none focus:border-[#FED018] focus:ring-2 focus:ring-[#FED018]/20 transition-all resize-none"
+            className="w-full bg-neutral-50 border border-neutral-200 rounded-xl py-3 px-4 text-sm text-neutral-800 placeholder-neutral-400 outline-none focus:border-[#FED018] focus:ring-2 focus:ring-[#FED018]/20 transition-all resize-none overflow-hidden"
             rows={2}
           />
           <div className="flex gap-2 mt-2">
@@ -744,9 +744,9 @@ export function Modal({
             <div className="flex-1 relative">
               <textarea
                 value={replyText}
-                onChange={(e) => setReplyText(e.target.value)}
+                onChange={(e) => { setReplyText(e.target.value); e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px'; }}
                 placeholder="Join the conversation..."
-                className="w-full text-[16px] text-neutral-600 placeholder-neutral-300 outline-none resize-none min-h-[45px] font-normal pt-1.5"
+                className="w-full text-[16px] text-neutral-600 placeholder-neutral-300 outline-none resize-none overflow-hidden min-h-[45px] font-normal pt-1.5"
               />
               <div className="flex justify-end mt-4">
                 <button
