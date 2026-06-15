@@ -377,9 +377,12 @@ export function Modal({
       replyText.trim(),
       replyImage
     );
-    setReplyText('');
-    setReplyImage(undefined);
-    setErrorMessage('');
+    // Only clear if user is logged in — if not, auth modal opens and we want to preserve the text
+    if (currentUser) {
+      setReplyText('');
+      setReplyImage(undefined);
+      setErrorMessage('');
+    }
   };
 
   return (
