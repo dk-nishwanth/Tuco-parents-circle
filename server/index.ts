@@ -1493,7 +1493,7 @@ app.get('/robots.txt', (req, res) => {
 app.get('/sitemap.xml', async (req, res) => {
   try {
     const conversations = await prisma.conversation.findMany({
-      where: { moderationStatus: { in: ['APPROVED', 'approved'] } },
+      where: { moderationStatus: 'APPROVED' },
       select: { id: true, updatedAt: true, title: true },
       orderBy: { updatedAt: 'desc' },
       take: 1000,
@@ -1537,7 +1537,7 @@ app.get('/thread/:id', async (req, res, next) => {
       include: { replies: { take: 20, orderBy: { id: 'asc' } } },
     });
 
-    if (!thread || !['APPROVED', 'approved'].includes(thread.moderationStatus)) return next();
+    if (!thread || thread.moderationStatus !== 'APPROVED') return next();
 
     const title = thread.title || 'Discussion';
     const desc = (thread.text || '').replace(/<[^>]+>/g, '').slice(0, 200).trim();
@@ -1583,7 +1583,7 @@ app.get('/', async (req, res, next) => {
 
   try {
     const threads = await prisma.conversation.findMany({
-      where: { moderationStatus: { in: ['APPROVED', 'approved'] } },
+      where: { moderationStatus: 'APPROVED' },
       orderBy: { createdAt: 'desc' },
       take: 50,
       select: { id: true, title: true, text: true, category: true },
