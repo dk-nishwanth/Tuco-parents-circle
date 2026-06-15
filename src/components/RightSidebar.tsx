@@ -21,13 +21,21 @@ export function RightSidebar({
 
   const approvedConvs = conversations.filter(c => c.moderationStatus === 'approved');
 
+  const getTrendingScore = (c: Conversation) => {
+    const ageHours = c.createdAt
+      ? (Date.now() - new Date(c.createdAt).getTime()) / (1000 * 60 * 60)
+      : 999;
+    const recencyBoost = Math.max(0, 1 - ageHours / 168); // decays over 7 days
+    return (c.votes || 0) * 2 + (c.replies?.length || 0) * 3 + (c.views || 0) * 0.1 + recencyBoost * 20;
+  };
+
   const trendingThreads = [...approvedConvs]
-    .sort((a, b) => b.votes - a.votes)
-    .slice(0, 3);
+    .sort((a, b) => getTrendingScore(b) - getTrendingScore(a))
+    .slice(0, 5);
 
   const spotlightThreads = [...approvedConvs]
-    .filter(c => c.isFeatured || c.votes > 50)
-    .sort((a, b) => b.votes - a.votes)
+    .filter(c => c.isFeatured || (c.votes || 0) > 10 || (c.replies?.length || 0) > 5)
+    .sort((a, b) => getTrendingScore(b) - getTrendingScore(a))
     .slice(0, 2);
 
   const containerClasses = isCarousel
@@ -94,19 +102,26 @@ export function RightSidebar({
                 TRENDING NOW
               </h4>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-3">
               {trendingThreads.map((trend, idx) => (
                 <div
                   key={trend.id}
-                  className="flex items-start gap-3 cursor-pointer"
+                  className="flex items-start gap-3 cursor-pointer hover:bg-white/60 rounded-xl p-2 -mx-2 transition-colors"
                   onClick={() => onTrendingClick(trend.id)}
                 >
-                  <span className="font-display font-bold text-sm text-[#4D4747] leading-none pt-0.5">
+                  <span className={`font-display font-black text-sm leading-none pt-0.5 shrink-0 ${idx === 0 ? 'text-orange-500' : idx === 1 ? 'text-neutral-500' : 'text-neutral-400'}`}>
                     #{idx + 1}
                   </span>
-                  <p className="font-display font-bold text-[12px] text-[#4D4747] line-clamp-2 leading-snug">
-                    {trend.title}
-                  </p>
+                  <div className="flex flex-col gap-0.5 min-w-0">
+                    <p className="font-display font-bold text-[12px] text-[#4D4747] line-clamp-2 leading-snug">
+                      {trend.title}
+                    </p>
+                    <div className="flex items-center gap-2 text-[10px] text-neutral-400 font-medium">
+                      <span>▲ {trend.votes || 0}</span>
+                      <span>·</span>
+                      <span>💬 {trend.replies?.length || 0}</span>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
