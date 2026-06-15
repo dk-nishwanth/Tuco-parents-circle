@@ -8,7 +8,8 @@ const isProduction = import.meta.env.PROD;
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <BrowserRouter basename={isProduction ? '/community' : '/'}>
+    <BrowserRouter basename="/">
+
       <App />
     </BrowserRouter>
   </StrictMode>
