@@ -315,6 +315,7 @@ export function Modal({
   const [replyImage, setReplyImage] = useState<string | undefined>(undefined);
   const [errorMessage, setErrorMessage] = useState('');
   const [isSortOpen, setIsSortOpen] = useState(false);
+  const [replySort, setReplySort] = useState<'new' | 'top' | 'old'>('new');
   const [searchTerm, setSearchTerm] = useState(propsSearchTerm || '');
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotificationsDropdown, setShowNotificationsDropdown] = useState(false);
@@ -322,6 +323,20 @@ export function Modal({
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const categoryRef = useRef<HTMLDivElement>(null);
   
+  const replySortOptions = [
+    { key: 'new' as const, label: 'New (Default)', icon: '✨', desc: 'Most recent first' },
+    { key: 'top' as const, label: 'Top', icon: '🔥', desc: 'Most liked first' },
+    { key: 'old' as const, label: 'Oldest', icon: '🕐', desc: 'Oldest first' },
+  ];
+  const currentReplySort = replySortOptions.find(o => o.key === replySort)!;
+
+  const sortedReplies = [...(thread?.replies || [])].sort((a, b) => {
+    if (replySort === 'top') return (b.likes || 0) - (a.likes || 0);
+    if (replySort === 'old') return (a.id || 0) - (b.id || 0);
+    // new: most recent first by id
+    return (b.id || 0) - (a.id || 0);
+  }).filter(r => !searchTerm.trim() || r.text?.toLowerCase().includes(searchTerm.toLowerCase()) || r.author?.toLowerCase().includes(searchTerm.toLowerCase()));
+
   const unreadCount = notifications.filter(n => !n.read).length;
   const notificationsRef = useRef<HTMLDivElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
@@ -757,11 +772,31 @@ export function Modal({
           <div className="relative">
             <button
               onClick={() => setIsSortOpen(!isSortOpen)}
-              className="flex items-center gap-2 px-6 py-2.5 bg-white border border-neutral-200 rounded-full text-[14px] font-medium text-neutral-400 hover:border-neutral-300 transition-all"
+              className="flex items-center gap-2 px-4 py-2.5 bg-white border border-neutral-200 rounded-full text-[14px] font-medium text-neutral-600 hover:border-tuco-cyan hover:bg-neutral-50 transition-all"
             >
-              <span>New (Default)</span>
+              <span>{currentReplySort.icon}</span>
+              <span>{currentReplySort.label}</span>
               <ChevronDown className={`w-4 h-4 transition-transform ${isSortOpen ? 'rotate-180' : ''}`} />
             </button>
+            {isSortOpen && (
+              <div className="absolute left-0 mt-2 w-48 bg-white border border-neutral-200 rounded-2xl shadow-lg z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="py-1">
+                  {replySortOptions.map(opt => (
+                    <button
+                      key={opt.key}
+                      onClick={() => { setReplySort(opt.key); setIsSortOpen(false); }}
+                      className={`w-full text-left px-4 py-2.5 text-sm font-display font-bold flex items-center gap-2 transition-colors ${replySort === opt.key ? 'bg-tuco-cyan/5 text-tuco-cyan' : 'text-neutral-600 hover:bg-neutral-50'}`}
+                    >
+                      <span>{opt.icon}</span>
+                      <div>
+                        <div>{opt.label}</div>
+                        <div className="text-[10px] font-normal text-neutral-400">{opt.desc}</div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
           <div className="flex-1 relative">
             <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" strokeWidth={1.5} />
@@ -777,7 +812,10 @@ export function Modal({
 
         {/* Replies List */}
         <div className="space-y-6">
-          {thread.replies.map((reply) => (
+          {sortedReplies.length === 0 && searchTerm.trim() && (
+            <p className="text-center text-sm text-neutral-400 py-8">No replies match "{searchTerm}"</p>
+          )}
+          {sortedReplies.map((reply) => (
             <ReplyComponent
               key={reply.id}
               reply={reply}
