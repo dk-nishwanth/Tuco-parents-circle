@@ -18,7 +18,7 @@ export default defineConfig(({ mode }) => {
           manualChunks: {
             'react-vendor': ['react', 'react-dom', 'react-router-dom'],
             'ui-vendor': ['lucide-react'],
-            'utils': ['zod', 'date-fns'],
+            'utils': ['zod'],
           },
         },
       },
