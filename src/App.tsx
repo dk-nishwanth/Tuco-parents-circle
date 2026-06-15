@@ -988,24 +988,13 @@ function AppContent() {
       checkAndAwardBadges(updatedUser);
       setIsNewPostOpen(false);
       
-      if (isInCoolingPeriod) {
-        const hoursRemaining = Math.ceil((1 - accountAgeDays) * 24);
-        setWarningModal({
-          isOpen: true,
-          type: 'info',
-          title: 'Post Submitted for Review',
-          message: `Your post has been submitted and is awaiting moderator review. As a new member, your posts will be reviewed before going live. You'll be able to post freely in ${hoursRemaining} hours!`,
-        });
-      } else if (moderationStatus === 'pending') {
-        setPendingReview({
-          threadId: newThread.id,
-          title,
-          category,
-          submittedAt: new Date().toISOString(),
-        });
-      } else {
-        handleThreadOpen(newThread.id);
-      }
+      // All posts go to moderation — always show pending review message
+      setPendingReview({
+        threadId: newThread.id,
+        title,
+        category,
+        submittedAt: new Date().toISOString(),
+      });
     } catch (error) {
       console.error('Failed to create thread:', error);
       setWarningModal({
