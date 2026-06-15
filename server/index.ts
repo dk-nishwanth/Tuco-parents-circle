@@ -13,6 +13,7 @@ import { z } from 'zod';
 import { PrismaClient, UserRole } from '@prisma/client';
 import Anthropic from '@anthropic-ai/sdk';
 import { Resend } from 'resend';
+import { OAuth2Client } from 'google-auth-library';
 
 dotenv.config();
 
@@ -23,6 +24,11 @@ const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-in-production-pl
 
 const prisma = new PrismaClient();
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
+const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '';
+const FRONTEND_URL = process.env.FRONTEND_URL || 'https://community.tucokids.com';
+const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, `${FRONTEND_URL}/api/auth/google/callback`);
 
 // ------------------------------
 // STARTUP SEED
@@ -590,6 +596,54 @@ app.get('/api/auth/me', authenticate, async (req: AuthRequest, res, next) => {
     const user = await prisma.user.findUnique({ where: { id: req.userId } });
     if (!user) return res.status(404).json({ error: 'User not found' });
     res.status(200).json(formatUser(user));
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Google OAuth
+app.get('/api/auth/google', (req, res) => {
+  const url = googleClient.generateAuthUrl({
+    access_type: 'offline',
+    scope: ['email', 'profile'],
+    prompt: 'select_account',
+  });
+  res.redirect(url);
+});
+
+app.get('/api/auth/google/callback', async (req, res, next) => {
+  try {
+    const { code } = req.query as { code: string };
+    if (!code) return res.redirect(`${FRONTEND_URL}?auth_error=no_code`);
+
+    const { tokens } = await googleClient.getToken(code);
+    googleClient.setCredentials(tokens);
+
+    const ticket = await googleClient.verifyIdToken({ idToken: tokens.id_token!, audience: GOOGLE_CLIENT_ID });
+    const payload = ticket.getPayload();
+    if (!payload || !payload.email) return res.redirect(`${FRONTEND_URL}?auth_error=invalid_token`);
+
+    const { email, name, sub: googleId } = payload;
+
+    let user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      const baseUsername = (name || email.split('@')[0]).replace(/[^a-zA-Z0-9_\-. ]/g, '').slice(0, 28) || 'Parent';
+      const username = `${baseUsername}${Math.floor(Math.random() * 900 + 100)}`;
+      user = await prisma.user.create({
+        data: {
+          email,
+          passwordHash: await bcrypt.hash(googleId + JWT_SECRET, 10),
+          username,
+          isVerified: true,
+          trustScore: 50,
+          savedPosts: [],
+          role: 'MEMBER' as UserRole,
+        },
+      });
+    }
+
+    const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: '30d' });
+    res.redirect(`${FRONTEND_URL}?auth_token=${token}`);
   } catch (error) {
     next(error);
   }

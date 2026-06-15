@@ -133,6 +133,16 @@ function AppContent() {
     };
   }, [isModalOpen, isNewPostOpen, isAuthOpen, isModerationOpen, isAdminOpen, isReportOpen, isProfileOpen, isMobileLeftSidebarOpen, isRightSidebarOpen]);
   useEffect(() => {
+    // Handle Google OAuth redirect token
+    const params = new URLSearchParams(window.location.search);
+    const googleToken = params.get('auth_token');
+    if (googleToken) {
+      tokenStore.set(googleToken);
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, []);
+
+  useEffect(() => {
     async function initData() {
       try {
         // Check if user has an existing session
