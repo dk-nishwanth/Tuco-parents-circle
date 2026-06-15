@@ -1494,8 +1494,8 @@ app.get('/sitemap.xml', async (req, res) => {
   try {
     const conversations = await prisma.conversation.findMany({
       where: { moderationStatus: 'APPROVED' },
-      select: { id: true, updatedAt: true, title: true },
-      orderBy: { updatedAt: 'desc' },
+      select: { id: true, title: true },
+      orderBy: { id: 'desc' },
       take: 1000,
     });
 
@@ -1503,8 +1503,7 @@ app.get('/sitemap.xml', async (req, res) => {
     const urls = [
       `<url><loc>${base}/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>`,
       ...conversations.map(c => {
-        const date = c.updatedAt ? c.updatedAt.toISOString().split('T')[0] : '';
-        return `<url><loc>${base}/thread/${c.id}</loc><lastmod>${date}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>`;
+        return `<url><loc>${base}/thread/${c.id}</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>`;
       }),
     ];
 
@@ -1514,6 +1513,7 @@ app.get('/sitemap.xml', async (req, res) => {
       `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join('\n')}\n</urlset>`
     );
   } catch (err) {
+    console.error('Sitemap error:', err);
     res.status(500).send('<?xml version="1.0"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>');
   }
 });
