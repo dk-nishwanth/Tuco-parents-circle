@@ -20,7 +20,11 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3002;
 const NODE_ENV = process.env.NODE_ENV || 'development';
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-in-production-please';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  console.error('FATAL: JWT_SECRET environment variable is not set');
+  process.exit(1);
+}
 
 const prisma = new PrismaClient();
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
@@ -484,6 +488,7 @@ app.get('/api/health', (req, res) => {
 
 // In-memory store for password reset tokens (token -> { userId, expiry })
 const passwordResetTokens = new Map<string, { userId: string; expiry: number }>();
+const oauthCodes = new Map<string, { token: string; expiresAt: number }>();
 
 const signupSchema = z.object({
   email: z.string().email(),
@@ -660,6 +665,18 @@ app.post('/api/auth/reset-password', authLimiter, async (req, res, next) => {
   }
 });
 
+// Exchange one-time OAuth code for JWT
+app.post('/api/auth/oauth-token', authLimiter, (req, res) => {
+  const { code } = req.body;
+  if (!code || typeof code !== 'string') return res.status(400).json({ error: 'Missing code' });
+  const record = oauthCodes.get(code);
+  oauthCodes.delete(code);
+  if (!record || Date.now() > record.expiresAt) {
+    return res.status(400).json({ error: 'Invalid or expired code' });
+  }
+  res.status(200).json({ token: record.token });
+});
+
 // Google OAuth
 app.get('/api/auth/google', (req, res) => {
   const url = googleClient.generateAuthUrl({
@@ -702,8 +719,11 @@ app.get('/api/auth/google/callback', async (req, res, next) => {
       });
     }
 
-    const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: '30d' });
-    res.redirect(`${FRONTEND_URL}?auth_token=${token}`);
+    const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET as string, { expiresIn: '30d' });
+    // Exchange code pattern: store token server-side, redirect with a one-time code
+    const oauthCode = crypto.randomBytes(16).toString('hex');
+    oauthCodes.set(oauthCode, { token, expiresAt: Date.now() + 5 * 60 * 1000 });
+    res.redirect(`${FRONTEND_URL}?oauth_code=${oauthCode}`);
   } catch (error) {
     next(error);
   }
@@ -835,14 +855,14 @@ app.patch('/api/conversations/:id', optionalAuth, async (req: AuthRequest, res, 
 
     const isMod = req.userRole === 'MODERATOR' || req.userRole === 'TUCO_TEAM';
 
-    // Check moderation fields require mod role
-    if ((moderationStatus || isPinned !== undefined || isFeatured !== undefined) && !isMod) {
+    // Mod-only fields
+    if ((moderationStatus || isPinned !== undefined || isFeatured !== undefined || featuredLabel !== undefined || votes !== undefined) && !isMod) {
       return res.status(403).json({ error: 'Moderator access required' });
     }
 
     const updateData: any = {};
-    if (votes !== undefined && isMod) updateData.votes = votes; // only mods can set raw vote count
-    if (views !== undefined) updateData.views = views;
+    if (votes !== undefined && isMod) updateData.votes = votes;
+    if (views !== undefined && isMod) updateData.views = views; // view counting is server-side only
     if (isPinned !== undefined) updateData.isPinned = isPinned;
     if (isFeatured !== undefined) updateData.isFeatured = isFeatured;
     if (featuredLabel !== undefined) updateData.featuredLabel = featuredLabel;
@@ -1281,7 +1301,7 @@ app.post('/api/notifications', authenticate, async (req: AuthRequest, res, next)
 app.patch('/api/notifications/:id/read', authenticate, async (req: AuthRequest, res, next) => {
   try {
     const id = parseInt(req.params.id);
-    await prisma.notification.update({ where: { id }, data: { read: true } });
+    await prisma.notification.updateMany({ where: { id, userId: req.userId }, data: { read: true } });
     res.status(200).json({ success: true });
   } catch (error) {
     next(error);
@@ -1303,7 +1323,7 @@ app.delete('/api/notifications', authenticate, async (req: AuthRequest, res, nex
 
 app.patch('/api/users/me', authenticate, async (req: AuthRequest, res, next) => {
   try {
-    const { username, city, childAge, emailNotifications, savedPosts, badges, role, trustScore, postCount, replyCount, totalUpvotes } = req.body;
+    const { username, city, childAge, emailNotifications, savedPosts, role } = req.body;
 
     const updateData: any = {};
     if (username) updateData.username = username;
@@ -1311,11 +1331,7 @@ app.patch('/api/users/me', authenticate, async (req: AuthRequest, res, next) => 
     if (childAge !== undefined) updateData.childAge = childAge;
     if (emailNotifications !== undefined) updateData.emailNotifications = emailNotifications;
     if (savedPosts !== undefined) updateData.savedPosts = savedPosts;
-    if (badges !== undefined) updateData.badges = badges;
-    if (trustScore !== undefined) updateData.trustScore = Math.round(trustScore * 100);
-    if (postCount !== undefined) updateData.postCount = postCount;
-    if (replyCount !== undefined) updateData.replyCount = replyCount;
-    if (totalUpvotes !== undefined) updateData.totalUpvotes = totalUpvotes;
+    // trustScore, badges, postCount, replyCount, totalUpvotes are server-managed only
 
     // Only mods can change roles
     if (role && (req.userRole === 'MODERATOR' || req.userRole === 'TUCO_TEAM')) {
@@ -1518,6 +1534,11 @@ app.get('/sitemap.xml', async (req, res) => {
   }
 });
 
+// ── HTML entity encoder for SSR templates ──────────────────────────────────
+function esc(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 // ── SEO: bot-detection helper ───────────────────────────────────────────────
 function isBot(ua: string): boolean {
   return /googlebot|bingbot|slurp|duckduckbot|baiduspider|yandexbot|sogou|exabot|facebot|ia_archiver|linkedinbot|twitterbot|whatsapp|telegrambot|discordbot|rogerbot|semrushbot|ahrefsbot|mj12bot|dotbot/i.test(ua);
@@ -1539,10 +1560,10 @@ app.get('/thread/:id', async (req, res, next) => {
 
     if (!thread || thread.moderationStatus !== 'APPROVED') return next();
 
-    const title = thread.title || 'Discussion';
-    const desc = (thread.opText || '').replace(/<[^>]+>/g, '').slice(0, 200).trim();
+    const title = esc(thread.title || 'Discussion');
+    const desc = esc((thread.opText || '').replace(/<[^>]+>/g, '').slice(0, 200).trim());
     const repliesHtml = thread.replies
-      .map(r => `<div class="reply"><p>${(r.text || '').replace(/<[^>]+>/g, '').slice(0, 500)}</p></div>`)
+      .map(r => `<div class="reply"><p>${esc((r.text || '').replace(/<[^>]+>/g, '').slice(0, 500))}</p></div>`)
       .join('\n');
 
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
@@ -1590,7 +1611,7 @@ app.get('/', async (req, res, next) => {
     });
 
     const linksHtml = threads
-      .map(t => `<li><a href="${FRONTEND_URL}/thread/${t.id}">${t.title || 'Discussion'}</a></li>`)
+      .map(t => `<li><a href="${FRONTEND_URL}/thread/${t.id}">${esc(t.title || 'Discussion')}</a></li>`)
       .join('\n');
 
     res.setHeader('Content-Type', 'text/html; charset=utf-8');

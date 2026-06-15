@@ -136,11 +136,18 @@ function AppContent() {
   useEffect(() => {
     // Handle Google OAuth redirect token and password reset token
     const params = new URLSearchParams(window.location.search);
-    const googleToken = params.get('auth_token');
+    const oauthCode = params.get('oauth_code');
     const resetToken = params.get('reset_token');
-    if (googleToken) {
-      tokenStore.set(googleToken);
+    if (oauthCode) {
       window.history.replaceState({}, '', window.location.pathname);
+      fetch('/api/auth/oauth-token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: oauthCode }),
+      })
+        .then(r => r.json())
+        .then(data => { if (data.token) tokenStore.set(data.token); })
+        .catch(() => {});
     }
     if (resetToken) {
       setAuthResetToken(resetToken);
