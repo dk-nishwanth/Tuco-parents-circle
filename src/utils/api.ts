@@ -211,6 +211,15 @@ export const api = {
     await handleResponse<any>(res);
   },
 
+  async createNotification(type: string, title: string, description?: string): Promise<void> {
+    const res = await fetch(`${API_BASE_URL}/notifications`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ type, title, description }),
+    });
+    await handleResponse<any>(res);
+  },
+
   async clearNotifications(): Promise<void> {
     const res = await fetch(`${API_BASE_URL}/notifications`, {
       method: 'DELETE',

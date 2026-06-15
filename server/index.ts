@@ -236,6 +236,8 @@ startup();
 // MIDDLEWARE
 // ------------------------------
 
+app.set('trust proxy', 1); // trust nginx reverse proxy for correct client IPs in rate limiting
+
 app.use(helmet({
   contentSecurityPolicy: NODE_ENV === 'production' ? undefined : false,
 }));
@@ -478,6 +480,9 @@ app.get('/api/health', (req, res) => {
 // AUTH ENDPOINTS
 // ------------------------------
 
+// In-memory store for password reset tokens (token -> { userId, expiry })
+const passwordResetTokens = new Map<string, { userId: string; expiry: number }>();
+
 const signupSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
@@ -596,6 +601,58 @@ app.get('/api/auth/me', authenticate, async (req: AuthRequest, res, next) => {
     const user = await prisma.user.findUnique({ where: { id: req.userId } });
     if (!user) return res.status(404).json({ error: 'User not found' });
     res.status(200).json(formatUser(user));
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Forgot password — send reset email
+app.post('/api/auth/forgot-password', authLimiter, async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email is required' });
+
+    const user = await prisma.user.findUnique({ where: { email } });
+    // Always return success to prevent email enumeration
+    if (!user) return res.status(200).json({ message: 'If that email exists, a reset link has been sent.' });
+
+    const token = crypto.randomBytes(32).toString('hex');
+    passwordResetTokens.set(token, { userId: user.id, expiry: Date.now() + 60 * 60 * 1000 }); // 1 hour
+
+    const resetUrl = `${FRONTEND_URL}?reset_token=${token}`;
+    await sendEmail(
+      user.email,
+      'Reset your tuco Parents Circle password',
+      `<h2>Hi ${user.username},</h2>
+       <p>You requested a password reset. Click the link below to set a new password. This link expires in 1 hour.</p>
+       <p><a href="${resetUrl}" style="background:#35B5EC;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;">Reset Password</a></p>
+       <p>If you didn't request this, you can safely ignore this email.</p>`
+    );
+
+    res.status(200).json({ message: 'If that email exists, a reset link has been sent.' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Reset password — verify token and set new password
+app.post('/api/auth/reset-password', authLimiter, async (req, res, next) => {
+  try {
+    const { token, password } = req.body;
+    if (!token || !password) return res.status(400).json({ error: 'Token and password are required' });
+    if (password.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
+
+    const record = passwordResetTokens.get(token);
+    if (!record || Date.now() > record.expiry) {
+      passwordResetTokens.delete(token);
+      return res.status(400).json({ error: 'Reset link is invalid or has expired' });
+    }
+
+    const passwordHash = await bcrypt.hash(password, 12);
+    await prisma.user.update({ where: { id: record.userId }, data: { passwordHash } });
+    passwordResetTokens.delete(token);
+
+    res.status(200).json({ message: 'Password reset successfully. You can now log in.' });
   } catch (error) {
     next(error);
   }
@@ -1194,6 +1251,26 @@ app.get('/api/notifications', authenticate, async (req: AuthRequest, res, next) 
       read: n.read,
       threadId: n.threadId,
     })));
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post('/api/notifications', authenticate, async (req: AuthRequest, res, next) => {
+  try {
+    const { type, title, description } = req.body;
+    if (!type || !title) return res.status(400).json({ error: 'type and title are required' });
+    const notification = await prisma.notification.create({
+      data: {
+        userId: req.userId!,
+        type: type.toUpperCase(),
+        title,
+        description: description || '',
+        time: 'Just now',
+        read: false,
+      },
+    });
+    res.status(201).json({ id: notification.id });
   } catch (error) {
     next(error);
   }

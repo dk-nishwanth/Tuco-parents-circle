@@ -5,18 +5,66 @@ interface AuthModalProps {
   onClose: () => void;
   onSignup: (email: string, username: string, city: string, childAge: string, password: string) => void;
   onLogin: (email: string, password: string) => void;
+  initialMode?: 'login' | 'signup' | 'forgot' | 'reset';
+  initialResetToken?: string;
 }
-export function AuthModal({ isOpen, onClose, onSignup, onLogin }: AuthModalProps) {
-  const [mode, setMode] = useState<'login' | 'signup'>('login');
+export function AuthModal({ isOpen, onClose, onSignup, onLogin, initialMode, initialResetToken }: AuthModalProps) {
+  const [mode, setMode] = useState<'login' | 'signup' | 'forgot' | 'reset'>(initialMode || 'login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
   const [city, setCity] = useState('');
   const [childAge, setChildAge] = useState('');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [resetToken, setResetToken] = useState(initialResetToken || '');
+  const [newPassword, setNewPassword] = useState('');
   if (!isOpen) return null;
+
+  const handleForgotSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    setLoading(true);
+    try {
+      const res = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Something went wrong');
+      setSuccess(data.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to send reset email');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResetSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    setLoading(true);
+    try {
+      const res = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: resetToken, password: newPassword }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Something went wrong');
+      setSuccess(data.message + ' Redirecting to login...');
+      setTimeout(() => { setMode('login'); setSuccess(''); setResetToken(''); setNewPassword(''); }, 2000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to reset password');
+    } finally {
+      setLoading(false);
+    }
+  };
   const handleSignupSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -71,7 +119,7 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin }: AuthModalProps
         {}
         <div className="bg-gradient-to-r from-tuco-cyan/10 to-orange-50 px-6 py-5 border-b border-neutral-200 flex items-center justify-between">
           <h2 className="font-display font-black text-lg text-neutral-800">
-            {mode === 'login' ? '🔓 Sign In' : '✨ Join the Circle'}
+            {mode === 'login' ? '🔓 Sign In' : mode === 'signup' ? '✨ Join the Circle' : mode === 'forgot' ? '🔑 Reset Password' : '🔑 Set New Password'}
           </h2>
           <button
             onClick={onClose}
@@ -83,39 +131,37 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin }: AuthModalProps
         {}
         <div className="p-6">
           {}
-          <div className="flex gap-2 mb-6">
-            <button
-              onClick={() => {
-                setMode('login');
-                setError('');
-              }}
-              className={`flex-1 py-2 rounded-lg font-display font-bold text-sm transition-all ${
-                mode === 'login'
-                  ? 'bg-tuco-cyan text-white'
-                  : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
-              }`}
-            >
-              Sign In
-            </button>
-            <button
-              onClick={() => {
-                setMode('signup');
-                setError('');
-              }}
-              className={`flex-1 py-2 rounded-lg font-display font-bold text-sm transition-all ${
-                mode === 'signup'
-                  ? 'bg-tuco-cyan text-white'
-                  : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
-              }`}
-            >
-              Sign Up
-            </button>
-          </div>
+          {(mode === 'login' || mode === 'signup') && (
+            <div className="flex gap-2 mb-6">
+              <button
+                onClick={() => { setMode('login'); setError(''); setSuccess(''); }}
+                className={`flex-1 py-2 rounded-lg font-display font-bold text-sm transition-all ${
+                  mode === 'login' ? 'bg-tuco-cyan text-white' : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
+                }`}
+              >
+                Sign In
+              </button>
+              <button
+                onClick={() => { setMode('signup'); setError(''); setSuccess(''); }}
+                className={`flex-1 py-2 rounded-lg font-display font-bold text-sm transition-all ${
+                  mode === 'signup' ? 'bg-tuco-cyan text-white' : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
+                }`}
+              >
+                Sign Up
+              </button>
+            </div>
+          )}
           {}
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
               <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" strokeWidth={1.5} />
               <p className="text-sm text-red-600 font-medium">{error}</p>
+            </div>
+          )}
+          {success && (
+            <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg flex items-start gap-2">
+              <CheckCircle className="w-4 h-4 text-green-600 shrink-0 mt-0.5" strokeWidth={1.5} />
+              <p className="text-sm text-green-600 font-medium">{success}</p>
             </div>
           )}
           {}
@@ -158,6 +204,90 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin }: AuthModalProps
                 className="w-full py-2.5 bg-tuco-cyan hover:bg-tuco-cyan-hover text-white font-display font-black text-sm rounded-lg transition-colors disabled:opacity-50"
               >
                 {loading ? 'Signing in...' : 'Sign In'}
+              </button>
+              <button
+                type="button"
+                onClick={() => { setMode('forgot'); setError(''); setSuccess(''); }}
+                className="w-full text-center text-xs text-tuco-cyan hover:underline mt-1"
+              >
+                Forgot password?
+              </button>
+            </form>
+          )}
+          {mode === 'forgot' && (
+            <form onSubmit={handleForgotSubmit} className="space-y-4">
+              <p className="text-sm text-neutral-600">Enter your email and we'll send you a reset link.</p>
+              <div>
+                <label className="block text-xs font-bold text-neutral-700 mb-1.5">Email Address</label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-3 w-4 h-4 text-neutral-400" strokeWidth={1.5} />
+                  <input
+                    type="email"
+                    placeholder="your@email.com"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2.5 border border-neutral-200 rounded-lg outline-none text-sm focus:border-tuco-cyan focus:ring-2 focus:ring-tuco-cyan/10"
+                  />
+                </div>
+              </div>
+              <button
+                type="submit"
+                disabled={loading || !!success}
+                className="w-full py-2.5 bg-tuco-cyan hover:bg-tuco-cyan-hover text-white font-display font-black text-sm rounded-lg transition-colors disabled:opacity-50"
+              >
+                {loading ? 'Sending...' : 'Send Reset Link'}
+              </button>
+              <button
+                type="button"
+                onClick={() => { setMode('login'); setError(''); setSuccess(''); }}
+                className="w-full text-center text-xs text-neutral-500 hover:text-neutral-700"
+              >
+                ← Back to Sign In
+              </button>
+            </form>
+          )}
+          {mode === 'reset' && (
+            <form onSubmit={handleResetSubmit} className="space-y-4">
+              <p className="text-sm text-neutral-600">Enter the token from your email and your new password.</p>
+              <div>
+                <label className="block text-xs font-bold text-neutral-700 mb-1.5">Reset Token</label>
+                <input
+                  type="text"
+                  placeholder="Paste token from email"
+                  value={resetToken}
+                  onChange={e => setResetToken(e.target.value)}
+                  className="w-full px-4 py-2.5 border border-neutral-200 rounded-lg outline-none text-sm focus:border-tuco-cyan focus:ring-2 focus:ring-tuco-cyan/10"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-neutral-700 mb-1.5">New Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-3 w-4 h-4 text-neutral-400" strokeWidth={1.5} />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="At least 6 characters"
+                    value={newPassword}
+                    onChange={e => setNewPassword(e.target.value)}
+                    className="w-full pl-10 pr-10 py-2.5 border border-neutral-200 rounded-lg outline-none text-sm focus:border-tuco-cyan focus:ring-2 focus:ring-tuco-cyan/10"
+                  />
+                  <button type="button" onClick={() => setShowPassword(p => !p)} className="absolute right-3 top-3 text-neutral-400 hover:text-neutral-600">
+                    {showPassword ? <EyeOff className="w-4 h-4" strokeWidth={1.5} /> : <Eye className="w-4 h-4" strokeWidth={1.5} />}
+                  </button>
+                </div>
+              </div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-2.5 bg-tuco-cyan hover:bg-tuco-cyan-hover text-white font-display font-black text-sm rounded-lg transition-colors disabled:opacity-50"
+              >
+                {loading ? 'Resetting...' : 'Set New Password'}
+              </button>
+              <button
+                type="button"
+                onClick={() => { setMode('login'); setError(''); setSuccess(''); }}
+                className="w-full text-center text-xs text-neutral-500 hover:text-neutral-700"
+              >
+                ← Back to Sign In
               </button>
             </form>
           )}
@@ -264,7 +394,7 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin }: AuthModalProps
               </p>
             </form>
           )}
-          <div className="mt-4 pt-4 border-t border-neutral-100">
+          {(mode === 'login' || mode === 'signup') && <div className="mt-4 pt-4 border-t border-neutral-100">
             <a
               href="/api/auth/google"
               className="flex items-center justify-center gap-3 w-full py-2.5 border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors text-sm font-semibold text-neutral-700"
@@ -277,15 +407,14 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin }: AuthModalProps
               </svg>
               Continue with Google
             </a>
-          </div>
+          </div>}
 
-          {}
-          <p className="text-xs text-neutral-500 text-center mt-6 pt-6 border-t border-neutral-150">
+          {(mode === 'login' || mode === 'signup') && <p className="text-xs text-neutral-500 text-center mt-6 pt-6 border-t border-neutral-150">
             By signing up, you agree to our{' '}
             <a href="#" className="text-tuco-cyan font-bold hover:underline">
               Community Guidelines
             </a>
-          </p>
+          </p>}
         </div>
       </div>
     </div>

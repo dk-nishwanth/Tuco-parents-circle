@@ -90,6 +90,8 @@ function AppContent() {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isNewPostOpen, setIsNewPostOpen] = useState<boolean>(false);
   const [isAuthOpen, setIsAuthOpen] = useState<boolean>(false);
+  const [authInitialMode, setAuthInitialMode] = useState<'login' | 'signup' | 'forgot' | 'reset'>('login');
+  const [authResetToken, setAuthResetToken] = useState<string>('');
   const [isModerationOpen, setIsModerationOpen] = useState<boolean>(false);
   const [isAdminOpen, setIsAdminOpen] = useState<boolean>(false);
   const [isReportOpen, setIsReportOpen] = useState<boolean>(false);
@@ -133,11 +135,18 @@ function AppContent() {
     };
   }, [isModalOpen, isNewPostOpen, isAuthOpen, isModerationOpen, isAdminOpen, isReportOpen, isProfileOpen, isMobileLeftSidebarOpen, isRightSidebarOpen]);
   useEffect(() => {
-    // Handle Google OAuth redirect token
+    // Handle Google OAuth redirect token and password reset token
     const params = new URLSearchParams(window.location.search);
     const googleToken = params.get('auth_token');
+    const resetToken = params.get('reset_token');
     if (googleToken) {
       tokenStore.set(googleToken);
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+    if (resetToken) {
+      setAuthResetToken(resetToken);
+      setAuthInitialMode('reset');
+      setIsAuthOpen(true);
       window.history.replaceState({}, '', window.location.pathname);
     }
   }, []);
@@ -387,7 +396,7 @@ function AppContent() {
       api.logout();
     }
   };
-  const checkAndAwardBadges = (user: User) => {
+  const checkAndAwardBadges = async (user: User) => {
     const eligibleBadges = checkEligibleBadges(user);
     if (eligibleBadges.length > 0) {
       const newBadges = eligibleBadges.map(badgeType => ({
@@ -398,16 +407,20 @@ function AppContent() {
       }));
       const updatedUser = { ...user, badges: [...user.badges, ...newBadges] };
       saveUser(updatedUser);
-      
-      const newNotifications: Notification[] = eligibleBadges.map((badgeType, idx) => ({
-        id: Date.now() + idx,
-        type: 'badge',
-        title: 'Badge Earned!',
-        description: `Congratulations! You've earned the ${BADGE_DISPLAY[badgeType].name} badge.`,
-        time: 'Just now',
-        read: false,
-      }));
-      saveNotifications([...newNotifications, ...notifications]);
+
+      // Persist badges to DB and create real notifications
+      try {
+        await api.updateMe({ badges: updatedUser.badges } as any);
+        for (const badgeType of eligibleBadges) {
+          await api.createNotification(
+            'badge',
+            'Badge Earned!',
+            `Congratulations! You've earned the ${BADGE_DISPLAY[badgeType].name} badge.`
+          );
+        }
+      } catch {
+        // badge persist failed silently — local state already updated
+      }
 
       const badgeNames = eligibleBadges
         .map(b => `${BADGE_DISPLAY[b].icon} ${BADGE_DISPLAY[b].name}`)
@@ -1348,6 +1361,8 @@ function AppContent() {
         onClose={() => setIsAuthOpen(false)}
         onSignup={handleSignup}
         onLogin={handleLogin}
+        initialMode={authInitialMode}
+        initialResetToken={authResetToken}
       />
       {currentUser && (
         <ProfileModal
