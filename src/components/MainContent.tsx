@@ -239,8 +239,8 @@ export function MainContent({
               onClick={() => setIsSortOpen(!isSortOpen)}
               className="flex items-center gap-1 px-3 py-1.5 bg-white border border-neutral-300 rounded-full text-[14px] font-display font-bold text-[#4D4747] shadow-sm hover:bg-neutral-50 transition-colors"
             >
-              <span className="text-lg">✨</span>
-              <span>new</span>
+              <span className="text-lg">{currentSort.icon}</span>
+              <span>{currentSort.label.toLowerCase()}</span>
               <ChevronDown className={`w-3.5 h-3.5 text-neutral-600 transition-transform ${isSortOpen ? 'rotate-180' : ''}`} strokeWidth={2} />
             </button>
 
@@ -286,7 +286,7 @@ export function MainContent({
                 onClick={() => setIsSortOpen(!isSortOpen)}
                 className="flex items-center gap-2 px-4 py-2 bg-white border border-neutral-200 rounded-full text-sm font-display font-bold text-[#4D4747] hover:border-tuco-cyan hover:bg-neutral-50 transition-all shadow-xs"
               >
-                <span>✨ <span className="text-neutral-400 font-medium">New</span></span>
+                <span>{currentSort.icon} <span className="text-neutral-400 font-medium">{currentSort.label}</span></span>
                 <ChevronDown className={`w-4 h-4 transition-transform ${isSortOpen ? 'rotate-180' : ''}`} strokeWidth={1.5} />
               </button>
 

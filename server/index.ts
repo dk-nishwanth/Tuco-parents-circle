@@ -710,7 +710,13 @@ app.post('/api/conversations', authenticate, async (req: AuthRequest, res, next)
     const isInCoolingPeriod = !isMod && accountAgeMs < 24 * 60 * 60 * 1000;
 
     const { title, category, city, text, image, greyAreaFlags, reviewPriority } = parsed.data;
-    const status = isMod ? (parsed.data.moderationStatus?.toUpperCase() as any) || 'PENDING' : 'PENDING';
+    const requestedStatus = parsed.data.moderationStatus?.toUpperCase();
+    // Allow frontend to mark as REJECTED for clear violations; mods can set any status
+    const status = isMod
+      ? (requestedStatus as any) || 'PENDING'
+      : requestedStatus === 'REJECTED'
+        ? 'REJECTED'
+        : 'PENDING';
 
     console.log('💾 Creating conversation in database...');
     const conversation = await prisma.conversation.create({
