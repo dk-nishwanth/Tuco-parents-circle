@@ -1479,6 +1479,139 @@ app.get('/apps/community', verifyShopifyProxy, (req, res) => {
 // FRONTEND FALLBACK
 // ------------------------------
 
+// ── SEO: robots.txt ────────────────────────────────────────────────────────
+app.get('/robots.txt', (req, res) => {
+  res.type('text/plain');
+  res.send(
+    `User-agent: *\nAllow: /\nSitemap: ${FRONTEND_URL}/sitemap.xml\n`
+  );
+});
+
+// ── SEO: dynamic sitemap from approved conversations ────────────────────────
+app.get('/sitemap.xml', async (req, res) => {
+  try {
+    const conversations = await prisma.conversation.findMany({
+      where: { moderationStatus: 'APPROVED' },
+      select: { id: true, updatedAt: true, title: true },
+      orderBy: { updatedAt: 'desc' },
+      take: 1000,
+    });
+
+    const base = FRONTEND_URL;
+    const urls = [
+      `<url><loc>${base}/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>`,
+      ...conversations.map(c => {
+        const date = c.updatedAt ? c.updatedAt.toISOString().split('T')[0] : '';
+        return `<url><loc>${base}/thread/${c.id}</loc><lastmod>${date}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>`;
+      }),
+    ];
+
+    res.header('Content-Type', 'application/xml');
+    res.header('Cache-Control', 'public, max-age=3600');
+    res.send(
+      `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join('\n')}\n</urlset>`
+    );
+  } catch (err) {
+    res.status(500).send('<?xml version="1.0"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>');
+  }
+});
+
+// ── SEO: bot-detection helper ───────────────────────────────────────────────
+function isBot(ua: string): boolean {
+  return /googlebot|bingbot|slurp|duckduckbot|baiduspider|yandexbot|sogou|exabot|facebot|ia_archiver|linkedinbot|twitterbot|whatsapp|telegrambot|discordbot|rogerbot|semrushbot|ahrefsbot|mj12bot|dotbot/i.test(ua);
+}
+
+// ── SEO: SSR-lite for crawlers on thread pages ──────────────────────────────
+app.get('/thread/:id', async (req, res, next) => {
+  const ua = req.headers['user-agent'] || '';
+  if (!isBot(ua)) return next();
+
+  try {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) return next();
+
+    const thread = await prisma.conversation.findUnique({
+      where: { id },
+      include: { replies: { take: 20, orderBy: { id: 'asc' } } },
+    });
+
+    if (!thread || thread.moderationStatus !== 'APPROVED') return next();
+
+    const title = thread.title || 'Discussion';
+    const desc = (thread.text || '').replace(/<[^>]+>/g, '').slice(0, 200).trim();
+    const repliesHtml = thread.replies
+      .map(r => `<div class="reply"><p>${(r.text || '').replace(/<[^>]+>/g, '').slice(0, 500)}</p></div>`)
+      .join('\n');
+
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    res.send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>${title} — tuco Parents Circle</title>
+  <meta name="description" content="${desc}"/>
+  <meta property="og:title" content="${title} — tuco Parents Circle"/>
+  <meta property="og:description" content="${desc}"/>
+  <meta property="og:url" content="${FRONTEND_URL}/thread/${id}"/>
+  <meta property="og:site_name" content="tuco Parents Circle"/>
+  <link rel="canonical" href="${FRONTEND_URL}/thread/${id}"/>
+</head>
+<body>
+  <header><a href="${FRONTEND_URL}">tuco Parents Circle</a></header>
+  <main>
+    <h1>${title}</h1>
+    <p>${desc}</p>
+    <section aria-label="Replies">${repliesHtml}</section>
+  </main>
+</body>
+</html>`);
+  } catch {
+    next();
+  }
+});
+
+// ── SEO: SSR-lite for bots on homepage ─────────────────────────────────────
+app.get('/', async (req, res, next) => {
+  const ua = req.headers['user-agent'] || '';
+  if (!isBot(ua)) {
+    return res.redirect('/community');
+  }
+
+  try {
+    const threads = await prisma.conversation.findMany({
+      where: { moderationStatus: 'APPROVED' },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+      select: { id: true, title: true, text: true, category: true },
+    });
+
+    const linksHtml = threads
+      .map(t => `<li><a href="${FRONTEND_URL}/thread/${t.id}">${t.title || 'Discussion'}</a></li>`)
+      .join('\n');
+
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=1800');
+    res.send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>tuco Parents Circle — Parenting Community for Indian Parents</title>
+  <meta name="description" content="A safe, anonymous community for Indian parents to discuss skincare, school, kids health, parenting hacks and more."/>
+  <link rel="canonical" href="${FRONTEND_URL}/"/>
+</head>
+<body>
+  <h1>tuco Parents Circle</h1>
+  <p>A safe, anonymous community for Indian parents.</p>
+  <ul>${linksHtml}</ul>
+</body>
+</html>`);
+  } catch {
+    res.redirect('/community');
+  }
+});
+
 // Mount the static files at /community
 app.use('/community', express.static(distPath));
 
@@ -1487,17 +1620,11 @@ app.get('/community/*', (req, res) => {
   res.sendFile(path.join(distPath, 'index.html'));
 });
 
-// Also handle root redirect if needed
-app.get('/', (req, res) => {
-  res.redirect('/community');
-});
-
 // 404 for API/app paths
 app.get('*', (req, res) => {
   if (req.path.startsWith('/api') || req.path.startsWith('/apps')) {
     return res.status(404).json({ error: 'Not found' });
   }
-  // If someone accesses root, redirect to community
   res.redirect('/community');
 });
 
