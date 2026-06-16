@@ -1693,7 +1693,8 @@ app.get('/thread/:id', async (req, res, next) => {
 app.get('/', async (req, res, next) => {
   const ua = req.headers['user-agent'] || '';
   if (!isBot(ua)) {
-    return res.redirect('/community');
+    const qs = req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : '';
+    return res.redirect(`/community${qs}`);
   }
 
   try {
