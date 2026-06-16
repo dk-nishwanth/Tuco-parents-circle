@@ -1520,6 +1520,132 @@ app.get('/apps/community', verifyShopifyProxy, (req, res) => {
 });
 
 // ------------------------------
+// ADMIN API
+// ------------------------------
+
+function requireAdmin(req: AuthRequest, res: any, next: any) {
+  if (req.userRole !== 'TUCO_TEAM' && req.userRole !== 'MODERATOR') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  next();
+}
+
+// Stats dashboard
+app.get('/api/admin/stats', authenticate, requireAdmin, async (req, res, next) => {
+  try {
+    const [users, conversations, replies, pending, votes, notifications] = await Promise.all([
+      prisma.user.count(),
+      prisma.conversation.count(),
+      prisma.reply.count(),
+      prisma.conversation.count({ where: { moderationStatus: 'PENDING' } }),
+      prisma.vote.count(),
+      prisma.notification.count(),
+    ]);
+    const recentUsers = await prisma.user.count({
+      where: { createdAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } },
+    });
+    res.json({ users, conversations, replies, pending, votes, notifications, recentUsers });
+  } catch (error) { next(error); }
+});
+
+// All users (admin view)
+app.get('/api/admin/users', authenticate, requireAdmin, async (req, res, next) => {
+  try {
+    const users = await prisma.user.findMany({
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true, username: true, email: true, city: true, role: true,
+        createdAt: true, isVerified: true, postCount: true, replyCount: true,
+        totalUpvotes: true, trustScore: true, badges: true, childAge: true,
+        emailNotifications: true,
+        _count: { select: { conversations: true, replies: true, votes: true } },
+      },
+    });
+    res.json(users.map(u => ({ ...u, trustScore: u.trustScore / 100 })));
+  } catch (error) { next(error); }
+});
+
+// Update user (role, ban, etc.)
+app.patch('/api/admin/users/:id', authenticate, requireAdmin, async (req: AuthRequest, res, next) => {
+  try {
+    const { role, isVerified, trustScore } = req.body;
+    const data: any = {};
+    if (role) data.role = mapRoleToDb(role);
+    if (isVerified !== undefined) data.isVerified = isVerified;
+    if (trustScore !== undefined) data.trustScore = Math.round(trustScore * 100);
+    const user = await prisma.user.update({ where: { id: req.params.id }, data });
+    res.json(formatUser(user));
+  } catch (error) { next(error); }
+});
+
+// Delete user
+app.delete('/api/admin/users/:id', authenticate, requireAdmin, async (req: AuthRequest, res, next) => {
+  try {
+    if (req.params.id === req.userId) return res.status(400).json({ error: 'Cannot delete yourself' });
+    await prisma.user.delete({ where: { id: req.params.id } });
+    res.json({ success: true });
+  } catch (error) { next(error); }
+});
+
+// All conversations (admin — includes all statuses)
+app.get('/api/admin/conversations', authenticate, requireAdmin, async (req, res, next) => {
+  try {
+    const conversations = await prisma.conversation.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: { _count: { select: { replies: true, votesRelation: true } } },
+    });
+    res.json(conversations.map(c => ({
+      id: c.id, title: c.title, category: c.category,
+      moderationStatus: c.moderationStatus.toLowerCase(),
+      isPinned: c.isPinned, isFeatured: c.isFeatured,
+      votes: c.votes, views: c.views, createdAt: c.createdAt,
+      authorId: c.authorId, opAuthor: c.opAuthor,
+      replyCount: c._count.replies, voteCount: c._count.votesRelation,
+      greyAreaFlags: c.greyAreaFlags, reviewPriority: c.reviewPriority,
+    })));
+  } catch (error) { next(error); }
+});
+
+// All replies (admin)
+app.get('/api/admin/replies', authenticate, requireAdmin, async (req, res, next) => {
+  try {
+    const replies = await prisma.reply.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 500,
+      select: {
+        id: true, author: true, authorId: true, text: true, likes: true,
+        createdAt: true, moderationStatus: true, conversationId: true,
+        conversation: { select: { title: true } },
+      },
+    });
+    res.json(replies.map(r => ({
+      ...r,
+      moderationStatus: r.moderationStatus.toLowerCase(),
+      conversationTitle: r.conversation?.title,
+    })));
+  } catch (error) { next(error); }
+});
+
+// Delete reply (admin)
+app.delete('/api/admin/replies/:id', authenticate, requireAdmin, async (req, res, next) => {
+  try {
+    await prisma.reply.delete({ where: { id: parseInt(req.params.id) } });
+    res.json({ success: true });
+  } catch (error) { next(error); }
+});
+
+// Moderation logs
+app.get('/api/admin/logs', authenticate, requireAdmin, async (req, res, next) => {
+  try {
+    const logs = await prisma.moderationLog.findMany({
+      orderBy: { timestamp: 'desc' },
+      take: 200,
+    });
+    res.json(logs);
+  } catch (error) { next(error); }
+});
+
+// ------------------------------
 // FRONTEND FALLBACK
 // ------------------------------
 

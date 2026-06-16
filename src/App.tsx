@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Routes, Route, useParams, useNavigate, useLocation } from 'react-router-dom';
+import { AdminPanel } from './components/AdminPanel';
 import { Header } from './components/Header';
 import { LeftSidebar } from './components/LeftSidebar';
 import { MainContent } from './components/MainContent';
@@ -1180,7 +1181,7 @@ function AppContent() {
         onLogout={handleLogout}
         onLoginClick={() => setIsAuthOpen(true)}
         onModerationClick={() => setIsModerationOpen(true)}
-        onAdminClick={() => setIsAdminOpen(true)}
+        onAdminClick={() => navigate('/admin')}
         onProfileClick={() => setIsProfileOpen(true)}
         onNotificationsClick={() => setIsNotificationsOpen(true)}
         onOpenCategories={() => {
@@ -1341,7 +1342,7 @@ function AppContent() {
         onLogout={handleLogout}
         onLoginClick={() => setIsAuthOpen(true)}
         onModerationClick={() => setIsModerationOpen(true)}
-        onAdminClick={() => setIsAdminOpen(true)}
+        onAdminClick={() => navigate('/admin')}
         onProfileClick={() => setIsProfileOpen(true)}
         onNotificationsClick={() => setIsNotificationsOpen(true)}
         onOpenCategories={() => {
@@ -1491,9 +1492,33 @@ function AppContent() {
   );
 }
 
+function AdminRoute() {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = tokenStore.get();
+    if (!token) { navigate('/'); return; }
+    api.getMe()
+      .then(u => { setUser(u); setLoading(false); })
+      .catch(() => { navigate('/'); });
+  }, [navigate]);
+
+  if (loading) return <LoadingScreen />;
+  if (!user) return null;
+  return (
+    <AdminPanel
+      currentUserRole={user.role}
+      onLogout={() => { api.logout(); navigate('/'); }}
+    />
+  );
+}
+
 export default function App() {
   return (
     <Routes>
+      <Route path="/admin" element={<AdminRoute />} />
       <Route path="/" element={<AppContent />} />
       <Route path="/:category" element={<AppContent />} />
     </Routes>
