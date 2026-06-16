@@ -6,8 +6,15 @@
  * Safe to re-run — skips conversations that already exist (by title match).
  */
 
-const { PrismaClient } = require('@prisma/client');
-const conversations = require('./seed-data.json');
+import { PrismaClient } from '@prisma/client';
+import { createRequire } from 'module';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const require = createRequire(import.meta.url);
+const conversations = require(join(__dirname, './seed-data.json'));
 
 const prisma = new PrismaClient();
 
