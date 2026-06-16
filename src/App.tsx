@@ -146,7 +146,13 @@ function AppContent() {
         body: JSON.stringify({ code: oauthCode }),
       })
         .then(r => r.json())
-        .then(data => { if (data.token) tokenStore.set(data.token); })
+        .then(data => {
+          if (data.token) {
+            tokenStore.set(data.token);
+            // Reload so initData runs again with the token in storage
+            window.location.replace(window.location.pathname);
+          }
+        })
         .catch(() => {});
     }
     if (resetToken) {
