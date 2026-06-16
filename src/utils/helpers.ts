@@ -177,9 +177,12 @@ export function searchThreadsWithRanking(
         r.text.toLowerCase().includes(queryLower)
       ).length;
       score += replyMatches * 10;
-      if (thread.views > 100) score += 20;
-      if (thread.replies.length > 5) score += 15;
-      if (thread.isPinned) score += 25;
+      // Only apply engagement bonuses if the post already has a text match
+      if (score > 0) {
+        if (thread.views > 100) score += 20;
+        if (thread.replies.length > 5) score += 15;
+        if (thread.isPinned) score += 25;
+      }
       return { thread, score };
     })
     .filter(item => item.score > 0)
