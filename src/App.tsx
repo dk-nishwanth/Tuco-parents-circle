@@ -14,6 +14,7 @@ import { GuestPromptBanner } from './components/GuestPromptBanner';
 import { ThreadReviewConfirmation } from './components/ThreadReviewConfirmation';
 import { AdminToolsPanel } from './components/AdminToolsPanel';
 import { LoadingScreen } from './components/LoadingScreen';
+import { CompleteProfileModal } from './components/CompleteProfileModal';
 import { ProfileModal } from './components/ProfileModal';
 import { WarningModal } from './components/WarningModal';
 import { ReportModal } from './components/ReportModal';
@@ -121,6 +122,7 @@ function AppContent() {
   const [isMobileLeftSidebarOpen, setIsMobileLeftSidebarOpen] = useState<boolean>(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState<boolean>(false);
   const [activeReplyTo, setActiveReplyTo] = useState<{ threadId: number; replyId: number } | null>(null);
+  const [showCompleteProfile, setShowCompleteProfile] = useState<boolean>(false);
 
   // Prevent body scroll when any modal/overlay is open
   useEffect(() => {
@@ -150,6 +152,7 @@ function AppContent() {
         .then(data => {
           if (data.token) {
             tokenStore.set(data.token);
+            localStorage.setItem('tuco_complete_profile', '1');
             // Reload so initData runs again with the token in storage
             window.location.replace(window.location.pathname);
           }
@@ -175,6 +178,9 @@ function AppContent() {
             setCurrentUser(user);
             if (user.savedPosts) {
               setSavedPosts(user.savedPosts);
+            }
+            if (localStorage.getItem('tuco_complete_profile') && !user.childAge) {
+              setShowCompleteProfile(true);
             }
 
             // Load user's votes from API
@@ -1488,6 +1494,15 @@ function AppContent() {
         onSubmit={handleSubmitReport}
         type={reportTarget?.type || 'reply'}
       />
+      {showCompleteProfile && currentUser && (
+        <CompleteProfileModal
+          user={currentUser}
+          onComplete={updatedUser => {
+            setCurrentUser(updatedUser);
+            setShowCompleteProfile(false);
+          }}
+        />
+      )}
     </div>
   );
 }
