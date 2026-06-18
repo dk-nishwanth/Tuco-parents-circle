@@ -1582,6 +1582,8 @@ app.patch('/api/admin/users/:id', authenticate, requireAdmin, async (req: AuthRe
 app.delete('/api/admin/users/:id', authenticate, requireAdmin, async (req: AuthRequest, res, next) => {
   try {
     if (req.params.id === req.userId) return res.status(400).json({ error: 'Cannot delete yourself' });
+    const target = await prisma.user.findUnique({ where: { id: req.params.id }, select: { email: true } });
+    if (target?.email === 'seed@tucokids.internal') return res.status(400).json({ error: 'Cannot delete the seed user' });
     await prisma.user.delete({ where: { id: req.params.id } });
     res.json({ success: true });
   } catch (error) { next(error); }
