@@ -53,6 +53,38 @@
         "time": "22 hours ago",
         "text": "Thank you all! Ordered the tuco one and will definitely do the 20-min pre-application trick. Going to reapply at halftime too. ☀️",
         "likes": 3
+      },
+      {
+        "id": 6,
+        "author": "GauriShah",
+        "city": "Ahmedabad",
+        "time": "1 day ago",
+        "text": "Adding to this — keep a small hand towel handy and have him wipe sweat (not rub!) before reapplying. Rubbing pulls sunscreen off; patting and reapplying actually works.",
+        "likes": 6
+      },
+      {
+        "id": 7,
+        "author": "NandiniK",
+        "city": "Coimbatore",
+        "time": "20 hours ago",
+        "text": "We use a stick sunscreen for the face (nose, ears, cheeks) and lotion for arms and legs. Less mess and the stick goes on even when he's sweaty.",
+        "likes": 4
+      },
+      {
+        "id": 8,
+        "author": "RituKapoor",
+        "city": "Chandigarh",
+        "time": "14 hours ago",
+        "text": "Don't skip the back of the legs and the nape — that's where most cricket-kid tan lines come from. Also a wide-brim cap for fielding sessions does more than people think.",
+        "likes": 3
+      },
+      {
+        "id": 9,
+        "author": "ShwetaIyer",
+        "city": "Hyderabad",
+        "time": "6 hours ago",
+        "text": "Coach tip from our academy: hydration matters too. A well-hydrated kid sweats less and sunscreen lasts longer. Cold electrolyte water between overs is non-negotiable.",
+        "likes": 5
       }
     ]
   },
@@ -94,6 +126,30 @@
         "time": "2 days ago",
         "text": "Switching from soap to a gentle body wash also helped us a lot. Regular soap has a high pH that disrupts the skin barrier. Look for pH-balanced, soap-free body washes for kids.",
         "likes": 8
+      },
+      {
+        "id": 4,
+        "author": "VandanaMehra",
+        "city": "Lucknow",
+        "time": "2 days ago",
+        "text": "Look at the bath products too — many 'baby' brands still contain SLS which is harsh on eczema-prone skin. Switching cleanser made a bigger difference for us than the moisturiser did.",
+        "likes": 9
+      },
+      {
+        "id": 5,
+        "author": "ArchanaPillai",
+        "city": "Trivandrum",
+        "time": "1 day ago",
+        "text": "Humidifier in her room overnight if you're running AC or fans. The dryness from constant air movement is sneaky and makes eczema flare without obvious trigger.",
+        "likes": 7
+      },
+      {
+        "id": 6,
+        "author": "GauriShah",
+        "city": "Ahmedabad",
+        "time": "18 hours ago",
+        "text": "Our dermat said avoid wet wipes on her face entirely — even 'sensitive' ones have preservatives that irritate compromised skin. Plain lukewarm water on a soft muslin works fine.",
+        "likes": 6
       }
     ]
   },
@@ -130,6 +186,38 @@
         "time": "3 days ago",
         "text": "Invest in good quality insulated tiffin boxes! The ones with separate compartments are a game changer. My kids love \"themed\" tiffins: sometimes all orange (carrot paratha, orange halwa, orange juice), sometimes all green. It's silly but they get excited.",
         "likes": 15
+      },
+      {
+        "id": 3,
+        "author": "MeghaSinha",
+        "city": "Patna",
+        "time": "2 days ago",
+        "text": "Mini idlis with a little ghee + veggie chutney — stays soft, no sogginess. We do batch cooking on Sunday and freeze portions.",
+        "likes": 13
+      },
+      {
+        "id": 4,
+        "author": "KritikaArora",
+        "city": "Gurgaon",
+        "time": "1 day ago",
+        "text": "Stuffed thepla rolled with grated paneer/veggies inside, cut into pinwheels. Looks fun, eats in 4 bites, no curry mess.",
+        "likes": 11
+      },
+      {
+        "id": 5,
+        "author": "SonalDesai",
+        "city": "Pune",
+        "time": "20 hours ago",
+        "text": "Sabudana khichdi with peanuts (if allergy-free) is filling and stays good. We add finely chopped carrot for colour. Hot tip: pack a tiny ice pack to keep curd-based tiffins safe till lunch.",
+        "likes": 8
+      },
+      {
+        "id": 6,
+        "author": "RashmiNair",
+        "city": "Mumbai",
+        "time": "8 hours ago",
+        "text": "Whole wheat pasta with hidden veggie sauce (beetroot + tomato blended) — looks like 'regular' pasta to the kids, but full of nutrients. They have no idea.",
+        "likes": 10
       }
     ]
   },
@@ -165,6 +253,38 @@
         "time": "4 days ago",
         "text": "If you want hills, Coorg is amazing with kids! Not too cold in summer, lots of plantations to walk through, coffee tastings (for adults), chocolate factories, and some great resorts with play areas. The weather is pleasant most of the day.",
         "likes": 12
+      },
+      {
+        "id": 3,
+        "author": "SonalDesai",
+        "city": "Pune",
+        "time": "3 days ago",
+        "text": "Munnar over Coorg if you want cooler weather in peak summer — temperatures drop nicely in the evenings and there are good kid-friendly resorts near Tata Tea museum.",
+        "likes": 11
+      },
+      {
+        "id": 4,
+        "author": "VandanaMehra",
+        "city": "Lucknow",
+        "time": "2 days ago",
+        "text": "Andaman (Havelock specifically) is underrated for young kids — clean water, shallow beaches, very low population density. Took our 4 and 7 year old, both loved it.",
+        "likes": 8
+      },
+      {
+        "id": 5,
+        "author": "IshaPandey",
+        "city": "Indore",
+        "time": "1 day ago",
+        "text": "If you don't want to fly, the Konkan coast (Tarkarli, Malvan) is gorgeous and quieter than Goa. Fewer crowds, great seafood, and the beaches are gentle.",
+        "likes": 6
+      },
+      {
+        "id": 6,
+        "author": "RituKapoor",
+        "city": "Chandigarh",
+        "time": "10 hours ago",
+        "text": "Bhutan! Easy visa, very kid-friendly culture, cool weather, and clean food everywhere. Best decision we made for a family trip with a 3 and 6 year old.",
+        "likes": 9
       }
     ]
   },
@@ -198,6 +318,38 @@
         "time": "5 days ago",
         "text": "Skip counting! We do it while climbing stairs, while waiting in line, while walking to the park. \"2,4,6,8...\" becomes a game, not work. Once skip counting is solid, tables click automatically because they understand the pattern, not just memorizing random numbers.",
         "likes": 22
+      },
+      {
+        "id": 3,
+        "author": "NandiniK",
+        "city": "Coimbatore",
+        "time": "5 days ago",
+        "text": "Times Tables Rock Stars app — we were skeptical because we limit screens but it genuinely worked. He went from struggling with 7s to confident in 3 weeks.",
+        "likes": 14
+      },
+      {
+        "id": 4,
+        "author": "PreetiKaur",
+        "city": "Amritsar",
+        "time": "4 days ago",
+        "text": "Skip the rote completely. Show the pattern visually using arrays — 4×3 is literally 4 rows of 3 dots. Once they SEE it, they stop forgetting. Worked beautifully for both my kids.",
+        "likes": 18
+      },
+      {
+        "id": 5,
+        "author": "GauriShah",
+        "city": "Ahmedabad",
+        "time": "3 days ago",
+        "text": "Bedtime tables — last 5 mins before sleep, we'd say one table back and forth. Sleep apparently helps memory consolidation. Sounds woo but it stuck for us.",
+        "likes": 9
+      },
+      {
+        "id": 6,
+        "author": "BhavanaRao",
+        "city": "Bangalore",
+        "time": "1 day ago",
+        "text": "Snake-and-ladder style board game where each move = answer a tables question correctly. Free printables online. My 7yo now begs to play 'maths snakes'.",
+        "likes": 11
       }
     ]
   },
@@ -226,6 +378,38 @@
         "time": "13 days ago",
         "text": "We do this too! Also, we lay out our own clothes the night before — not just the kids. One less thing to think about at 7 AM.",
         "likes": 11
+      },
+      {
+        "id": 2,
+        "author": "KritikaArora",
+        "city": "Gurgaon",
+        "time": "12 days ago",
+        "text": "Adding to this — uniform check the night before too. Found out about missing belt/ID card at 7:45am one too many times.",
+        "likes": 16
+      },
+      {
+        "id": 3,
+        "author": "SonalDesai",
+        "city": "Pune",
+        "time": "10 days ago",
+        "text": "We made a giant printed checklist by the door. Kids tick it off themselves now — homework copy, water bottle, lunch, ID card. Eliminated 'I forgot' completely.",
+        "likes": 13
+      },
+      {
+        "id": 4,
+        "author": "RashmiNair",
+        "city": "Mumbai",
+        "time": "8 days ago",
+        "text": "Wake yourself up 15 mins before kids. That alone changed everything. Mornings where parents are still half-asleep are guaranteed chaos.",
+        "likes": 19
+      },
+      {
+        "id": 5,
+        "author": "VandanaMehra",
+        "city": "Lucknow",
+        "time": "4 days ago",
+        "text": "Breakfast prep is the killer. We do overnight oats Sun-Thurs and dosa/idli batter on weekends. No cooking before 8am.",
+        "likes": 12
       }
     ]
   },
@@ -251,6 +435,38 @@
         "time": "2 days ago",
         "text": "Yes! Involving them in grocery shopping helps too. Let them pick one \"mystery vegetable\" each week. It gives them a sense of ownership over what's on their plate.",
         "likes": 15
+      },
+      {
+        "id": 2,
+        "author": "IshaPandey",
+        "city": "Indore",
+        "time": "2 days ago",
+        "text": "Naming worked for us — 'farmer kale', 'superhero spinach'. Sounds silly but a 4yo accepted broccoli after we called it 'tiny trees'. The framing matters.",
+        "likes": 12
+      },
+      {
+        "id": 3,
+        "author": "NandiniK",
+        "city": "Coimbatore",
+        "time": "1 day ago",
+        "text": "We started a 'rainbow plate' challenge — try to get 5 colours on his plate. He treats it like a game. Three weeks in he asks for purple cabbage by name.",
+        "likes": 17
+      },
+      {
+        "id": 4,
+        "author": "AnitaSrivastava",
+        "city": "Noida",
+        "time": "16 hours ago",
+        "text": "Don't underestimate hunger as a teacher. We stopped offering snacks between meals. By lunch he was hungry enough to try things he'd refused for months.",
+        "likes": 14
+      },
+      {
+        "id": 5,
+        "author": "GauriShah",
+        "city": "Ahmedabad",
+        "time": "6 hours ago",
+        "text": "Eating with cousins or friends — peer pressure works in both directions. My picky eater watched her cousin eat carrots and ate them too. Group meals more often.",
+        "likes": 9
       }
     ]
   },
@@ -276,6 +492,38 @@
         "time": "5 days ago",
         "text": "We started at 3 and it was perfect. Before that, it was mostly just water play. The most important thing is finding a coach who is patient and makes it fun rather than a drill.",
         "likes": 7
+      },
+      {
+        "id": 2,
+        "author": "MeghaSinha",
+        "city": "Patna",
+        "time": "4 days ago",
+        "text": "We started our daughter at 18 months — pure water play, blowing bubbles, getting comfortable. By 4 she could swim independently. Early exposure builds zero fear.",
+        "likes": 11
+      },
+      {
+        "id": 3,
+        "author": "SonalDesai",
+        "city": "Pune",
+        "time": "3 days ago",
+        "text": "In Chennai look at Y Sport in Anna Nagar — they have a graded toddler programme and the pool is heated which makes a huge difference for hesitant kids.",
+        "likes": 7
+      },
+      {
+        "id": 4,
+        "author": "RituKapoor",
+        "city": "Chandigarh",
+        "time": "2 days ago",
+        "text": "More important than age: instructor-to-child ratio. For toddlers anything over 1:3 is a no. They need eyes on them constantly.",
+        "likes": 10
+      },
+      {
+        "id": 5,
+        "author": "VandanaMehra",
+        "city": "Lucknow",
+        "time": "14 hours ago",
+        "text": "Avoid lessons after a heavy lunch — toddlers shiver fast and the digestion + cold combo causes meltdowns. Mid-morning slots worked best for us.",
+        "likes": 5
       }
     ]
   },
@@ -301,6 +549,38 @@
         "time": "5 days ago",
         "text": "It's a huge shift in how they think, not just what they learn. IB is much more inquiry-based. If she enjoys projects and research over rote learning, she'll love it. But be prepared for a transition period!",
         "likes": 10
+      },
+      {
+        "id": 2,
+        "author": "NandiniK",
+        "city": "Coimbatore",
+        "time": "4 days ago",
+        "text": "We made the switch in Grade 6 and it took our son 6 months to adjust. He is now in Grade 9, IB, and his analytical writing is leagues ahead of his CBSE cousins. Worth it.",
+        "likes": 15
+      },
+      {
+        "id": 3,
+        "author": "IshaPandey",
+        "city": "Indore",
+        "time": "3 days ago",
+        "text": "College admissions in India — most IB-recognised universities now exist (Ashoka, Krea, Plaksha) but if you're aiming for IIT/JEE route, IB makes that path harder. Be clear on the long game.",
+        "likes": 18
+      },
+      {
+        "id": 4,
+        "author": "BhavanaRao",
+        "city": "Bangalore",
+        "time": "2 days ago",
+        "text": "Cost. Don't underestimate the financial commitment — IB schools are 3-5x the fees. If you can sustain it through Grade 12, great. Mid-stream pullouts are tough.",
+        "likes": 13
+      },
+      {
+        "id": 5,
+        "author": "GauriShah",
+        "city": "Ahmedabad",
+        "time": "20 hours ago",
+        "text": "Visit and sit in on classes if the school allows. The teaching style is so different that some kids thrive immediately and others wilt. You'll know within 30 minutes of observation.",
+        "likes": 9
       }
     ]
   },
@@ -326,6 +606,38 @@
         "time": "3 days ago",
         "text": "Boiled chickpeas and peeled garlic are my lifesavers! You can whip up hummus, chole, or a quick stir fry in no time.",
         "likes": 14
+      },
+      {
+        "id": 2,
+        "author": "KritikaArora",
+        "city": "Gurgaon",
+        "time": "3 days ago",
+        "text": "Pre-portioned, frozen marinated paneer is our weeknight saviour. 15 min defrost, 5 min on the tawa, dinner done.",
+        "likes": 12
+      },
+      {
+        "id": 3,
+        "author": "PreetiKaur",
+        "city": "Amritsar",
+        "time": "2 days ago",
+        "text": "I do a 'base + variation' approach: one batch of onion-tomato masala in the fridge becomes butter masala / palak gravy / dal makhani / curry — just add the protein.",
+        "likes": 17
+      },
+      {
+        "id": 4,
+        "author": "RashmiNair",
+        "city": "Mumbai",
+        "time": "1 day ago",
+        "text": "Roti dough is my secret — I make for the whole week and freeze in portions. Fresh rotis nightly in 10 mins flat. Game changer for working parents.",
+        "likes": 14
+      },
+      {
+        "id": 5,
+        "author": "MeghaSinha",
+        "city": "Patna",
+        "time": "12 hours ago",
+        "text": "Pre-cut veggies in airtight glass containers — 30 mins on Sunday saves an hour every weekday. The trick is glass, not plastic — they actually last till Friday.",
+        "likes": 10
       }
     ]
   },
@@ -359,6 +671,30 @@
         "time": "4 days ago",
         "text": "Short term is probably fine, but regular use isn't ideal. tuco's Gentle Glow body lotion was recommended by my paed dermat specifically for toddlers — no sulfates, no parabens, light enough that it doesn't clog pores.",
         "likes": 11
+      },
+      {
+        "id": 3,
+        "author": "AnitaSrivastava",
+        "city": "Noida",
+        "time": "3 days ago",
+        "text": "Once we switched to a kid-specific moisturiser the dryness we hadn't even noticed cleared up. Adult lotions are formulated for skin that's already done growing — the difference shows up months later.",
+        "likes": 8
+      },
+      {
+        "id": 4,
+        "author": "ArchanaPillai",
+        "city": "Trivandrum",
+        "time": "2 days ago",
+        "text": "If you're in a pinch, plain coconut oil works better than adult lotion. No fragrance, no preservatives, easily absorbed.",
+        "likes": 11
+      },
+      {
+        "id": 5,
+        "author": "IshaPandey",
+        "city": "Indore",
+        "time": "14 hours ago",
+        "text": "Read the ingredient list — if 'fragrance/parfum' is in the top 5 ingredients, don't use it on kid skin. That single rule eliminates 90% of unsuitable products.",
+        "likes": 7
       }
     ]
   },
@@ -392,6 +728,30 @@
         "time": "2 days ago",
         "text": "Also check if saliva from feeding is collecting there. A bib helps. Once we sorted the moisture issue, the rash cleared in about 4–5 days.",
         "likes": 7
+      },
+      {
+        "id": 3,
+        "author": "NandiniK",
+        "city": "Coimbatore",
+        "time": "2 days ago",
+        "text": "Coconut oil under the folds (literally just a film) acts as a barrier and the rash cleared in 4 days for us. Anti-fungal too, helpful when intertrigo gets a yeast component.",
+        "likes": 12
+      },
+      {
+        "id": 4,
+        "author": "PreetiKaur",
+        "city": "Amritsar",
+        "time": "1 day ago",
+        "text": "Air drying is underrated. After bath, 5 minutes of just lying in cool air, gentle fan, before clothing on. We started doing this and the rash stopped recurring.",
+        "likes": 9
+      },
+      {
+        "id": 5,
+        "author": "MeghaSinha",
+        "city": "Patna",
+        "time": "10 hours ago",
+        "text": "If it persists more than a week with all the moisture control, get it checked — fungal intertrigo needs antifungal cream, not just barrier cream.",
+        "likes": 6
       }
     ]
   },
@@ -425,6 +785,30 @@
         "time": "5 days ago",
         "text": "Also look at seasonal allergies. My son's dark circles get worse in spring and post-rainy season — it's a classic allergy sign called 'allergic shiners'. If she rubs her eyes a lot that could be a clue.",
         "likes": 13
+      },
+      {
+        "id": 3,
+        "author": "VandanaMehra",
+        "city": "Lucknow",
+        "time": "5 days ago",
+        "text": "We had a vit D and B12 test done — both were low in my son and supplementation visibly improved his under-eye colour in 3 months. Worth checking beyond just basic iron.",
+        "likes": 16
+      },
+      {
+        "id": 4,
+        "author": "SonalDesai",
+        "city": "Pune",
+        "time": "4 days ago",
+        "text": "Eye rubbing from screen strain — even adult-level screens at age 10 can cause this. We cut screen time before bed and the circles softened noticeably.",
+        "likes": 11
+      },
+      {
+        "id": 5,
+        "author": "GauriShah",
+        "city": "Ahmedabad",
+        "time": "2 days ago",
+        "text": "Hydration. Sounds basic but most kids are mildly dehydrated and don't show it anywhere except dark eye circles. We measured 1.2L water/day for our 10yo and the change was real.",
+        "likes": 8
       }
     ]
   },
@@ -458,6 +842,30 @@
         "time": "12 days ago",
         "text": "Try applying it at night after she's asleep — that's how we solved it. One good overnight application with a plain petroleum jelly or beeswax balm heals faster than daytime applications that just get licked off.",
         "likes": 18
+      },
+      {
+        "id": 3,
+        "author": "AnitaSrivastava",
+        "city": "Noida",
+        "time": "10 days ago",
+        "text": "We figured out the licking was a sensory thing — gave her a chewy necklace for daytime and the lip licking dropped 80%. The mouth was looking for input.",
+        "likes": 17
+      },
+      {
+        "id": 4,
+        "author": "ArchanaPillai",
+        "city": "Trivandrum",
+        "time": "8 days ago",
+        "text": "Ghee. Just plain ghee at night. Heals overnight and is the safest possible ingredient if licked. Old school but it works.",
+        "likes": 13
+      },
+      {
+        "id": 5,
+        "author": "IshaPandey",
+        "city": "Indore",
+        "time": "5 days ago",
+        "text": "Watch out for the lick-then-it-dries-worse cycle — chronic lip licking can develop into 'lip lick dermatitis' which is a proper condition. Don't dismiss it as a habit.",
+        "likes": 9
       }
     ]
   },
@@ -491,6 +899,38 @@
         "time": "3 days ago",
         "text": "Hybrid sunscreens (part mineral, part chemical) tend to have less cast than pure mineral. Or look for micronized zinc oxide formulations — much finer particles so less visible.",
         "likes": 10
+      },
+      {
+        "id": 3,
+        "author": "BhavanaRao",
+        "city": "Bangalore",
+        "time": "2 days ago",
+        "text": "Korean kids' sunscreens (Cosrx, Beauty of Joseon) blend beautifully on Indian skin tones and are reasonably priced now on Amazon. We've been using them for a year.",
+        "likes": 15
+      },
+      {
+        "id": 4,
+        "author": "RashmiNair",
+        "city": "Mumbai",
+        "time": "1 day ago",
+        "text": "Tinted mineral sunscreens are the answer. Even the kids' versions now come in 1–2 shade options. Worth the slightly higher price to actually get her to wear it.",
+        "likes": 18
+      },
+      {
+        "id": 5,
+        "author": "GauriShah",
+        "city": "Ahmedabad",
+        "time": "12 hours ago",
+        "text": "Apply, wait 5 minutes, then dust a tiny bit of your foundation powder over the top — adult hack that works for kids too. Cuts the white cast completely.",
+        "likes": 7
+      },
+      {
+        "id": 6,
+        "author": "NandiniK",
+        "city": "Coimbatore",
+        "time": "6 hours ago",
+        "text": "Don't go pure chemical to avoid the cast — many chemical sunscreens are not approved for under-12s in EU/Korea standards. Hybrid is the safer middle ground.",
+        "likes": 9
       }
     ]
   },
@@ -516,6 +956,30 @@
         "time": "6 days ago",
         "text": "Please see a dermat — ringworm (tinea capitis) is very common in toddlers and needs antifungal treatment, both topical and often oral. Don't try over-the-counter adult antifungal for this — dosage for toddlers is very different.",
         "likes": 21
+      },
+      {
+        "id": 2,
+        "author": "MeghaSinha",
+        "city": "Patna",
+        "time": "5 days ago",
+        "text": "Tinea capitis spreads — wash his pillowcase, hat, and any combs in hot water immediately and don't let siblings share these. We missed this and the brother got it next.",
+        "likes": 15
+      },
+      {
+        "id": 3,
+        "author": "SonalDesai",
+        "city": "Pune",
+        "time": "4 days ago",
+        "text": "Topical antifungals alone often don't reach the hair follicle. Oral griseofulvin or terbinafine is usually needed for scalp ringworm. Don't accept just a topical from a GP — push for a dermat referral.",
+        "likes": 13
+      },
+      {
+        "id": 4,
+        "author": "KritikaArora",
+        "city": "Gurgaon",
+        "time": "12 hours ago",
+        "text": "Also check the family pet if you have one — cats especially carry tinea and re-infect kids in a cycle. Vet check is part of the treatment.",
+        "likes": 7
       }
     ]
   },
@@ -541,6 +1005,30 @@
         "time": "5 days ago",
         "text": "AC strips humidity so yes, twice a day at minimum. After bath and before sleep. Look for ceramides, glycerin, shea butter — these humectants draw and hold moisture. Avoid fragrance and alcohol.",
         "likes": 12
+      },
+      {
+        "id": 2,
+        "author": "PreetiKaur",
+        "city": "Amritsar",
+        "time": "4 days ago",
+        "text": "Bowl of water in the room — old desi trick that genuinely helps. Add a few before sleep. The AC water collection trays are also useful indicators of how dry the air actually is.",
+        "likes": 11
+      },
+      {
+        "id": 3,
+        "author": "VandanaMehra",
+        "city": "Lucknow",
+        "time": "3 days ago",
+        "text": "Switch to gentle oil massage 2x a week — coconut or almond oil. Locks in moisture better than lotion alone for very dry skin. 10-min massage before bath works best.",
+        "likes": 14
+      },
+      {
+        "id": 4,
+        "author": "ArchanaPillai",
+        "city": "Trivandrum",
+        "time": "14 hours ago",
+        "text": "Watch the AC temperature — anything below 24°C dries skin disproportionately. We set ours to 25 and the difference in everyone's skin was noticeable in a week.",
+        "likes": 8
       }
     ]
   },
@@ -574,6 +1062,30 @@
         "time": "4 days ago",
         "text": "Neem-infused water in the bath is an old-school remedy that genuinely works. Boil neem leaves, cool the water, add to bathwater. Natural antibacterial and soothes the skin.",
         "likes": 14
+      },
+      {
+        "id": 3,
+        "author": "GauriShah",
+        "city": "Ahmedabad",
+        "time": "3 days ago",
+        "text": "Cotton vests under regular clothes — wick away sweat from the skin. We swapped polyester school t-shirts for cotton-only and the back rash disappeared.",
+        "likes": 12
+      },
+      {
+        "id": 4,
+        "author": "IshaPandey",
+        "city": "Indore",
+        "time": "2 days ago",
+        "text": "Multani mitti paste applied for 10 mins, then washed off — cools the skin and reduces inflammation. Don't use daily but useful as a once-a-week summer treatment.",
+        "likes": 9
+      },
+      {
+        "id": 5,
+        "author": "NandiniK",
+        "city": "Coimbatore",
+        "time": "14 hours ago",
+        "text": "Aloe vera gel (the pure kind, no fragrance) cools the area instantly. We keep a tube refrigerated for summer flare-ups.",
+        "likes": 6
       }
     ]
   },
@@ -599,6 +1111,30 @@
         "time": "6 days ago",
         "text": "Coconut oil is fine and actually great for baby scalp — it has lauric acid which is gentle and anti-fungal. The key is a tiny amount, warm it slightly, massage gently, and wash off after 30 mins. Don't leave overnight as it can attract dust.",
         "likes": 20
+      },
+      {
+        "id": 2,
+        "author": "AnitaSrivastava",
+        "city": "Noida",
+        "time": "5 days ago",
+        "text": "Bhringraj is too strong for 1-year-olds — wait till 3+. Stick to coconut or almond oil till then. MIL had us using bhringraj early and it caused dandruff.",
+        "likes": 10
+      },
+      {
+        "id": 3,
+        "author": "BhavanaRao",
+        "city": "Bangalore",
+        "time": "4 days ago",
+        "text": "Use very little — most parents over-oil. A pea-sized amount for the whole scalp is enough. Excess oil clogs pores and can cause cradle cap rebound.",
+        "likes": 13
+      },
+      {
+        "id": 4,
+        "author": "RashmiNair",
+        "city": "Mumbai",
+        "time": "12 hours ago",
+        "text": "Lukewarm, not hot oil. Hot oil can scald the delicate scalp. Test on your inner wrist first — should feel barely warm.",
+        "likes": 8
       }
     ]
   },
@@ -631,6 +1167,30 @@
         "city": "Delhi",
         "time": "2 days ago",
         "text": "Patches are fine as additional protection but don't rely on them alone for high-risk areas. We use a patch plus light long-sleeve clothing. The physical barrier is underrated.",
+        "likes": 9
+      },
+      {
+        "id": 3,
+        "author": "SonalDesai",
+        "city": "Pune",
+        "time": "2 days ago",
+        "text": "We use BabyOrgano patches as a backup but our main protection is mesh window screens + door screens. Source control matters far more than personal repellent for dengue.",
+        "likes": 12
+      },
+      {
+        "id": 4,
+        "author": "MeghaSinha",
+        "city": "Patna",
+        "time": "1 day ago",
+        "text": "Plug-in vapourisers (Goodknight, AllOut) — modern formulations are safe for kids' rooms but use them in well-ventilated spaces. Old continuous-use ones are not great.",
+        "likes": 7
+      },
+      {
+        "id": 5,
+        "author": "KritikaArora",
+        "city": "Gurgaon",
+        "time": "10 hours ago",
+        "text": "Lemon eucalyptus oil (OLE — not the same as plain eucalyptus) is the only natural repellent shown to work as well as low-DEET. Look for products with 30% OLE for kids over 3.",
         "likes": 9
       }
     ]
@@ -665,6 +1225,30 @@
         "time": "8 days ago",
         "text": "We switched to a sulphate-free baby shampoo and the stinging stopped. Sulphates are the main culprit — they create more lather but irritate sensitive eyes a lot.",
         "likes": 16
+      },
+      {
+        "id": 3,
+        "author": "VandanaMehra",
+        "city": "Lucknow",
+        "time": "7 days ago",
+        "text": "Lie-back position — head over the edge of the bath with your hand cradling. The water runs back, not into the eyes. Works for our 3yo even with the strong shampoos.",
+        "likes": 19
+      },
+      {
+        "id": 4,
+        "author": "IshaPandey",
+        "city": "Indore",
+        "time": "6 days ago",
+        "text": "Hair washing only twice a week. Most parents wash daily out of habit but it isn't needed for toddlers and the daily exposure to shampoo is the bigger irritant.",
+        "likes": 11
+      },
+      {
+        "id": 5,
+        "author": "PreetiKaur",
+        "city": "Amritsar",
+        "time": "4 days ago",
+        "text": "Tangle Teezer hair-wash visor — looks like a sun hat. Buy on Amazon, life-changing. We went from screaming bath to actually-fun bath.",
+        "likes": 14
       }
     ]
   },
@@ -690,6 +1274,30 @@
         "time": "7 days ago",
         "text": "Clean running water is actually the best first step — rinse for at least 30 seconds. Diluted antiseptic or saline solution after that. Cover with a breathable bandage. Moist wound healing (don't let it dry out and scab prematurely) actually heals faster.",
         "likes": 19
+      },
+      {
+        "id": 2,
+        "author": "ArchanaPillai",
+        "city": "Trivandrum",
+        "time": "6 days ago",
+        "text": "Dettol is too harsh — kills good and bad bacteria, dries the wound. Saline (just dissolve salt in boiled water) is gentler and equally effective for cleaning.",
+        "likes": 16
+      },
+      {
+        "id": 3,
+        "author": "NandiniK",
+        "city": "Coimbatore",
+        "time": "5 days ago",
+        "text": "We keep liquid bandage (Nexcare) in the kit — better for active kids than fabric plasters that peel off in 20 mins. One application stays on through play and bath.",
+        "likes": 12
+      },
+      {
+        "id": 4,
+        "author": "GauriShah",
+        "city": "Ahmedabad",
+        "time": "14 hours ago",
+        "text": "Tetanus check — if his last booster was more than 5 years ago and the wound is deep or dirty, the paed may want to do a booster. Worth knowing for parents of active kids.",
+        "likes": 8
       }
     ]
   },
@@ -715,6 +1323,30 @@
         "time": "13 days ago",
         "text": "A few drops of coconut oil, leave for 20 minutes, then VERY gently use a soft baby brush in small circular motions, then wash with gentle baby shampoo. Do not pick or force the flakes — it can cause irritation. Usually clears in 2–3 weeks with consistent gentle treatment.",
         "likes": 23
+      },
+      {
+        "id": 2,
+        "author": "AnitaSrivastava",
+        "city": "Noida",
+        "time": "12 days ago",
+        "text": "We used Mustela's cradle cap shampoo — 2 weeks of consistent use cleared it. Pricier than coconut oil method but faster.",
+        "likes": 9
+      },
+      {
+        "id": 3,
+        "author": "SonalDesai",
+        "city": "Pune",
+        "time": "10 days ago",
+        "text": "Don't panic if it lingers — some babies have it until 6-8 months and it's completely harmless. As long as it isn't red, weepy, or spreading, you're not doing anything wrong.",
+        "likes": 13
+      },
+      {
+        "id": 4,
+        "author": "MeghaSinha",
+        "city": "Patna",
+        "time": "6 days ago",
+        "text": "A soft toothbrush works better than baby brushes for the gentle scrubbing — bristles are softer and more precise. Worked beautifully for us after coconut oil soak.",
+        "likes": 7
       }
     ]
   },
@@ -748,6 +1380,30 @@
         "time": "5 days ago",
         "text": "Spray is fastest but you need to rub it in after spraying — most parents skip this step and then it's not evenly applied. Stick or lotion give better coverage if applied properly.",
         "likes": 12
+      },
+      {
+        "id": 3,
+        "author": "BhavanaRao",
+        "city": "Bangalore",
+        "time": "5 days ago",
+        "text": "Make it a routine like brushing teeth — same time, same place, no negotiation. Once it becomes 'just a thing we do' the morning drama stops. Took 3 weeks to lock in.",
+        "likes": 14
+      },
+      {
+        "id": 4,
+        "author": "RashmiNair",
+        "city": "Mumbai",
+        "time": "4 days ago",
+        "text": "Give them ownership: let your 7yo apply his own on arms and legs while you do the face. Buying him 'his sunscreen' in a fun bottle also helped — kids love ownership.",
+        "likes": 11
+      },
+      {
+        "id": 5,
+        "author": "KritikaArora",
+        "city": "Gurgaon",
+        "time": "2 days ago",
+        "text": "Lotion at home (cooler hands, more controlled application), stick in the school bag for reapplication. Two formats serve different purposes.",
+        "likes": 8
       }
     ]
   },
@@ -773,6 +1429,30 @@
         "time": "8 days ago",
         "text": "Completely normal and extremely common — up to 70% of adolescent girls get them. They fade from pink/purple to silver over 6–12 months. Keeping the skin moisturised helps appearance. The most important thing is reassuring her that they are normal and even celebrated by many.",
         "likes": 28
+      },
+      {
+        "id": 2,
+        "author": "VandanaMehra",
+        "city": "Lucknow",
+        "time": "7 days ago",
+        "text": "Bio-Oil and Mederma have some clinical evidence for fading. Daily application for 3-6 months, not a quick fix. But for an anxious teen the act of doing something itself helps.",
+        "likes": 13
+      },
+      {
+        "id": 3,
+        "author": "PreetiKaur",
+        "city": "Amritsar",
+        "time": "5 days ago",
+        "text": "Conversation matters more than products at this age. Reassure her that stretch marks are markers of growth, not flaws. Show her your own if you have them — normalisation is powerful.",
+        "likes": 22
+      },
+      {
+        "id": 4,
+        "author": "IshaPandey",
+        "city": "Indore",
+        "time": "2 days ago",
+        "text": "Hydration from inside (water + healthy fats — avocado, ghee, nuts) does more for skin elasticity than topical products. Long game though, not visible in days.",
+        "likes": 9
       }
     ]
   },
@@ -806,6 +1486,30 @@
         "time": "4 days ago",
         "text": "Cooked beetroot is surprisingly sweet and kids often accept it. Also sesame seeds (til) — add to rotis, laddoos, or sprinkle on rice. Watermelon seeds and pumpkin seeds are also high in iron if your child will eat them as a snack.",
         "likes": 17
+      },
+      {
+        "id": 3,
+        "author": "ArchanaPillai",
+        "city": "Trivandrum",
+        "time": "3 days ago",
+        "text": "Dates and figs — high iron, sweet, and kids accept them as 'treats'. We blend them into a milkshake when she refuses outright. Soaked overnight increases iron availability.",
+        "likes": 14
+      },
+      {
+        "id": 4,
+        "author": "NandiniK",
+        "city": "Coimbatore",
+        "time": "2 days ago",
+        "text": "Iron-fortified cereals can help bridge the gap — look for ones with ferrous sulphate, the most bioavailable form. Don't pair with milk (calcium blocks absorption); pair with citrus.",
+        "likes": 11
+      },
+      {
+        "id": 5,
+        "author": "GauriShah",
+        "city": "Ahmedabad",
+        "time": "12 hours ago",
+        "text": "Cast iron cookware actually adds iron to the food cooked in it. Sounds folksy but there's good evidence. We switched our dal/sabzi pan to cast iron and her levels came up.",
+        "likes": 10
       }
     ]
   },
@@ -839,6 +1543,30 @@
         "time": "2 days ago",
         "text": "We had an evaluation done at 3.5 privately — just for peace of mind. It turned out our son just needed some speech therapy (not a disorder, just a boost). Six months of sessions and he was chatting nonstop. Worth doing if the anxiety is affecting you.",
         "likes": 19
+      },
+      {
+        "id": 3,
+        "author": "SonalDesai",
+        "city": "Pune",
+        "time": "1 day ago",
+        "text": "We were in the same boat — bilingual household, son spoke late. He's now 7 and articulate in both languages. The 'silent gathering' period is real and bilingual kids often jump straight to sentences once they start.",
+        "likes": 22
+      },
+      {
+        "id": 4,
+        "author": "MeghaSinha",
+        "city": "Patna",
+        "time": "20 hours ago",
+        "text": "Speech delay vs language delay are different — if he understands, the receptive language is fine. Expressive delay is much more often developmental and resolves on its own.",
+        "likes": 14
+      },
+      {
+        "id": 5,
+        "author": "KritikaArora",
+        "city": "Gurgaon",
+        "time": "6 hours ago",
+        "text": "If you do go for evaluation, look for a bilingual speech-language pathologist. Monolingual evaluators often pathologise bilingual development that's actually normal.",
+        "likes": 11
       }
     ]
   },
@@ -864,6 +1592,30 @@
         "time": "5 days ago",
         "text": "If he eats curd and paneer he's actually doing quite well! A cup of curd has almost as much calcium as a glass of milk. Add ragi, broccoli, almonds, white sesame, and small fish (if non-veg) to cover the gaps. Green leafy veggies also contribute.",
         "likes": 22
+      },
+      {
+        "id": 2,
+        "author": "RashmiNair",
+        "city": "Mumbai",
+        "time": "4 days ago",
+        "text": "Til-jaggery laddoos — calcium + iron, kids love them as 'sweets'. Make a batch fortnightly. Old grandma recipe with serious nutritional firepower.",
+        "likes": 17
+      },
+      {
+        "id": 3,
+        "author": "PreetiKaur",
+        "city": "Amritsar",
+        "time": "3 days ago",
+        "text": "Ragi malt with cardamom — looks and tastes nothing like plain milk. Our milk-refuser drinks 2 cups a day of this. Ragi alone has 350mg calcium per 100g.",
+        "likes": 14
+      },
+      {
+        "id": 4,
+        "author": "VandanaMehra",
+        "city": "Lucknow",
+        "time": "1 day ago",
+        "text": "Cheese-loving kids do well — a single cube of cheddar is ~200mg calcium. Used as topping, in sandwiches, melted on rotis. Many milk-refusers accept cheese happily.",
+        "likes": 9
       }
     ]
   },
@@ -897,6 +1649,38 @@
         "time": "3 days ago",
         "text": "This was us until recently. What worked: a 'landing snack' ready at the door, quiet time in his room with sensory toys, and absolutely no screens or demands for the first 30 minutes. It sounds indulgent but the meltdowns basically stopped within 2 weeks.",
         "likes": 28
+      },
+      {
+        "id": 3,
+        "author": "BhavanaRao",
+        "city": "Bangalore",
+        "time": "2 days ago",
+        "text": "Snack in the car on pickup — protein-based not sugar. Hangry meltdowns are physiological, not behavioural. A boiled egg or peanut butter sandwich on the drive home stopped 70% of ours.",
+        "likes": 31
+      },
+      {
+        "id": 4,
+        "author": "NandiniK",
+        "city": "Coimbatore",
+        "time": "1 day ago",
+        "text": "After-school activities are too much at 5 even if they look 'fun'. We cut all weekday classes and only kept weekends. Meltdowns dropped within a week.",
+        "likes": 25
+      },
+      {
+        "id": 5,
+        "author": "IshaPandey",
+        "city": "Indore",
+        "time": "10 hours ago",
+        "text": "We let our 5yo wear pyjamas as soon as he got home — physical cue that 'school is over, you can relax now'. Sounds odd but it worked as a transition ritual.",
+        "likes": 18
+      },
+      {
+        "id": 6,
+        "author": "AnitaSrivastava",
+        "city": "Noida",
+        "time": "4 hours ago",
+        "text": "Don't try to talk about the day right away — questions overwhelm them. We do 'no talking time' for 15 mins, then he naturally starts sharing once he's decompressed.",
+        "likes": 14
       }
     ]
   },
@@ -922,6 +1706,30 @@
         "time": "6 days ago",
         "text": "Never mention weight or dieting to kids this age. Frame everything as 'family health habits' — new activities for everyone, new recipes everyone tries, screen time limits for all adults too. Changes that apply to only the child make them feel singled out.",
         "likes": 33
+      },
+      {
+        "id": 2,
+        "author": "ArchanaPillai",
+        "city": "Trivandrum",
+        "time": "5 days ago",
+        "text": "Get the whole family active together — weekend hikes, evening walks, cycling. Don't make it 'exercise for the child'. Our paed told us this and it transformed the household.",
+        "likes": 26
+      },
+      {
+        "id": 3,
+        "author": "GauriShah",
+        "city": "Ahmedabad",
+        "time": "3 days ago",
+        "text": "Replace, don't restrict. If you remove fried snacks, the freezer should have a tasty alternative he chose. Restriction-only approaches usually backfire by 9-10.",
+        "likes": 22
+      },
+      {
+        "id": 4,
+        "author": "MeghaSinha",
+        "city": "Patna",
+        "time": "1 day ago",
+        "text": "Talk about food in terms of how it makes the body feel — 'fuel for cricket', 'helps you concentrate' — not weight or body. The language shapes their internal narrative.",
+        "likes": 19
       }
     ]
   },
@@ -947,6 +1755,30 @@
         "time": "7 days ago",
         "text": "Signs of protein deficiency in kids include: thinning hair, slow wound healing, swollen belly/ankles (in severe cases), fatigue, and frequent illness. For a 4-year-old she only needs about 16g/day — that's 2 eggs or a small bowl of dal. But if you're concerned, a blood albumin test gives a clear picture.",
         "likes": 26
+      },
+      {
+        "id": 2,
+        "author": "SonalDesai",
+        "city": "Pune",
+        "time": "6 days ago",
+        "text": "She might be hitting a 'fat-loading' phase — toddlers naturally crave more fat than protein for brain development. Pair this with curd and milk and you're often covering protein too.",
+        "likes": 18
+      },
+      {
+        "id": 3,
+        "author": "KritikaArora",
+        "city": "Gurgaon",
+        "time": "4 days ago",
+        "text": "Hidden protein: add besan to atta rotis (~15% by weight), use moong dal flour in dosas, peanut butter on apple. You can boost protein 30-40% without changing what she eats.",
+        "likes": 14
+      },
+      {
+        "id": 4,
+        "author": "PreetiKaur",
+        "city": "Amritsar",
+        "time": "1 day ago",
+        "text": "If you're stressed, get a paed-supervised blood test rather than guessing. Knowing the actual numbers stops the anxiety loop and tells you exactly what to address.",
+        "likes": 9
       }
     ]
   },
@@ -972,6 +1804,30 @@
         "time": "5 days ago",
         "text": "Playdough is the gold standard! Rolling, pinching, squeezing builds exactly the hand strength needed. Also: tearing paper, threading pasta on string, picking up small objects with tongs, finger painting, and peeling stickers. Basically anything that demands precision finger movement.",
         "likes": 30
+      },
+      {
+        "id": 2,
+        "author": "RashmiNair",
+        "city": "Mumbai",
+        "time": "4 days ago",
+        "text": "Cutting fruit with a butter knife — supervised. The grip + control + concentration builds exactly what we want. Kids feel grown-up doing it. Win-win.",
+        "likes": 22
+      },
+      {
+        "id": 3,
+        "author": "VandanaMehra",
+        "city": "Lucknow",
+        "time": "3 days ago",
+        "text": "Lacing cards (or just an old cardboard with holes and a shoelace) — cheap and effective. We did 10 mins a day before bed for a month and the OT noticed real improvement.",
+        "likes": 17
+      },
+      {
+        "id": 4,
+        "author": "BhavanaRao",
+        "city": "Bangalore",
+        "time": "1 day ago",
+        "text": "Tongs and tweezers for everything — picking pom-poms, transferring beans between bowls. The pincer-grip practice translates directly to pencil control.",
+        "likes": 11
       }
     ]
   },
@@ -997,6 +1853,30 @@
         "time": "9 days ago",
         "text": "My son did this for a term. Turned out lunch recess at his school overlapped with the only time to use the swings — so he was choosing play over food every day! Totally social. Ask him directly what happens at lunchtime.",
         "likes": 24
+      },
+      {
+        "id": 2,
+        "author": "IshaPandey",
+        "city": "Indore",
+        "time": "8 days ago",
+        "text": "Tiffin format matters at 9 — kids self-conscious about smelly curries, things that need utensils. Switching to dry/hand-eatable tiffins helped our son. Wraps, sandwiches, idli.",
+        "likes": 19
+      },
+      {
+        "id": 3,
+        "author": "NandiniK",
+        "city": "Coimbatore",
+        "time": "7 days ago",
+        "text": "Ask him to help pack his own tiffin. Ownership transforms eating. Even one item he chose makes a huge difference.",
+        "likes": 13
+      },
+      {
+        "id": 4,
+        "author": "ArchanaPillai",
+        "city": "Trivandrum",
+        "time": "3 days ago",
+        "text": "If he's eating a huge dinner and growing well, the body is regulating itself. Some kids just aren't lunch-eaters. Worth not making it a battle if everything else is fine.",
+        "likes": 10
       }
     ]
   },
@@ -1022,6 +1902,30 @@
         "time": "4 days ago",
         "text": "The evidence is mixed — trials show modest benefit for attention in children with ADHD, less clear for neurotypical kids. If you want food sources: flaxseeds (ground), walnuts, chia seeds, and hemp seeds provide ALA which the body partially converts to DHA. Algae-based DHA supplements are the best direct source for vegetarians.",
         "likes": 21
+      },
+      {
+        "id": 2,
+        "author": "GauriShah",
+        "city": "Ahmedabad",
+        "time": "3 days ago",
+        "text": "We did a 3-month trial of algae DHA on our 7yo at the paed's suggestion — honestly we saw no notable difference in focus. Anecdotally, lots of kids show no effect. Save your money for the food sources.",
+        "likes": 17
+      },
+      {
+        "id": 3,
+        "author": "MeghaSinha",
+        "city": "Patna",
+        "time": "2 days ago",
+        "text": "Quality varies wildly. If you do supplement, choose third-party tested (look for IFOS or USP certifications). Cheap supplements can have rancid oils which are worse than none.",
+        "likes": 11
+      },
+      {
+        "id": 4,
+        "author": "AnitaSrivastava",
+        "city": "Noida",
+        "time": "14 hours ago",
+        "text": "Two walnuts a day from age 4 — Ayurvedic 'brain food' recommendation with modern science behind it. Whole walnuts beat pills nutritionally.",
+        "likes": 8
       }
     ]
   },
@@ -1047,6 +1951,30 @@
         "time": "6 days ago",
         "text": "We do 'his turn, then my turn' — he brushes first, then I do a 'check' pass. I frame it as quality control, not correction. He's proud to be the one who goes first. Works perfectly!",
         "likes": 29
+      },
+      {
+        "id": 2,
+        "author": "SonalDesai",
+        "city": "Pune",
+        "time": "5 days ago",
+        "text": "Disclosing-tablets (you chew them after brushing and they turn missed plaque pink) — bought a pack on Amazon and they ended every brushing debate. The 'check' became objective.",
+        "likes": 24
+      },
+      {
+        "id": 3,
+        "author": "KritikaArora",
+        "city": "Gurgaon",
+        "time": "4 days ago",
+        "text": "Electric brush with a 2-min timer + music — removed the 'are we done yet' negotiation. Built-in time = built-in compliance.",
+        "likes": 17
+      },
+      {
+        "id": 4,
+        "author": "PreetiKaur",
+        "city": "Amritsar",
+        "time": "1 day ago",
+        "text": "Brush together — model the technique while doing your own. Kids mirror what they see, and they want to be 'like us'. We brush side-by-side every morning.",
+        "likes": 13
       }
     ]
   },
@@ -1072,6 +2000,30 @@
         "time": "3 days ago",
         "text": "The evidence is real but nuanced: blue light suppresses melatonin by delaying the signal, so even if he falls asleep easily, sleep quality may be affected. The content also matters — calm, slow-paced content vs. fast-paced gaming videos have very different arousal effects. 30 mins of quiet nature content is very different from 30 mins of Minecraft.",
         "likes": 25
+      },
+      {
+        "id": 2,
+        "author": "VandanaMehra",
+        "city": "Lucknow",
+        "time": "3 days ago",
+        "text": "Not all 8yo are equally affected. Some kids' melatonin systems handle blue light easily, others don't. If sleep onset, duration, and morning wake are all good — your kid is likely fine.",
+        "likes": 22
+      },
+      {
+        "id": 3,
+        "author": "BhavanaRao",
+        "city": "Bangalore",
+        "time": "2 days ago",
+        "text": "We switched to audiobooks for the bedtime wind-down. Same screen-free benefit, satisfies the 'just one more story' urge, no blue light. He listens to 30 min and naturally drifts off.",
+        "likes": 16
+      },
+      {
+        "id": 4,
+        "author": "RashmiNair",
+        "city": "Mumbai",
+        "time": "10 hours ago",
+        "text": "The content matters more than the screen — Bluey or nature documentaries have very different arousal effects than gaming content. Audit what he's actually watching for 30 mins.",
+        "likes": 14
       }
     ]
   },
@@ -1097,6 +2049,30 @@
         "time": "2 days ago",
         "text": "Simple and honest language is best — avoid euphemisms like 'went to sleep' or 'passed' which confuse young kids and can cause fear of sleep. 'Bruno died. His body stopped working and he can't come back, but we can remember how much we loved him.' Let her see you be sad too — it teaches her that grief is okay.",
         "likes": 42
+      },
+      {
+        "id": 2,
+        "author": "NandiniK",
+        "city": "Coimbatore",
+        "time": "2 days ago",
+        "text": "'I'll Always Love You' by Hans Wilhelm — beautiful picture book about a pet dying. We read it through tears together. Helped my daughter find words for her grief.",
+        "likes": 28
+      },
+      {
+        "id": 3,
+        "author": "IshaPandey",
+        "city": "Indore",
+        "time": "1 day ago",
+        "text": "Create a memory ritual — we made a small box with Bruno's collar, a photo, and a drawing. She visits it when she misses him. Concrete objects help young children process abstract loss.",
+        "likes": 22
+      },
+      {
+        "id": 4,
+        "author": "ArchanaPillai",
+        "city": "Trivandrum",
+        "time": "14 hours ago",
+        "text": "Be prepared for the questions to recurse for weeks — same questions, same answers. That's normal grief processing, not malice. Patience > information.",
+        "likes": 17
       }
     ]
   },
@@ -1122,6 +2098,30 @@
         "time": "6 days ago",
         "text": "This is called 'neophobia' and it peaks between 18–24 months — completely developmentally normal. The Division of Responsibility model says: you decide WHAT is served, she decides IF and HOW MUCH she eats. Keep offering variety without pressure. It can take 10–15 exposures to a new food before acceptance.",
         "likes": 32
+      },
+      {
+        "id": 2,
+        "author": "MeghaSinha",
+        "city": "Patna",
+        "time": "6 days ago",
+        "text": "The 18-24 month food refusal phase is brutal but temporary. We just kept offering 1 new food alongside familiar ones, no pressure. By 30 months she was eating broadly again.",
+        "likes": 19
+      },
+      {
+        "id": 3,
+        "author": "GauriShah",
+        "city": "Ahmedabad",
+        "time": "4 days ago",
+        "text": "Don't replace with what they will eat — that reinforces the refusal. Serve the family meal in toddler form. They eat or don't eat, no separate kids' menu.",
+        "likes": 14
+      },
+      {
+        "id": 4,
+        "author": "PreetiKaur",
+        "city": "Amritsar",
+        "time": "1 day ago",
+        "text": "Smoothies were our bridge — banana + spinach + curd + dates. Looked normal, tasted sweet, smuggled in nutrition while she was in the 'I only eat rice' phase.",
+        "likes": 11
       }
     ]
   },
@@ -1155,6 +2155,30 @@
         "time": "6 days ago",
         "text": "Read aloud WITH them. Don't stop at chapter two. Leave them at a cliffhanger and say 'I have to do something, let me know what happens!' The curiosity often pulls them to read ahead themselves.",
         "likes": 22
+      },
+      {
+        "id": 3,
+        "author": "SonalDesai",
+        "city": "Pune",
+        "time": "6 days ago",
+        "text": "Audiobooks were our gateway — she listened first, got hooked on Harry Potter, then asked for the books to 'see what they look like'. Listening counts as reading at this age.",
+        "likes": 18
+      },
+      {
+        "id": 4,
+        "author": "AnitaSrivastava",
+        "city": "Noida",
+        "time": "4 days ago",
+        "text": "Visible reading time for adults. Kids who see parents read books for pleasure are 4x more likely to become readers themselves. Phones don't count.",
+        "likes": 21
+      },
+      {
+        "id": 5,
+        "author": "KritikaArora",
+        "city": "Gurgaon",
+        "time": "1 day ago",
+        "text": "Let her pick — even if it's 'bad' books. Captain Underpants is not literature but it converts non-readers to readers. The habit matters more than the title at 7.",
+        "likes": 15
       }
     ]
   },
@@ -1180,6 +2204,30 @@
         "time": "3 days ago",
         "text": "4 is actually older than typical biting age (18 months–3 years) so worth investigating triggers. Ask daycare what was happening each time — usually it's frustration, overwhelm, or desire for something. Work with them on warning signs and redirection strategies. A quick consultation with a child psychologist is worth it at this point.",
         "likes": 18
+      },
+      {
+        "id": 2,
+        "author": "VandanaMehra",
+        "city": "Lucknow",
+        "time": "3 days ago",
+        "text": "Sometimes biting at 4 is sensory-seeking or related to a speech limitation — child can't verbalise frustration so bites. An occupational therapy eval can be revealing.",
+        "likes": 14
+      },
+      {
+        "id": 3,
+        "author": "IshaPandey",
+        "city": "Indore",
+        "time": "2 days ago",
+        "text": "Don't shame him after — it doesn't deter the biting and damages your relationship. Focus on the trigger and the alternative behaviour: 'words first, hands second'.",
+        "likes": 12
+      },
+      {
+        "id": 4,
+        "author": "BhavanaRao",
+        "city": "Bangalore",
+        "time": "14 hours ago",
+        "text": "Same situation here at 4 — turned out he was being repeatedly pushed by a specific kid and didn't have language to escalate. Once we identified that and adults intervened, biting stopped.",
+        "likes": 9
       }
     ]
   },
@@ -1205,6 +2253,30 @@
         "time": "5 days ago",
         "text": "Swimming, cycling, martial arts, gymnastics, and dance are all individual-progress based. You're not compared to a team — you improve against yourself. My daughter who cried at every football match absolutely loves her Bharatanatyam class because every term she can do things she couldn't before.",
         "likes": 28
+      },
+      {
+        "id": 2,
+        "author": "NandiniK",
+        "city": "Coimbatore",
+        "time": "5 days ago",
+        "text": "Rock climbing! Genuinely changed my 'non-sporty' daughter. It's individual progress, no team politics, builds strength + confidence. Most cities have indoor walls now with kid sessions.",
+        "likes": 22
+      },
+      {
+        "id": 3,
+        "author": "RashmiNair",
+        "city": "Mumbai",
+        "time": "4 days ago",
+        "text": "Skating (roller or ice) — solo activity, very visible progress, and the kids 'compete' against themselves. Built confidence for our risk-averse daughter.",
+        "likes": 16
+      },
+      {
+        "id": 4,
+        "author": "GauriShah",
+        "city": "Ahmedabad",
+        "time": "2 days ago",
+        "text": "Swimming. The water is the leveller — strength matters less than technique, and every kid improves at their own pace without comparison.",
+        "likes": 13
       }
     ]
   },
@@ -1238,6 +2310,30 @@
         "time": "4 days ago",
         "text": "We do a daily 'movement break' by following YouTube kids yoga or GoNoodle dances — keeps the physical energy moving. The kids actually look forward to it!",
         "likes": 19
+      },
+      {
+        "id": 3,
+        "author": "ArchanaPillai",
+        "city": "Trivandrum",
+        "time": "3 days ago",
+        "text": "Pillow forts and cushion 'mountains' — sounds basic but young kids will play in a giant indoor fort for HOURS. Move all the living room cushions, declare a fort day.",
+        "likes": 25
+      },
+      {
+        "id": 4,
+        "author": "MeghaSinha",
+        "city": "Patna",
+        "time": "2 days ago",
+        "text": "Bowling pins from empty water bottles + soft ball = indoor bowling. Our hallway became a bowling alley for an entire monsoon.",
+        "likes": 14
+      },
+      {
+        "id": 5,
+        "author": "PreetiKaur",
+        "city": "Amritsar",
+        "time": "1 day ago",
+        "text": "We bought a small indoor swing (suction-mount, holds up to 50kg) — best ₹3000 spent. Kids swing daily, burns physical energy, packs away.",
+        "likes": 19
       }
     ]
   },
@@ -1263,6 +2359,30 @@
         "time": "6 days ago",
         "text": "Activity has to be social at this age — peer-driven. Find a neighbour kid who cycles or a weekend football group. My son was 'too tired' for any solo activity but suddenly had energy for anything his friends were doing.",
         "likes": 24
+      },
+      {
+        "id": 2,
+        "author": "SonalDesai",
+        "city": "Pune",
+        "time": "5 days ago",
+        "text": "Make it part of school transit if possible — cycling to school, walking, parking further. Lifestyle activity beats 'exercise time' at this age.",
+        "likes": 19
+      },
+      {
+        "id": 3,
+        "author": "KritikaArora",
+        "city": "Gurgaon",
+        "time": "4 days ago",
+        "text": "Fitness tracker gamification works at 10! We got our son a basic Fitbit and he chases his step goal obsessively. Sounds wrong but the result is real activity.",
+        "likes": 16
+      },
+      {
+        "id": 4,
+        "author": "VandanaMehra",
+        "city": "Lucknow",
+        "time": "14 hours ago",
+        "text": "Pickleball is the new family activity — easier than tennis, all ages can play, my 10yo loves it because she can actually compete with adults.",
+        "likes": 11
       }
     ]
   },
@@ -1288,6 +2408,30 @@
         "time": "6 days ago",
         "text": "Cubbon Park on Sunday mornings is magical — the roads are blocked for vehicles! Lalbagh also has internal paths. For longer rides, the Nandi Hills route is too advanced but the roads around Ulsoor Lake early mornings are quiet and flat.",
         "likes": 22
+      },
+      {
+        "id": 2,
+        "author": "BhavanaRao",
+        "city": "Bangalore",
+        "time": "6 days ago",
+        "text": "Bannerghatta Road on Sunday mornings has a designated cycling stretch (5-9am). Closed to vehicles, lots of families. Best place we found for safe child cycling.",
+        "likes": 14
+      },
+      {
+        "id": 3,
+        "author": "IshaPandey",
+        "city": "Indore",
+        "time": "5 days ago",
+        "text": "Decathlon Sarjapur has a beginner cycle track on weekends — free, supervised, and they rent bikes if you don't want to lug yours. Great for first 'real ride'.",
+        "likes": 11
+      },
+      {
+        "id": 4,
+        "author": "NandiniK",
+        "city": "Coimbatore",
+        "time": "14 hours ago",
+        "text": "Whitefield's CV Raman Nagar quiet inner roads work well early mornings — wide, flat, low traffic before 8am.",
+        "likes": 8
       }
     ]
   },
@@ -1313,6 +2457,30 @@
         "time": "7 days ago",
         "text": "Taekwondo has a heavy emphasis on kicks which kids love, plus the belt progression system is excellent for building goal-setting habits. Karate is more balanced — both hands and feet. For a 6-year-old, the quality of the instructor matters far more than the style. Visit a few trial classes and watch how they treat beginners.",
         "likes": 26
+      },
+      {
+        "id": 2,
+        "author": "AnitaSrivastava",
+        "city": "Noida",
+        "time": "7 days ago",
+        "text": "Our daughter does taekwondo — what hooked her was the discipline rituals (bowing, belt ceremonies). The structure built confidence faster than the techniques. Visit a class first; if the dojo doesn't feel right she'll quit in 2 weeks.",
+        "likes": 22
+      },
+      {
+        "id": 3,
+        "author": "GauriShah",
+        "city": "Ahmedabad",
+        "time": "6 days ago",
+        "text": "Kalaripayattu! Indigenous, beautiful art, more rounded than karate/TKD. Hard to find good schools though — Kerala has the best teachers. Worth exploring if you're nearby.",
+        "likes": 14
+      },
+      {
+        "id": 4,
+        "author": "MeghaSinha",
+        "city": "Patna",
+        "time": "2 days ago",
+        "text": "Look at the female instructor ratio. A martial art with female instructors at higher levels reinforces 'this is for you too' for daughters. Made a real difference for ours.",
+        "likes": 11
       }
     ]
   },
@@ -1338,6 +2506,30 @@
         "time": "13 days ago",
         "text": "Key things to check: do they play small-sided games (3v3, 4v4) or do young kids just stand in a big 11v11 and get ignored? Good academies for under-10s use small-sided games where every child touches the ball constantly. Avoid any coach who screams at kids or focuses only on wins.",
         "likes": 20
+      },
+      {
+        "id": 2,
+        "author": "PreetiKaur",
+        "city": "Amritsar",
+        "time": "12 days ago",
+        "text": "Pune FC academy at Balewadi Stadium is excellent for 6-10 age group. Real coaches, FIFA-aligned curriculum, fun-first approach. Tryout day is monthly.",
+        "likes": 13
+      },
+      {
+        "id": 3,
+        "author": "RashmiNair",
+        "city": "Mumbai",
+        "time": "10 days ago",
+        "text": "Reliance Foundation Young Champs runs trials in Pune annually — if your son is serious it's worth the trial. Even if not selected the experience is valuable.",
+        "likes": 9
+      },
+      {
+        "id": 4,
+        "author": "ArchanaPillai",
+        "city": "Trivandrum",
+        "time": "5 days ago",
+        "text": "Watch a session before enrolling. Coach-to-kid ratio + the body language of kids on the field tells you everything. Happy kids playing = right academy.",
+        "likes": 12
       }
     ]
   },
@@ -1363,6 +2555,30 @@
         "time": "4 days ago",
         "text": "WHO guidelines recommend at least 3 hours of physical activity for children under 5, of which at least 60 minutes should be moderate-to-vigorous (running, jumping, climbing). For 5-year-olds the recommendation is 60 minutes of moderate-vigorous activity daily. School recess + 30 mins at home is likely close if both are active.",
         "likes": 17
+      },
+      {
+        "id": 2,
+        "author": "VandanaMehra",
+        "city": "Lucknow",
+        "time": "4 days ago",
+        "text": "Activity 'snacks' through the day work better than one big block. 10 mins of running before school, 10 mins of cycling after, 30 mins of free play — adds to 50+ comfortably.",
+        "likes": 14
+      },
+      {
+        "id": 3,
+        "author": "SonalDesai",
+        "city": "Pune",
+        "time": "3 days ago",
+        "text": "If school recess is genuinely active (not standing around chatting), it can cover 40+ mins. Ask the teacher how recess looks. We were surprised at the variability.",
+        "likes": 11
+      },
+      {
+        "id": 4,
+        "author": "NandiniK",
+        "city": "Coimbatore",
+        "time": "1 day ago",
+        "text": "Don't count screen-based 'movement' (like Switch Sports). Real outdoor unstructured play is qualitatively different. Sun exposure + variable terrain matters at this age.",
+        "likes": 9
       }
     ]
   },
@@ -1388,6 +2604,30 @@
         "time": "8 days ago",
         "text": "Start with water play completely outside the pool — bathtub face dipping, pouring cups of water on her own head, water balloon fights. Build water confidence with zero pressure over a few weeks BEFORE going back to the pool. Trauma response needs desensitization, not exposure.",
         "likes": 29
+      },
+      {
+        "id": 2,
+        "author": "BhavanaRao",
+        "city": "Bangalore",
+        "time": "7 days ago",
+        "text": "Find a teacher who specialises in water-anxious kids — many do. Group classes don't work for this kid. 1:1 for 3-4 sessions, then transition to group.",
+        "likes": 21
+      },
+      {
+        "id": 3,
+        "author": "KritikaArora",
+        "city": "Gurgaon",
+        "time": "5 days ago",
+        "text": "Goggles are game-changing. Many fears are about water in eyes specifically. Once she has goggles she trusts, the panic drops sharply.",
+        "likes": 18
+      },
+      {
+        "id": 4,
+        "author": "IshaPandey",
+        "city": "Indore",
+        "time": "1 day ago",
+        "text": "Swimming earplugs too — water in ears can cause vertigo which deepens the fear. Cheap fix that helped our anxious swimmer enormously.",
+        "likes": 12
       }
     ]
   },
@@ -1413,6 +2653,30 @@
         "time": "6 days ago",
         "text": "Twister is the classic. Jenga while standing on one leg (house rule). But honestly, 'action dice' where each number = 10 jumping jacks, 5 squats etc — you can add this to ANY board game between turns. The 10-year-old will probably love creating the action dice rules.",
         "likes": 21
+      },
+      {
+        "id": 2,
+        "author": "GauriShah",
+        "city": "Ahmedabad",
+        "time": "5 days ago",
+        "text": "'Throw Throw Burrito' — combines dodgeball with cards. Hilarious, gets kids running around the living room, ages 6+. Most-played family game in our house.",
+        "likes": 17
+      },
+      {
+        "id": 3,
+        "author": "MeghaSinha",
+        "city": "Patna",
+        "time": "4 days ago",
+        "text": "Story Cubes + 'act out' rules — roll dice, but you have to physically act out the story. Adds movement to a calm game. Free hack for any creative game.",
+        "likes": 11
+      },
+      {
+        "id": 4,
+        "author": "PreetiKaur",
+        "city": "Amritsar",
+        "time": "14 hours ago",
+        "text": "Charades, Simon Says, and the indoor classics still beat most modern games. Sometimes the old ones are the best.",
+        "likes": 8
       }
     ]
   },
@@ -1438,6 +2702,30 @@
         "time": "11 days ago",
         "text": "Left-handed batsmen are actually prized in cricket! Once he reaches a certain level coaches will actively develop that. At 9, any good coach should be comfortable — the fundamentals are the same, just mirrored. Ensure the coach is watching and giving mirror-corrected feedback, not generic right-handed cues.",
         "likes": 16
+      },
+      {
+        "id": 2,
+        "author": "ArchanaPillai",
+        "city": "Trivandrum",
+        "time": "11 days ago",
+        "text": "Find a coach who is also left-handed if possible. The instincts are mirrored — explanation comes naturally rather than mentally flipping every cue.",
+        "likes": 10
+      },
+      {
+        "id": 3,
+        "author": "NandiniK",
+        "city": "Coimbatore",
+        "time": "9 days ago",
+        "text": "Don't let anyone try to convert him to right-handed batting. Older coaches sometimes still do this. Left-handed cricketers like Gambhir, Pant, Ganguly are proof — keep him a leftie.",
+        "likes": 14
+      },
+      {
+        "id": 4,
+        "author": "SonalDesai",
+        "city": "Pune",
+        "time": "3 days ago",
+        "text": "Equipment: gloves and pads are right-hand specific. Ensure the academy provides correct left-hand gear. Many kits at lower levels are right-only.",
+        "likes": 9
       }
     ]
   },
@@ -1463,6 +2751,30 @@
         "time": "4 days ago",
         "text": "5 is a great age! Kids yoga at this age is almost entirely play-based — animal poses, stories through movement, no real holds or serious technique. Benefits are breathing awareness, body awareness, and concentration. Avoid any class that involves real flexibility forcing or adult-style stretching.",
         "likes": 24
+      },
+      {
+        "id": 2,
+        "author": "AnitaSrivastava",
+        "city": "Noida",
+        "time": "4 days ago",
+        "text": "Cosmic Kids Yoga on YouTube — free, story-based, perfectly pitched at 4-7. We did it daily for a year before enrolling in an actual class. Great way to test interest.",
+        "likes": 16
+      },
+      {
+        "id": 3,
+        "author": "RashmiNair",
+        "city": "Mumbai",
+        "time": "3 days ago",
+        "text": "Avoid classes that mix adults and kids. Kids' yoga is a completely different discipline — story-led, no holds, lots of laughter. Adult-style classes are inappropriate for 5yo.",
+        "likes": 11
+      },
+      {
+        "id": 4,
+        "author": "VandanaMehra",
+        "city": "Lucknow",
+        "time": "12 hours ago",
+        "text": "Look for classes with breathwork — even at 5, simple belly breathing has clear emotional regulation benefits. That's the real long-term gift.",
+        "likes": 9
       }
     ]
   },
@@ -1488,6 +2800,30 @@
         "time": "3 days ago",
         "text": "Grass! Take him to a gentle slope on grass. The grass slows him down enough that he doesn't panic, and the soft surface means falling doesn't hurt. Once balance clicks on grass, tarmac feels easy. Also: holding the shoulder, not the seat — the shoulder gives them better proprioception of body balance.",
         "likes": 35
+      },
+      {
+        "id": 2,
+        "author": "BhavanaRao",
+        "city": "Bangalore",
+        "time": "3 days ago",
+        "text": "Strider/balance bike from age 3-5 first, then transition. We did this for our second kid and she went pedalling without training wheels in one afternoon at age 5. The balance is pre-built.",
+        "likes": 26
+      },
+      {
+        "id": 3,
+        "author": "KritikaArora",
+        "city": "Gurgaon",
+        "time": "2 days ago",
+        "text": "Lower the seat dramatically so feet are flat on the ground. Removes the fear of falling. Once balance is found, raise it back. Game changer for fearful kids.",
+        "likes": 19
+      },
+      {
+        "id": 4,
+        "author": "GauriShah",
+        "city": "Ahmedabad",
+        "time": "14 hours ago",
+        "text": "Don't hold the seat — they feel the support is the only thing keeping them upright. Light hand on the back of the t-shirt, let go for 2 seconds, hold, repeat.",
+        "likes": 14
       }
     ]
   },
@@ -1513,6 +2849,30 @@
         "time": "5 days ago",
         "text": "Most injuries happen from multiple people jumping simultaneously, flips, and landing on the frame. Go on a weekday when it's less crowded. One person per trampoline section. No flips or somersaults. Check that the park has thick padding on all frame edges. We've done it 5–6 times with zero issues following these rules.",
         "likes": 19
+      },
+      {
+        "id": 2,
+        "author": "IshaPandey",
+        "city": "Indore",
+        "time": "5 days ago",
+        "text": "I'm an orthopaedic surgeon — wrist fractures from trampoline parks are the #1 paediatric ortho injury in summer holidays now. Manageable if rules are followed, devastating if not. No flips. Ever. Solo on each pad.",
+        "likes": 28
+      },
+      {
+        "id": 3,
+        "author": "MeghaSinha",
+        "city": "Patna",
+        "time": "4 days ago",
+        "text": "Don't let two kids of very different sizes share a trampoline — the smaller one bounces uncontrollably. We saw a nasty broken arm from this combination at Sky Jumper.",
+        "likes": 17
+      },
+      {
+        "id": 4,
+        "author": "PreetiKaur",
+        "city": "Amritsar",
+        "time": "1 day ago",
+        "text": "Grip socks are mandatory at most parks but make sure they actually fit. Loose socks = sliding = injuries. Worth taking time to size correctly.",
+        "likes": 11
       }
     ]
   },
@@ -1538,6 +2898,30 @@
         "time": "3 days ago",
         "text": "First, validate what he's observing — don't dismiss it. Then reframe: 'I know it doesn't feel fair, and you're right — some teachers do have favourites. That's a real thing. But your job is to do good work for yourself, not to impress the teacher.' Then, if it's seriously affecting his learning, a calm parent-teacher meeting is the right step — stick to specific observations, not accusations.",
         "likes": 34
+      },
+      {
+        "id": 2,
+        "author": "SonalDesai",
+        "city": "Pune",
+        "time": "3 days ago",
+        "text": "Document specific instances with dates before talking to school. 'On Tuesday, X happened' is concrete; 'she always favours' invites defensive denial. We took 2 weeks of notes and the meeting went very differently.",
+        "likes": 22
+      },
+      {
+        "id": 3,
+        "author": "ArchanaPillai",
+        "city": "Trivandrum",
+        "time": "2 days ago",
+        "text": "Don't go in adversarially — frame it as 'I want to understand the classroom dynamic so I can support my son better.' Teachers respond very differently to curious vs accusatory parents.",
+        "likes": 18
+      },
+      {
+        "id": 4,
+        "author": "NandiniK",
+        "city": "Coimbatore",
+        "time": "14 hours ago",
+        "text": "Sometimes 'favourites' are kids who reply more enthusiastically — teacher might not realise. Subtly coaching your son to engage more in class can shift the dynamic without confrontation.",
+        "likes": 13
       }
     ]
   },
@@ -1563,6 +2947,30 @@
         "time": "4 days ago",
         "text": "Research guidelines suggest 10 minutes per grade level — so Grade 3 should be 30 minutes max. 2 hours is excessive and actually counterproductive for this age. Raise it with the school collectively — one parent raising it gets nowhere, a group of parents gets results.",
         "likes": 38
+      },
+      {
+        "id": 2,
+        "author": "RashmiNair",
+        "city": "Mumbai",
+        "time": "4 days ago",
+        "text": "It's not normal at Grade 3 — research-backed homework recommendations are 30 mins. Parents collectively writing to the school principal (not the teacher) is the most effective channel.",
+        "likes": 26
+      },
+      {
+        "id": 3,
+        "author": "VandanaMehra",
+        "city": "Lucknow",
+        "time": "3 days ago",
+        "text": "Stop helping. Seriously. If she takes 2 hours alone but you'd 'finish' in 40 mins together, let the school see what she actually does in her own time. Teacher will adjust if real outcomes are visible.",
+        "likes": 21
+      },
+      {
+        "id": 4,
+        "author": "AnitaSrivastava",
+        "city": "Noida",
+        "time": "1 day ago",
+        "text": "Time her — 20 minutes per subject, hard stop. Send a note: 'completed work in allotted time'. Some teachers respect this; some don't, but it's reasonable boundary-setting.",
+        "likes": 14
       }
     ]
   },
@@ -1596,6 +3004,30 @@
         "time": "2 days ago",
         "text": "Also build her social life outside school — activity classes, neighbour kids, cousins. When children have social connections beyond one friend group at school, they have a safety net and the peer rejection hurts less deeply.",
         "likes": 26
+      },
+      {
+        "id": 3,
+        "author": "GauriShah",
+        "city": "Ahmedabad",
+        "time": "2 days ago",
+        "text": "Read 'Queen Bees and Wannabes' (Rosalind Wiseman) — old but timeless on female social dynamics. Helped me support my daughter through near-identical issues with concrete language.",
+        "likes": 24
+      },
+      {
+        "id": 4,
+        "author": "IshaPandey",
+        "city": "Indore",
+        "time": "1 day ago",
+        "text": "Don't try to fix who her friends are. Help her develop independence — hobbies, solo activities, confidence in her own company. The hardest skill at this age is not needing the friend group, which paradoxically makes other kids want to befriend her.",
+        "likes": 28
+      },
+      {
+        "id": 5,
+        "author": "BhavanaRao",
+        "city": "Bangalore",
+        "time": "14 hours ago",
+        "text": "We took our daughter to a child therapist for 4 sessions just for tools to handle the social pain. Best decision. Some emotional skills are easier to learn from a neutral expert than from a worried parent.",
+        "likes": 17
       }
     ]
   },
@@ -1621,6 +3053,30 @@
         "time": "6 days ago",
         "text": "NTSE in Stage 1 heavily tests MAT (mental ability) and SAT at CBSE/NCERT levels — a student with strong fundamentals can prepare 45–60 mins a day and do well without specialised coaching. Coaching centres take 2–3 hours daily which absolutely affects school performance. Self-study with a good test series is usually enough for a capable student.",
         "likes": 20
+      },
+      {
+        "id": 2,
+        "author": "KritikaArora",
+        "city": "Gurgaon",
+        "time": "6 days ago",
+        "text": "NTSE selection rate is ~0.3% — incredibly competitive. Don't go in expecting selection; go in for the exam-practice and depth-of-study benefits. Take the pressure off.",
+        "likes": 16
+      },
+      {
+        "id": 3,
+        "author": "PreetiKaur",
+        "city": "Amritsar",
+        "time": "5 days ago",
+        "text": "Self-study with NCERT + Arihant NTSE book + previous year papers is sufficient for Stage 1. The marginal benefit of coaching is small relative to time cost. Coaching is helpful only for Stage 2 prep.",
+        "likes": 13
+      },
+      {
+        "id": 4,
+        "author": "MeghaSinha",
+        "city": "Patna",
+        "time": "1 day ago",
+        "text": "Even 'not selected' kids often do significantly better in boards because the prep raises the level. Treat it as enrichment, not a target.",
+        "likes": 9
       }
     ]
   },
@@ -1646,6 +3102,30 @@
         "time": "5 days ago",
         "text": "Offline is better for doubt-clearing — real back-and-forth. Online is better for flexibility and recorded content you can rewatch. A hybrid often works: offline for the subjects where he struggles, online video content for subjects where he needs enrichment but not handholding.",
         "likes": 18
+      },
+      {
+        "id": 2,
+        "author": "SonalDesai",
+        "city": "Pune",
+        "time": "5 days ago",
+        "text": "Don't underestimate the local home tutor route — a single subject tutor at home who works 1:1 with him often outperforms both online platforms and big offline centres. Look for a postgrad student or junior college teacher.",
+        "likes": 18
+      },
+      {
+        "id": 3,
+        "author": "NandiniK",
+        "city": "Coimbatore",
+        "time": "4 days ago",
+        "text": "Trial a free demo of both before paying anything. The 'right format' depends on the child's attention style. Some kids drift on video, some thrive on it.",
+        "likes": 14
+      },
+      {
+        "id": 4,
+        "author": "ArchanaPillai",
+        "city": "Trivandrum",
+        "time": "12 hours ago",
+        "text": "Watch out for online platforms that 'gamify' — short attention bursts that feel productive but don't build deep concept mastery. The chocolate-flavoured medicine analogy applies.",
+        "likes": 11
       }
     ]
   },
@@ -1671,6 +3151,30 @@
         "time": "3 days ago",
         "text": "This is classic separation anxiety combined with what's called 'functional abdominal pain' — the stress genuinely causes stomach cramps in kids. The fact that he's fine 5 mins later and fine all day is the key information. The most important thing is NOT giving in — it reinforces that school is dangerous. A confident goodbye ritual (same script every day, maximum 1 minute at gate, no lingering) is crucial.",
         "likes": 35
+      },
+      {
+        "id": 2,
+        "author": "AnitaSrivastava",
+        "city": "Noida",
+        "time": "3 days ago",
+        "text": "Read 'When Children Refuse School' by Christopher Kearney — gave us a framework to identify the actual cause (avoidance, attention-seeking, fear, etc.). Solutions are very different by cause.",
+        "likes": 21
+      },
+      {
+        "id": 3,
+        "author": "RashmiNair",
+        "city": "Mumbai",
+        "time": "2 days ago",
+        "text": "Have the school give him a small responsibility — class monitor, plant watering, library helper. Sense of purpose can completely reframe school for an anxious child.",
+        "likes": 18
+      },
+      {
+        "id": 4,
+        "author": "VandanaMehra",
+        "city": "Lucknow",
+        "time": "12 hours ago",
+        "text": "Talk to the teacher about his social map at school. Sometimes it's one specific kid making things miserable, sometimes it's not having a best friend. Specific intel changes the strategy.",
+        "likes": 13
       }
     ]
   },
@@ -1696,6 +3200,30 @@
         "time": "6 days ago",
         "text": "The key is asking questions instead of giving answers. Instead of: 'Let's put the water cycle diagram here' try: 'What do you think should go on this page?' Get materials, set up the workspace, be the logistical support — the creative and intellectual choices should be his.",
         "likes": 29
+      },
+      {
+        "id": 2,
+        "author": "BhavanaRao",
+        "city": "Bangalore",
+        "time": "6 days ago",
+        "text": "Visible parent involvement embarrasses the kid at this age. We do the 'helping' on a separate sheet first — discuss ideas, then he transcribes onto the project. The thinking is his, the output is his handwriting.",
+        "likes": 21
+      },
+      {
+        "id": 3,
+        "author": "GauriShah",
+        "city": "Ahmedabad",
+        "time": "5 days ago",
+        "text": "Set a timer on YOUR involvement — 30 mins of brainstorming with him, that's it. The rest is his. This prevents the slow drift into 'doing it for him'.",
+        "likes": 16
+      },
+      {
+        "id": 4,
+        "author": "KritikaArora",
+        "city": "Gurgaon",
+        "time": "1 day ago",
+        "text": "Imperfection is the goal. A child-made project that looks like a child made it is the WIN. Parents who do projects send kids the message 'you can't do it' — that's the real damage.",
+        "likes": 13
       }
     ]
   },
@@ -1721,6 +3249,30 @@
         "time": "7 days ago",
         "text": "Grade 9 is for building the foundation — the syllabus is 60% the same as Grade 10. Good Grade 9 study habits + concept clarity now means Grade 10 is revision, not learning from scratch. Focus on NCERT mastery, not supplementary books. Serious exam prep (previous papers, time trials) should start October of Grade 10.",
         "likes": 22
+      },
+      {
+        "id": 2,
+        "author": "IshaPandey",
+        "city": "Indore",
+        "time": "6 days ago",
+        "text": "Grade 9 is where students who later become toppers build conceptual mastery, not those who 'start preparing' for boards. The shift in mindset she needs is 'understand deeply' not 'cover quickly'.",
+        "likes": 17
+      },
+      {
+        "id": 3,
+        "author": "NandiniK",
+        "city": "Coimbatore",
+        "time": "5 days ago",
+        "text": "Don't start board-style mock tests until Aug-Sept of Grade 10. Too early and they become rote attempts. Build the foundation first.",
+        "likes": 14
+      },
+      {
+        "id": 4,
+        "author": "ArchanaPillai",
+        "city": "Trivandrum",
+        "time": "1 day ago",
+        "text": "Health basics this year matter most — sleep schedule, screen routine, exercise. Grade 10 stress is real and a kid going in with poor health habits crashes early.",
+        "likes": 11
       }
     ]
   },
@@ -1746,6 +3298,30 @@
         "time": "4 days ago",
         "text": "First: be sad with him. Don't rush to silver linings. 'I can see you worked hard and this result is really disappointing. That makes sense.' Only after he feels heard do you move to: 'Let's look at the paper together and figure out what happened' — which is about learning, not blaming.",
         "likes": 43
+      },
+      {
+        "id": 2,
+        "author": "MeghaSinha",
+        "city": "Patna",
+        "time": "4 days ago",
+        "text": "Share your own failure stories with him. Hearing that you also failed at things, recovered, and grew — destigmatises failure faster than any pep talk.",
+        "likes": 31
+      },
+      {
+        "id": 3,
+        "author": "PreetiKaur",
+        "city": "Amritsar",
+        "time": "3 days ago",
+        "text": "Don't go straight to fixing/analysing. Give it a day or two — let the disappointment sit. Premature problem-solving signals 'the feeling is the problem' rather than 'the feeling is valid'.",
+        "likes": 23
+      },
+      {
+        "id": 4,
+        "author": "SonalDesai",
+        "city": "Pune",
+        "time": "14 hours ago",
+        "text": "Watch your own face when he tells you results. Kids read disappointment in micro-expressions and store it as 'I let mom down'. Your composure is half the conversation.",
+        "likes": 19
       }
     ]
   },
@@ -1771,6 +3347,30 @@
         "time": "5 days ago",
         "text": "French is genuinely useful — it opens Canada, France, and 20+ African countries and is an official UN language. Mandarin is the second-most-spoken globally and increasingly valuable for commerce. German is excellent for engineering/research careers in Europe. At 8, honestly pick whichever she finds most fun — motivation is the biggest predictor of language success.",
         "likes": 27
+      },
+      {
+        "id": 2,
+        "author": "VandanaMehra",
+        "city": "Lucknow",
+        "time": "5 days ago",
+        "text": "Spanish is the fastest to gain conversational fluency and opens Latin America — a region with major growth in trade with India. Often overlooked.",
+        "likes": 14
+      },
+      {
+        "id": 3,
+        "author": "GauriShah",
+        "city": "Ahmedabad",
+        "time": "4 days ago",
+        "text": "Sanskrit if she's curious — counterintuitive but it builds an extraordinary grammar foundation and several school boards offer scoring advantage. Often overlooked.",
+        "likes": 12
+      },
+      {
+        "id": 4,
+        "author": "AnitaSrivastava",
+        "city": "Noida",
+        "time": "1 day ago",
+        "text": "More important: pick a language she can use weekly. A language without immersion fades by adulthood regardless of which one it is.",
+        "likes": 16
       }
     ]
   },
@@ -1804,6 +3404,30 @@
         "time": "2 days ago",
         "text": "There's a middle ground: dumb phones or basic calling-only devices are allowed at many schools. A Nokia-style phone solves the emergency contact problem without the distraction of a smartphone.",
         "likes": 21
+      },
+      {
+        "id": 3,
+        "author": "BhavanaRao",
+        "city": "Bangalore",
+        "time": "2 days ago",
+        "text": "Read Jonathan Haidt's 'The Anxious Generation' if you haven't — exhaustive research on smartphone-school link to teen mental health. After reading it, my opposition to bans evaporated.",
+        "likes": 33
+      },
+      {
+        "id": 4,
+        "author": "IshaPandey",
+        "city": "Indore",
+        "time": "1 day ago",
+        "text": "Many phone-ban schools allow GPS-only smartwatches for pickup coordination. A reasonable compromise. Apple Watch with cellular-only-on-school-app would work too.",
+        "likes": 18
+      },
+      {
+        "id": 5,
+        "author": "NandiniK",
+        "city": "Coimbatore",
+        "time": "12 hours ago",
+        "text": "The kids adapt within 2-3 weeks — they always do. Adults panic more than kids do about phone bans. Trust the data: 14yo brains genuinely don't benefit from in-school phone access.",
+        "likes": 14
       }
     ]
   },
@@ -1829,6 +3453,30 @@
         "time": "6 days ago",
         "text": "Don't push traditional drawing if he's not interested — creativity comes in many forms. Lego IS visual-spatial design. If you want creative structured activity, try pottery, model-building, or even architecture Lego kits. Force-fed art class for a disinterested 8-year-old usually just creates resentment toward art.",
         "likes": 25
+      },
+      {
+        "id": 2,
+        "author": "ArchanaPillai",
+        "city": "Trivandrum",
+        "time": "6 days ago",
+        "text": "Don't force visual art if he's not interested but introduce 'maker' classes — robotics, woodworking, simple engineering kits. Creative output without the drawing pressure.",
+        "likes": 19
+      },
+      {
+        "id": 3,
+        "author": "SonalDesai",
+        "city": "Pune",
+        "time": "5 days ago",
+        "text": "Music or theatre might appeal more than visual art. The 'creative outlet' need not be drawing. Listen to what he gravitates toward naturally.",
+        "likes": 15
+      },
+      {
+        "id": 4,
+        "author": "KritikaArora",
+        "city": "Gurgaon",
+        "time": "1 day ago",
+        "text": "Art as therapy and art as career are different things. Some art exposure is good for any child but pushing 'classes' on a disinterested 8yo is usually counterproductive.",
+        "likes": 11
       }
     ]
   },
@@ -1865,6 +3513,38 @@
         "time": "2 days ago",
         "text": "A visual bedtime chart with pictures helped us enormously. Kids this age need to KNOW what's coming, not be told. When they can look at the chart and see 'bath is next' they transition better than when we just announce it.",
         "likes": 32
+      },
+      {
+        "id": 3,
+        "author": "PreetiKaur",
+        "city": "Amritsar",
+        "time": "2 days ago",
+        "text": "Cut the day's last meal earlier — heavy dinner too close to bed sabotages everything. We moved dinner from 8pm to 7pm and the routine compressed by 30 mins overnight.",
+        "likes": 28
+      },
+      {
+        "id": 4,
+        "author": "MeghaSinha",
+        "city": "Patna",
+        "time": "1 day ago",
+        "text": "Lights low / yellow only 1 hour before bed. Blue/white overhead lights signal 'morning' to the brain. We changed all bulbs in the kids' areas to warm dimmable LEDs.",
+        "likes": 22
+      },
+      {
+        "id": 5,
+        "author": "RashmiNair",
+        "city": "Mumbai",
+        "time": "14 hours ago",
+        "text": "Reduce choices the closer to bed it gets. Pajama choice at 7pm = no problem. Story choice at 8:30pm = power struggle. The brain decides better when fresh.",
+        "likes": 19
+      },
+      {
+        "id": 6,
+        "author": "NandiniK",
+        "city": "Coimbatore",
+        "time": "4 hours ago",
+        "text": "Consistency on weekends too. Sleep schedule that swings 2 hours on Sat/Sun resets the work week badly. Hard but worth it.",
+        "likes": 14
       }
     ]
   },
@@ -1898,6 +3578,30 @@
         "time": "3 days ago",
         "text": "We solved it with a middle seat seat divider bag — organises snacks and activities between them and creates a physical 'barrier' without looking like a punishment. Zero fights when they each have their own activity bag.",
         "likes": 22
+      },
+      {
+        "id": 3,
+        "author": "GauriShah",
+        "city": "Ahmedabad",
+        "time": "3 days ago",
+        "text": "Window companion! Each kid gets a notepad and pencil — count cars by colour, draw things they see, alphabet hunt on number plates. Engaged + quiet + educational.",
+        "likes": 21
+      },
+      {
+        "id": 4,
+        "author": "IshaPandey",
+        "city": "Indore",
+        "time": "2 days ago",
+        "text": "Snack curation matters — sticky/sugary snacks = high energy = fights. Plain crackers, fruit, nuts (allergy permitting) = calm energy. Made a real difference for us.",
+        "likes": 14
+      },
+      {
+        "id": 5,
+        "author": "BhavanaRao",
+        "city": "Bangalore",
+        "time": "1 day ago",
+        "text": "Audiobook the whole family listens to together — Roald Dahl, Geronimo Stilton, the Tinkle podcast. Shared listening turns the drive into a positive bonding time.",
+        "likes": 17
       }
     ]
   },
@@ -1923,6 +3627,30 @@
         "time": "4 days ago",
         "text": "Financial experts generally say: not tied to basic household chores (those are done because we're a family), but extra tasks earn extra. A simple 3-jar system — Spend, Save, Give — teaches allocation early. For 8-year-olds ₹100–150/week is common in urban India.",
         "likes": 31
+      },
+      {
+        "id": 2,
+        "author": "VandanaMehra",
+        "city": "Lucknow",
+        "time": "4 days ago",
+        "text": "We made savings visible — old pickle jar, coins pile up, kids see growth. Abstract bank balances mean nothing to 8yo. Physical jar with a goal label works.",
+        "likes": 26
+      },
+      {
+        "id": 3,
+        "author": "KritikaArora",
+        "city": "Gurgaon",
+        "time": "3 days ago",
+        "text": "Don't bail out 'oops I spent it all' moments. The whole point is learning consequences. Hold the line for one cycle and the lesson lasts forever.",
+        "likes": 22
+      },
+      {
+        "id": 4,
+        "author": "ArchanaPillai",
+        "city": "Trivandrum",
+        "time": "14 hours ago",
+        "text": "Add a 'match' on savings — for every ₹100 saved, we add ₹50. Teaches the magic of compounding informally. Even small kids understand 'free money for saving'.",
+        "likes": 14
       }
     ]
   },
@@ -1948,6 +3676,30 @@
         "time": "3 days ago",
         "text": "Two things that worked: (1) Visual cue cards at the relevant spot rather than verbal reminders — a card on the shoe rack that says 'Shoes go here' works better than saying it daily. (2) 'When-then' framing: 'When you've cleared your plate, then we can watch that show.' Not punitive, just sequencing.",
         "likes": 33
+      },
+      {
+        "id": 2,
+        "author": "SonalDesai",
+        "city": "Pune",
+        "time": "3 days ago",
+        "text": "We tried a chores chart with stickers — flopped. What worked: family meeting once a week, kids choose which 3 chores they own that week. Ownership > assignment.",
+        "likes": 27
+      },
+      {
+        "id": 3,
+        "author": "NandiniK",
+        "city": "Coimbatore",
+        "time": "2 days ago",
+        "text": "'Reset time' at 8pm — 10 min where the whole family puts away their own stuff. No talking, just doing. Makes evening tidy-up communal, not nag-driven.",
+        "likes": 21
+      },
+      {
+        "id": 4,
+        "author": "MeghaSinha",
+        "city": "Patna",
+        "time": "14 hours ago",
+        "text": "Natural consequences > reminders. Didn't put plate away? Then no snack on it later. Once is usually enough for the lesson to land.",
+        "likes": 16
       }
     ]
   },
@@ -1973,6 +3725,30 @@
         "time": "2 days ago",
         "text": "Special time — 15–20 mins of one-on-one time daily where YOU follow his lead completely, no phones, no agenda. Let him name it (we called it 'Arjun time'). Studies show consistent special time reduces regression behaviours within 4–6 weeks. Also give him a role — 'You're my special helper' with the baby; ownership reduces jealousy.",
         "likes": 38
+      },
+      {
+        "id": 2,
+        "author": "AnitaSrivastava",
+        "city": "Noida",
+        "time": "2 days ago",
+        "text": "Big sibling 'job' — let him be the one who hands you the diaper, picks the baby's outfit, sings to her. Inclusion turns rival into helper. We saw a complete shift in 6 weeks.",
+        "likes": 27
+      },
+      {
+        "id": 3,
+        "author": "PreetiKaur",
+        "city": "Amritsar",
+        "time": "1 day ago",
+        "text": "Visitors who bring gifts should bring something for the older sibling too. Tell relatives explicitly — most do this once asked. Eliminates a major jealousy trigger.",
+        "likes": 22
+      },
+      {
+        "id": 4,
+        "author": "RashmiNair",
+        "city": "Mumbai",
+        "time": "14 hours ago",
+        "text": "Bedwetting is a stress signal, not naughtiness. Wake him for a pee at 11pm for a few weeks (called 'lifting') — physiological fix while emotional adjustment happens.",
+        "likes": 16
       }
     ]
   },
@@ -1998,6 +3774,30 @@
         "time": "4 days ago",
         "text": "7 is actually peak lying age in developmental psychology — children have developed the cognitive sophistication to lie but haven't yet internalised the moral weight of it. It's a sign of healthy cognitive development (oddly). The key response: address the behaviour (consequences for the uncompleted task), not the morality lecture which they tune out.",
         "likes": 29
+      },
+      {
+        "id": 2,
+        "author": "GauriShah",
+        "city": "Ahmedabad",
+        "time": "4 days ago",
+        "text": "Reduce situations that incentivise lying. 'Did you brush your teeth?' invites a lie. 'Show me your brush — wet?' is a check. Designing situations matters more than moral lessons.",
+        "likes": 23
+      },
+      {
+        "id": 3,
+        "author": "IshaPandey",
+        "city": "Indore",
+        "time": "3 days ago",
+        "text": "When you do catch him, make truth-telling safer than lying. 'I'd rather you tell me and we figure it out together than hide it' — repeat it often. Otherwise lies get more sophisticated, not less.",
+        "likes": 19
+      },
+      {
+        "id": 4,
+        "author": "BhavanaRao",
+        "city": "Bangalore",
+        "time": "14 hours ago",
+        "text": "Don't trap him into lying. If you already know the answer, don't ask — just state it. 'I see you didn't brush. Let's go do it now.' Less drama, no escalation.",
+        "likes": 15
       }
     ]
   },
@@ -2023,6 +3823,30 @@
         "time": "5 days ago",
         "text": "Don't go cold turkey — it creates resentment. Start with 'one tech-free evening per week' and make it special: cooking together, board games, a family walk, gardening. The key is it has to be genuinely fun, not just screen-absent. We do Sunday evenings and now the kids actually look forward to it.",
         "likes": 26
+      },
+      {
+        "id": 2,
+        "author": "VandanaMehra",
+        "city": "Lucknow",
+        "time": "5 days ago",
+        "text": "Family activities that compete with screens: board games (Catan, Codenames), cooking together, a household project (gardening, organising a room). Replace the entertainment, don't just remove it.",
+        "likes": 22
+      },
+      {
+        "id": 3,
+        "author": "KritikaArora",
+        "city": "Gurgaon",
+        "time": "4 days ago",
+        "text": "The adults have to do it too. If your phone is in your hand during 'no screen evening', the kids see the lie. Hardest part is parent compliance, honestly.",
+        "likes": 25
+      },
+      {
+        "id": 4,
+        "author": "NandiniK",
+        "city": "Coimbatore",
+        "time": "1 day ago",
+        "text": "Start small — 90 min tech-free, not the whole evening. Compounding success works better than ambitious failure at any age.",
+        "likes": 14
       }
     ]
   },
@@ -2048,6 +3872,30 @@
         "time": "2 days ago",
         "text": "Reframe the ask: instead of 'please don't give junk food' (which feels like criticism), try 'we'd love if the special treat time with you was this specific fruit or these specific snacks we approve' — you're redirecting to love-as-snack, not removing the love. Give them a list of approved treat foods they can still 'spoil' with.",
         "likes": 40
+      },
+      {
+        "id": 2,
+        "author": "ArchanaPillai",
+        "city": "Trivandrum",
+        "time": "2 days ago",
+        "text": "Engage the kids in the boundary directly: 'Dadi loves you SO much, but cookies before dinner make tummy aches. Can you politely say no thank you?' Empowers them to set the limit.",
+        "likes": 26
+      },
+      {
+        "id": 3,
+        "author": "SonalDesai",
+        "city": "Pune",
+        "time": "1 day ago",
+        "text": "Time the visits differently. Right after dinner is safer than 30 mins before. Schedule manipulation is sometimes easier than confrontation.",
+        "likes": 18
+      },
+      {
+        "id": 4,
+        "author": "MeghaSinha",
+        "city": "Patna",
+        "time": "14 hours ago",
+        "text": "Pick your battles — let grandparents 'win' on weekend treats, hold the line on weekdays. Some indulgence from grandparents is genuinely valuable to children. Total bans damage family relationships.",
+        "likes": 21
       }
     ]
   },
@@ -2073,6 +3921,30 @@
         "time": "4 days ago",
         "text": "Start with low-stakes, reversible decisions: what to wear (as long as it's weather-appropriate), which breakfast item from two options, which homework to do first. As she makes good decisions (and occasionally bad ones with low consequences) naturally expand the scope. Autonomy is a muscle, it grows with use.",
         "likes": 24
+      },
+      {
+        "id": 2,
+        "author": "PreetiKaur",
+        "city": "Amritsar",
+        "time": "4 days ago",
+        "text": "Two options to start — not 'what do you want for breakfast' (overwhelming) but 'idli or poha?' Builds decision muscle without paralysis. Expand options as the muscle grows.",
+        "likes": 19
+      },
+      {
+        "id": 3,
+        "author": "GauriShah",
+        "city": "Ahmedabad",
+        "time": "3 days ago",
+        "text": "Let her experience the consequence of small bad decisions. Wore the wrong shoes for the park? Sore feet for an hour. That hour teaches more than 100 lectures.",
+        "likes": 23
+      },
+      {
+        "id": 4,
+        "author": "AnitaSrivastava",
+        "city": "Noida",
+        "time": "1 day ago",
+        "text": "Praise the process of deciding, not the choice. 'I like how you thought about that' teaches her decision-making is a skill. The choice being 'good' is secondary.",
+        "likes": 14
       }
     ]
   },
@@ -2098,6 +3970,30 @@
         "time": "6 days ago",
         "text": "At this age: cooking (give them real recipes and ownership of a meal), woodworking or simple crafts, strategy board games (Catan, Codenames), journaling/comic making, and most importantly — other kids. The 'nothing to do' at 11 usually means 'nobody to do it with'. Social activity fills this gap.",
         "likes": 22
+      },
+      {
+        "id": 2,
+        "author": "RashmiNair",
+        "city": "Mumbai",
+        "time": "6 days ago",
+        "text": "Make-your-own-comic kits, photography projects, podcast making (free apps), pen-pal exchanges with cousins. The 10-12 sweet spot loves 'real adult' creative tools.",
+        "likes": 20
+      },
+      {
+        "id": 3,
+        "author": "IshaPandey",
+        "city": "Indore",
+        "time": "5 days ago",
+        "text": "Magic kits! Genuinely held my 11yo for months. Performance ambition + manual dexterity + presentation skills. Underrated for tweens.",
+        "likes": 16
+      },
+      {
+        "id": 4,
+        "author": "BhavanaRao",
+        "city": "Bangalore",
+        "time": "1 day ago",
+        "text": "Lego still works at 11 if you upgrade — Technic, Architecture, mechanical kits. Adult-level Lego is a different category. Hours of focused build time.",
+        "likes": 13
       }
     ]
   },
@@ -2123,6 +4019,38 @@
         "time": "2 days ago",
         "text": "The PANTS rule is excellent for this age (UK NSPCC programme): Private parts, Always remember your body belongs to you, No means no, Talk about secrets that upset you, Speak up. Frame it positively — your body is special and private, not scary. Books: 'My Body Belongs to Me' by Jill Starishevsky is gentle and age-appropriate.",
         "likes": 51
+      },
+      {
+        "id": 2,
+        "author": "KritikaArora",
+        "city": "Gurgaon",
+        "time": "2 days ago",
+        "text": "Read 'Amazing You' by Gail Saltz — perfect first book for 4-6 about body awareness. Picture-based and gentle. Read it together a few times — repetition normalises the language.",
+        "likes": 35
+      },
+      {
+        "id": 3,
+        "author": "VandanaMehra",
+        "city": "Lucknow",
+        "time": "1 day ago",
+        "text": "Use correct anatomical names from the start. Studies show kids who know correct names are more likely to disclose abuse and be believed. Euphemisms create barriers.",
+        "likes": 41
+      },
+      {
+        "id": 4,
+        "author": "NandiniK",
+        "city": "Coimbatore",
+        "time": "12 hours ago",
+        "text": "Teach 'safe surprises' (good news to share later) vs 'secrets' (must hide). The distinction is critical and easy for young children to grasp.",
+        "likes": 27
+      },
+      {
+        "id": 5,
+        "author": "SonalDesai",
+        "city": "Pune",
+        "time": "4 hours ago",
+        "text": "Repeat conversations, not one big talk. Drip-feed over months, not a 30-min sit-down. The drip approach is age-appropriate and feels natural.",
+        "likes": 19
       }
     ]
   },
@@ -2149,6 +4077,30 @@
         "time": "3 days ago",
         "text": "You're not alone — guilt is almost universal in Indian mothers especially, because we're raised with the message that self-sacrifice equals good mothering. The reframe that helped me: guilt = gap between expected behaviour and actual behaviour. Ask whether the expectation is actually reasonable, not whether you failed it.",
         "likes": 58
+      },
+      {
+        "id": 2,
+        "author": "MeghaSinha",
+        "city": "Patna",
+        "time": "3 days ago",
+        "text": "I had to actively work on this for years and the therapist's reframe stuck: 'good mothers feel guilt; perfect mothers (don't exist) wouldn't'. Guilt is often a sign you care, not that you've failed.",
+        "likes": 44
+      },
+      {
+        "id": 3,
+        "author": "ArchanaPillai",
+        "city": "Trivandrum",
+        "time": "2 days ago",
+        "text": "Lower the bar. Aim for 'good enough' not 'great' parent. Donald Winnicott's idea of the 'good enough mother' — research shows children thrive with imperfect, loving parents.",
+        "likes": 37
+      },
+      {
+        "id": 4,
+        "author": "GauriShah",
+        "city": "Ahmedabad",
+        "time": "14 hours ago",
+        "text": "Find one other honest mum friend you can confess to. Suffering in private amplifies guilt. Hearing 'me too' diffuses 70% of it.",
+        "likes": 28
       }
     ]
   },
@@ -2174,6 +4126,30 @@
         "time": "4 days ago",
         "text": "A third-party timer (physical timer or a parental control app) removes YOU from the negotiation — it's not Mum saying stop, it's the timer. Kids negotiate much less with an impartial device than with a parent who might be persuaded.",
         "likes": 27
+      },
+      {
+        "id": 2,
+        "author": "PreetiKaur",
+        "city": "Amritsar",
+        "time": "4 days ago",
+        "text": "Bedrock rule: when the timer ends, the device goes in the parent's drawer. Removing the object from the room removes the negotiation possibility.",
+        "likes": 24
+      },
+      {
+        "id": 3,
+        "author": "AnitaSrivastava",
+        "city": "Noida",
+        "time": "3 days ago",
+        "text": "Front-load — let him pick his 1 hour. Choosing when he uses it (without changing the total) shifts the power dynamic and reduces complaints.",
+        "likes": 19
+      },
+      {
+        "id": 4,
+        "author": "RashmiNair",
+        "city": "Mumbai",
+        "time": "1 day ago",
+        "text": "We do 'no screens after dinner' as a household rule. Predictable boundary, no daily negotiation. Once it's a rule for everyone, the kid stops asking.",
+        "likes": 16
       }
     ]
   },
@@ -2199,6 +4175,30 @@
         "time": "5 days ago",
         "text": "Don't go back to nappies full-time — it sends the message that nappies are still an option. But temporary pull-ups only at night or during outings while she resettles is fine. Regression after a big change (move, new sibling, school start) is extremely common and usually resolves in 4–8 weeks. Treat accidents as completely normal, zero shame.",
         "likes": 29
+      },
+      {
+        "id": 2,
+        "author": "IshaPandey",
+        "city": "Indore",
+        "time": "5 days ago",
+        "text": "Don't ask 'do you need to go' — at 3 the answer is always no. Take her to the toilet every 90 min as routine. Removes the decision from her brain.",
+        "likes": 22
+      },
+      {
+        "id": 3,
+        "author": "BhavanaRao",
+        "city": "Bangalore",
+        "time": "4 days ago",
+        "text": "Add an extra 30 mins of one-on-one time in her old routine spot if you can. Regression from disruption resolves with 'home base' restored.",
+        "likes": 17
+      },
+      {
+        "id": 4,
+        "author": "NandiniK",
+        "city": "Coimbatore",
+        "time": "1 day ago",
+        "text": "Special undies (let her pick) — kids don't want to soil their favourites. Tiny psychological tool that works disproportionately well.",
+        "likes": 13
       }
     ]
   },
@@ -2224,6 +4224,30 @@
         "time": "3 days ago",
         "text": "I share enough context without specifics: 'We earn enough for our needs and some wants, and we have to make choices about what we spend on.' At 10-11, sharing a rough household budget in categories (rent, food, school, savings, fun) actually teaches great financial literacy without burden.",
         "likes": 26
+      },
+      {
+        "id": 2,
+        "author": "KritikaArora",
+        "city": "Gurgaon",
+        "time": "3 days ago",
+        "text": "Show, don't tell, with percentages: 'About 40% goes to home, 30% to school and food, 20% to savings, 10% to fun.' Kids grasp percentages of a whole better than rupee figures.",
+        "likes": 21
+      },
+      {
+        "id": 3,
+        "author": "VandanaMehra",
+        "city": "Lucknow",
+        "time": "2 days ago",
+        "text": "Beware the comparison conversations. 'Do they earn more than us?' is the next question. Pre-empt: 'every family has different jobs and earnings, and what matters is how we use what we have.'",
+        "likes": 17
+      },
+      {
+        "id": 4,
+        "author": "GauriShah",
+        "city": "Ahmedabad",
+        "time": "14 hours ago",
+        "text": "Involve them in family financial decisions — choosing between two vacation options based on cost, deciding whether to repair vs buy new. Real-world financial reasoning.",
+        "likes": 13
       }
     ]
   },
@@ -2249,6 +4273,30 @@
         "time": "4 days ago",
         "text": "Early puberty breakouts are normal from age 9–10. A gentle foaming cleanser (not stripping), non-comedogenic moisturiser, and SPF during the day is the correct routine. Avoid adult acne products with salicylic acid above 0.5% or benzoyl peroxide without dermat guidance — too strong for prepubescent skin.",
         "likes": 24
+      },
+      {
+        "id": 2,
+        "author": "SonalDesai",
+        "city": "Pune",
+        "time": "4 days ago",
+        "text": "Hands off her face! Most prepubescent acne worsens because kids touch/pick. We taped a 'don't touch' note on her bathroom mirror for a month.",
+        "likes": 16
+      },
+      {
+        "id": 3,
+        "author": "ArchanaPillai",
+        "city": "Trivandrum",
+        "time": "3 days ago",
+        "text": "Don't introduce makeup yet. Foundation/concealer at 10 makes acne worse and embeds adult skincare anxiety early. The 'leave it alone, it'll pass' approach is medically correct here.",
+        "likes": 13
+      },
+      {
+        "id": 4,
+        "author": "MeghaSinha",
+        "city": "Patna",
+        "time": "14 hours ago",
+        "text": "Skincare is also self-image work — frame it as care, not correction. 'We're keeping our skin happy', not 'we're fixing your pimples'. The language matters at this age.",
+        "likes": 11
       }
     ]
   },
@@ -2274,6 +4322,30 @@
         "time": "3 days ago",
         "text": "Must-haves: Paracetamol + ibuprofen (age-appropriate doses noted), ORS sachets, bandages in 3 sizes, sterile gauze, adhesive plasters, antiseptic solution, digital thermometer, tweezers, medical-grade scissors, and a paediatric first aid reference card. Review for expiry dates every 6 months.",
         "likes": 47
+      },
+      {
+        "id": 2,
+        "author": "PreetiKaur",
+        "city": "Amritsar",
+        "time": "3 days ago",
+        "text": "Add: hydrocortisone 1% (for bug bites and rashes), saline eye wash, dispenser-pack oral rehydration powder, calamine lotion, and a small ice pack in the freezer.",
+        "likes": 28
+      },
+      {
+        "id": 3,
+        "author": "IshaPandey",
+        "city": "Indore",
+        "time": "2 days ago",
+        "text": "Take a paediatric first aid course — most cities have weekend ones for ₹2-3k. The kit is useless without the skill to use it. Best money I've spent as a parent.",
+        "likes": 33
+      },
+      {
+        "id": 4,
+        "author": "NandiniK",
+        "city": "Coimbatore",
+        "time": "14 hours ago",
+        "text": "Keep a laminated card with: paed's number, nearest 24hr hospital, blood group of each family member, and any allergies. In an emergency you don't want to be looking up phone numbers.",
+        "likes": 25
       }
     ]
   },
@@ -2299,6 +4371,30 @@
         "time": "2 days ago",
         "text": "The key markers of 'healthy deep interest' vs 'concerning obsession': Can he stop when asked (with normal protest)? Does he still enjoy non-game activities at all? Does he sleep and eat normally? Is his school work holding? If yes to all — this is a passion. Channel it: Minecraft-based maths, reading Minecraft guides, making real-world models of his in-game builds.",
         "likes": 35
+      },
+      {
+        "id": 2,
+        "author": "BhavanaRao",
+        "city": "Bangalore",
+        "time": "2 days ago",
+        "text": "Channel the passion: real architecture/design books, real-world model-building (Lego architecture, woodwork). Minecraft skills translate beautifully to design careers. Don't fight it; broaden it.",
+        "likes": 28
+      },
+      {
+        "id": 3,
+        "author": "RashmiNair",
+        "city": "Mumbai",
+        "time": "1 day ago",
+        "text": "Look up MinecraftEdu — there are paid versions used in schools globally. Curriculum-linked Minecraft activities feel like play but are genuinely educational.",
+        "likes": 19
+      },
+      {
+        "id": 4,
+        "author": "VandanaMehra",
+        "city": "Lucknow",
+        "time": "14 hours ago",
+        "text": "What you're describing sounds healthy — deep interest, creative output. Concerning would be: refuses to do anything else, melts down when stopped, sleep/eating disrupted. Your son sounds fine.",
+        "likes": 22
       }
     ]
   },
@@ -2324,6 +4420,30 @@
         "time": "2 days ago",
         "text": "I do a 'check twice a day' routine — morning at 8am and evening at 6pm. Mute with notifications off but check manually. Most 'urgent' messages can wait 6 hours. For actually critical info, teachers always call directly.",
         "likes": 39
+      },
+      {
+        "id": 2,
+        "author": "AnitaSrivastava",
+        "city": "Noida",
+        "time": "2 days ago",
+        "text": "Use WhatsApp's 'pin chat' feature for the actually-important groups (class teacher direct, real homework group). Pin them at top, mute everything else. Quick scan = important info found.",
+        "likes": 29
+      },
+      {
+        "id": 3,
+        "author": "KritikaArora",
+        "city": "Gurgaon",
+        "time": "1 day ago",
+        "text": "Class parent rep system — designate ONE rep per class who relays urgent updates only. Avoids 40 parents commenting on the same announcement. Worth pitching to school.",
+        "likes": 23
+      },
+      {
+        "id": 4,
+        "author": "GauriShah",
+        "city": "Ahmedabad",
+        "time": "12 hours ago",
+        "text": "Set boundaries — 'I don't respond to school WhatsApp after 8pm' as your bio status. Most parents secretly want this norm but no one wants to be first.",
+        "likes": 18
       }
     ]
   },
@@ -2349,6 +4469,30 @@
         "time": "6 days ago",
         "text": "Monopoly Junior is shorter and simpler. 'The Allowance Game' by Lakeshore is excellent for 5–9 year olds. 'Cashflow for Kids' by Robert Kiyosaki for 9+. Even simpler: play 'market' at home with real coins — let kids buy snacks from a pretend store you've set up.",
         "likes": 21
+      },
+      {
+        "id": 2,
+        "author": "MeghaSinha",
+        "city": "Patna",
+        "time": "6 days ago",
+        "text": "Acquire Junior, Settlers of Catan Junior — both teach resource management without explicit money mechanics. Stealth financial literacy.",
+        "likes": 17
+      },
+      {
+        "id": 3,
+        "author": "ArchanaPillai",
+        "city": "Trivandrum",
+        "time": "5 days ago",
+        "text": "Wingspan Junior (if available) for older kids in the 9-12 range — engine-building thinking. Or Stardew Valley on console — surprisingly money-focused gameplay.",
+        "likes": 13
+      },
+      {
+        "id": 4,
+        "author": "SonalDesai",
+        "city": "Pune",
+        "time": "14 hours ago",
+        "text": "Real-world: give kids ₹500 for a family grocery trip with a list. Watching them prioritise, weigh trade-offs, deal with budget overruns is the best 'game' there is.",
+        "likes": 22
       }
     ]
   },
@@ -2374,6 +4518,30 @@
         "time": "4 days ago",
         "text": "Age 4: put toys away, sort laundry by colour, wipe down low surfaces. Age 7: load dishwasher, set/clear the table, water plants, sweep small areas. Age 10: fold and put away laundry, cook simple meals with supervision, vacuum, help with groceries. The rule: kids can always do more than we expect if we teach them properly first.",
         "likes": 33
+      },
+      {
+        "id": 2,
+        "author": "PreetiKaur",
+        "city": "Amritsar",
+        "time": "4 days ago",
+        "text": "Don't redo their chores in front of them — if the bed is wonky, leave it. Redoing kills motivation faster than anything. Imperfection is part of the learning.",
+        "likes": 27
+      },
+      {
+        "id": 3,
+        "author": "VandanaMehra",
+        "city": "Lucknow",
+        "time": "3 days ago",
+        "text": "Visual chore wheel that rotates weekly — kids don't get bored of the same chores, and 'this week is your dusting week' frames it as turn-taking, not assigned work.",
+        "likes": 19
+      },
+      {
+        "id": 4,
+        "author": "IshaPandey",
+        "city": "Indore",
+        "time": "14 hours ago",
+        "text": "Teach the 4yo first by 'helping you', not by assigning. 'Want to help me sort socks?' is irresistible. Real assignment can wait till 5-6.",
+        "likes": 16
       }
     ]
   },
@@ -2399,6 +4567,30 @@
         "time": "4 days ago",
         "text": "The secret weapon: a small bag of brand-new toys and snacks you reveal ONE at a time through the flight. Novelty buys 20–30 mins each. Breastfeed or give a bottle/sippy cup during takeoff and landing for ear pressure. Night flights with a tired toddler often mean they sleep for 5–6 hours. Red-eye is your friend.",
         "likes": 42
+      },
+      {
+        "id": 2,
+        "author": "BhavanaRao",
+        "city": "Bangalore",
+        "time": "4 days ago",
+        "text": "Pack double the diapers you think you need. Sounds excessive. You'll need them. Pressurised cabin = unpredictable bowel timing.",
+        "likes": 19
+      },
+      {
+        "id": 3,
+        "author": "NandiniK",
+        "city": "Coimbatore",
+        "time": "3 days ago",
+        "text": "Book the bulkhead row for the bassinet — for many long-haul carriers, under-2 toddlers up to certain weight can use it. She'll sleep, you'll be free-handed.",
+        "likes": 24
+      },
+      {
+        "id": 4,
+        "author": "GauriShah",
+        "city": "Ahmedabad",
+        "time": "1 day ago",
+        "text": "Lower expectations dramatically. The flight will not be great. Aim for 'survived, no injuries, no one cried for more than 30 mins'. Anything more is bonus.",
+        "likes": 27
       }
     ]
   },
@@ -2432,6 +4624,30 @@
         "time": "3 days ago",
         "text": "4-year gap and I found it the smoothest transition. Your older child can genuinely HELP — fetch things, entertain baby, understand 'quiet time.' The cons: they're in different life stages and don't always want to play together. No perfect gap, honestly.",
         "likes": 21
+      },
+      {
+        "id": 3,
+        "author": "RashmiNair",
+        "city": "Mumbai",
+        "time": "3 days ago",
+        "text": "5-year gap parent here — the bonus is that the older child is genuinely emotionally regulated and helpful. The minus is they don't play together at all until the little one is 4+. Different relationship arc.",
+        "likes": 18
+      },
+      {
+        "id": 4,
+        "author": "KritikaArora",
+        "city": "Gurgaon",
+        "time": "2 days ago",
+        "text": "Closer gap pros are real but the first year is gruelling — two in nappies, two non-sleepers, two needing constant attention. Plan for 18 months of survival mode.",
+        "likes": 23
+      },
+      {
+        "id": 5,
+        "author": "AnitaSrivastava",
+        "city": "Noida",
+        "time": "14 hours ago",
+        "text": "Don't optimise on 'ideal gap'. Conception isn't always controllable, and 'spacing' decisions can frustrate couples for years. Whatever happens, you'll make it work.",
+        "likes": 19
       }
     ]
   },
@@ -2457,6 +4673,30 @@
         "time": "2 days ago",
         "text": "Delay as long as socially feasible — average recommendation from child development experts is 13+ or secondary school entry. If you do give one earlier: no social media until 13, parental controls on, phone charges in parents' room at night, clear rules about who can be contacted. The issue isn't the phone, it's the unsupervised internet access.",
         "likes": 34
+      },
+      {
+        "id": 2,
+        "author": "SonalDesai",
+        "city": "Pune",
+        "time": "2 days ago",
+        "text": "Wait, Wait Wait. Read 'The Anxious Generation' or watch Jonathan Haidt's interviews. The mental health evidence on smartphones before 13-14 is genuinely alarming. Peer pressure passes; brain damage from early social media doesn't.",
+        "likes": 39
+      },
+      {
+        "id": 3,
+        "author": "MeghaSinha",
+        "city": "Patna",
+        "time": "1 day ago",
+        "text": "We gave a 'dumb phone' at 11 (Nokia 105) for calls and SMS. Solved the peer-pressure 'I don't have a phone' problem without the smartphone. Worked beautifully for 2 years.",
+        "likes": 28
+      },
+      {
+        "id": 4,
+        "author": "ArchanaPillai",
+        "city": "Trivandrum",
+        "time": "14 hours ago",
+        "text": "If you do give it: 'wait until 8th' pledge (lots of parent groups online) — coordinating with other parents removes the social-isolation argument completely.",
+        "likes": 22
       }
     ]
   },
@@ -2482,6 +4722,30 @@
         "time": "3 days ago",
         "text": "Three rules we've taught: (1) If something online makes you feel weird, scared, or uncomfortable, you ALWAYS come tell me — I will never be angry. (2) Don't share our address, school, or your full name. (3) Real-life friends you know first. Keeping the door open to 'weird feeling' conversations is the most important thing.",
         "likes": 44
+      },
+      {
+        "id": 2,
+        "author": "PreetiKaur",
+        "city": "Amritsar",
+        "time": "3 days ago",
+        "text": "Watch a YouTube video together that has comments — show her how strangers comment. The visceral 'these are not your friends' realisation lands stronger than explanation.",
+        "likes": 26
+      },
+      {
+        "id": 3,
+        "author": "IshaPandey",
+        "city": "Indore",
+        "time": "2 days ago",
+        "text": "Set up YouTube Kids (not regular YouTube) with content review enabled. Algorithm gets very dark very fast on regular YouTube. Worth the slightly limited library.",
+        "likes": 21
+      },
+      {
+        "id": 4,
+        "author": "GauriShah",
+        "city": "Ahmedabad",
+        "time": "14 hours ago",
+        "text": "Talk about deepfakes and AI-generated content. Kids today need to understand 'real vs fake' as a constant question, not a one-time lesson.",
+        "likes": 17
       }
     ]
   },
@@ -2507,6 +4771,30 @@
         "time": "7 days ago",
         "text": "Annual 'well child visits' are recommended even for healthy children. A standard one should cover: height/weight/BMI tracking, blood pressure, vision and hearing screen, developmental milestone check, vaccination review, and a chance to discuss behavioural concerns. Many issues are caught early this way.",
         "likes": 22
+      },
+      {
+        "id": 2,
+        "author": "VandanaMehra",
+        "city": "Lucknow",
+        "time": "6 days ago",
+        "text": "Eye check is critical at 7-8 — undetected vision issues are mistaken for learning issues regularly. Many kids labelled 'inattentive' just need glasses.",
+        "likes": 18
+      },
+      {
+        "id": 3,
+        "author": "BhavanaRao",
+        "city": "Bangalore",
+        "time": "5 days ago",
+        "text": "If your child is athletic, ask for a baseline ECG once. Cardiac screening pre-sports activity catches rare but serious conditions. Sports-academy doctors recommend this.",
+        "likes": 14
+      },
+      {
+        "id": 4,
+        "author": "NandiniK",
+        "city": "Coimbatore",
+        "time": "1 day ago",
+        "text": "Posture and spine check — phone/tablet kids increasingly have early postural issues. Most paeds don't check unless asked.",
+        "likes": 11
       }
     ]
   },
@@ -2532,6 +4820,30 @@
         "time": "5 days ago",
         "text": "Age 4–6: They need to know their full name, your phone number by heart, and to 'find a safe adult.' Age 7–10: Practice home fire drill, identify meeting spot, know who to call. Do one family emergency practice drill per year — make it matter-of-fact, like a recipe, not scary.",
         "likes": 27
+      },
+      {
+        "id": 2,
+        "author": "KritikaArora",
+        "city": "Gurgaon",
+        "time": "5 days ago",
+        "text": "Earthquake drills in our flat: 'drop, cover, hold under the dining table' — kids treat it as a game during practice. We do it twice a year. Took 30 mins to teach.",
+        "likes": 22
+      },
+      {
+        "id": 3,
+        "author": "ArchanaPillai",
+        "city": "Trivandrum",
+        "time": "4 days ago",
+        "text": "Pack an emergency 'go bag' together as a family activity — water, torch, whistle, photocopies of IDs. Kids participate in packing, learn the contents.",
+        "likes": 17
+      },
+      {
+        "id": 4,
+        "author": "AnitaSrivastava",
+        "city": "Noida",
+        "time": "14 hours ago",
+        "text": "Memorise one adult's number — not the parent's, ideally a grandparent or aunt in a different city. In a disaster local lines fail; out-of-town numbers often connect.",
+        "likes": 15
       }
     ]
   },
@@ -2557,6 +4869,38 @@
         "time": "2 days ago",
         "text": "This is THE most common thing I hear from parents of young kids. The phase is real but so is the drift becoming permanent if unaddressed. 'Date night' doesn't have to mean going out — 45 mins after kids sleep with no phones and actual conversation counts. Schedule it like a meeting; spontaneity is a luxury, intention replaces it.",
         "likes": 56
+      },
+      {
+        "id": 2,
+        "author": "GauriShah",
+        "city": "Ahmedabad",
+        "time": "2 days ago",
+        "text": "Block out one 2-hour 'us' slot per fortnight — non-negotiable. Babysitter, even if it's the cousins or grandparents. The relationship needs investment, not just leftover time.",
+        "likes": 42
+      },
+      {
+        "id": 3,
+        "author": "RashmiNair",
+        "city": "Mumbai",
+        "time": "1 day ago",
+        "text": "Couples counselling early, not late. The 'we're not that bad yet' stage is the easiest to fix. 4-5 sessions can shift dynamics that 5 years of drift created.",
+        "likes": 38
+      },
+      {
+        "id": 4,
+        "author": "IshaPandey",
+        "city": "Indore",
+        "time": "14 hours ago",
+        "text": "Audit your division of labour. Resentment often disguises itself as 'lost spark'. If one partner does 70% of the kid load, no romance survives that imbalance.",
+        "likes": 36
+      },
+      {
+        "id": 5,
+        "author": "MeghaSinha",
+        "city": "Patna",
+        "time": "4 hours ago",
+        "text": "Touch — not sexual, just affection. Hugs, hand-holding, a kiss when you pass in the hallway. Physical reconnection ladders up to emotional reconnection. Often forgotten with young kids.",
+        "likes": 29
       }
     ]
   },
@@ -2582,6 +4926,30 @@
         "time": "4 days ago",
         "text": "The 'weights stunt growth' myth is outdated — no evidence supports it. Resistance training with proper form and appropriate weight is safe from around 7–8 years under supervision. For 11-year-olds: bodyweight exercises first (push-ups, squats, lunges), proper technique emphasis over weight, and a knowledgeable coach. Avoid Olympic lifting or max-effort training.",
         "likes": 25
+      },
+      {
+        "id": 2,
+        "author": "SonalDesai",
+        "city": "Pune",
+        "time": "4 days ago",
+        "text": "American Academy of Pediatrics endorses strength training from age 7-8 with proper form. The 'no weights for kids' belief is outdated by ~20 years.",
+        "likes": 16
+      },
+      {
+        "id": 3,
+        "author": "BhavanaRao",
+        "city": "Bangalore",
+        "time": "3 days ago",
+        "text": "Find a strength coach with paediatric/youth certification. Not 'gym bro'. The form-teaching at 11 sets up safety for life. Worth the investment.",
+        "likes": 13
+      },
+      {
+        "id": 4,
+        "author": "NandiniK",
+        "city": "Coimbatore",
+        "time": "14 hours ago",
+        "text": "Bodyweight + light resistance bands for the first 6 months — no barbells, no max efforts. Once technique is grooved, the actual loads can come.",
+        "likes": 11
       }
     ]
   },
@@ -2607,6 +4975,30 @@
         "time": "3 days ago",
         "text": "Enroll him. Dance builds coordination, confidence, discipline, and rhythm that benefits every physical activity. Martial arts, cricket, athletics — all elite performers dance train. Frame it to family as 'performance training' if the word dance brings pushback. The teasing risk at 7 is minimal — most classmates are genuinely impressed by good dancers.",
         "likes": 48
+      },
+      {
+        "id": 2,
+        "author": "PreetiKaur",
+        "city": "Amritsar",
+        "time": "3 days ago",
+        "text": "Show him videos of male dancers — Hrithik, Tiger Shroff, Prabhu Deva, BTS members. Visibility neutralises 'not for boys' instantly. He needs role models he can see.",
+        "likes": 31
+      },
+      {
+        "id": 3,
+        "author": "IshaPandey",
+        "city": "Indore",
+        "time": "2 days ago",
+        "text": "Hip-hop or contemporary classes tend to have more boys than ballet/Bharatanatyam if the family is the concern. Same skill building, different framing.",
+        "likes": 19
+      },
+      {
+        "id": 4,
+        "author": "AnitaSrivastava",
+        "city": "Noida",
+        "time": "14 hours ago",
+        "text": "The family pushback usually softens once they see a recital. Recorded video of him performing is more persuasive than any argument.",
+        "likes": 22
       }
     ]
   },
@@ -2632,6 +5024,30 @@
         "time": "3 days ago",
         "text": "Test anxiety is a real, recognized condition — not just 'nerves.' Practical strategies: mock exams at home in timed conditions (desensitization), breathing exercises before tests (box breathing: 4-4-4-4), and reassessing what 'good' looks like (process praise, not result praise). If it's severe, a child psychologist can do Cognitive Behavioural work that's very effective.",
         "likes": 31
+      },
+      {
+        "id": 2,
+        "author": "VandanaMehra",
+        "city": "Lucknow",
+        "time": "3 days ago",
+        "text": "Have her teach the topic to you — explaining out loud locks it deeply and the safety of teaching mum eliminates evaluation pressure. Highly effective for high-IQ anxious kids.",
+        "likes": 28
+      },
+      {
+        "id": 3,
+        "author": "GauriShah",
+        "city": "Ahmedabad",
+        "time": "2 days ago",
+        "text": "Pre-exam routine matters: solid breakfast (no sugar crash), 10 mins of stretching, no last-minute revision. The cortisol pattern shapes performance more than content knowledge.",
+        "likes": 22
+      },
+      {
+        "id": 4,
+        "author": "KritikaArora",
+        "city": "Gurgaon",
+        "time": "14 hours ago",
+        "text": "If panic hits during exam, teach her 'reverse breathing' (slow exhale longer than inhale). Activates the parasympathetic nervous system in under 60 seconds.",
+        "likes": 17
       }
     ]
   },
@@ -2657,6 +5073,30 @@
         "time": "4 days ago",
         "text": "For children under 6: most cough and cold medicines are not recommended and not proven effective (WHO, AAP stance). Home remedies that DO have some evidence: honey for cough (age 1+), saline nasal drops/rinse, steam, fluids and rest. Paracetamol only if uncomfortable or feverish. Most colds resolve in 7–10 days regardless of what you do.",
         "likes": 34
+      },
+      {
+        "id": 2,
+        "author": "ArchanaPillai",
+        "city": "Trivandrum",
+        "time": "4 days ago",
+        "text": "Saline nasal drops + a cool-mist humidifier in the room overnight = better than 80% of OTC remedies for under-6s. Both inexpensive and evidence-backed.",
+        "likes": 21
+      },
+      {
+        "id": 3,
+        "author": "MeghaSinha",
+        "city": "Patna",
+        "time": "3 days ago",
+        "text": "Honey + warm water + a pinch of cinnamon — cough suppressant for 1+yo with research support. Avoid honey under 1 (botulism risk).",
+        "likes": 18
+      },
+      {
+        "id": 4,
+        "author": "SonalDesai",
+        "city": "Pune",
+        "time": "14 hours ago",
+        "text": "Steam bath — boil water, take to bathroom, sit with the child for 5 mins (safe distance). Clears stuffy nose faster than any spray. Old technique, still works.",
+        "likes": 14
       }
     ]
   },
@@ -2682,6 +5122,30 @@
         "time": "6 days ago",
         "text": "A weighted 88-key digital keyboard is perfectly adequate for beginners and even intermediate learners. The key is weighted keys — touch-sensitive response teaches proper finger technique. Avoid mini or unweighted keyboards for serious learning. Brands like Yamaha P-45 or Roland FP-30 are the standard recommendations for beginner home use.",
         "likes": 18
+      },
+      {
+        "id": 2,
+        "author": "NandiniK",
+        "city": "Coimbatore",
+        "time": "5 days ago",
+        "text": "Korg B2 and Casio CDP-S160 are also solid beginner weighted keyboards at lower price than Yamaha. Same teaching value if you're on a budget.",
+        "likes": 11
+      },
+      {
+        "id": 3,
+        "author": "RashmiNair",
+        "city": "Mumbai",
+        "time": "4 days ago",
+        "text": "Get a real piano teacher who's okay with keyboard students — some teachers refuse, others are fine. Teacher attitude matters more than equipment.",
+        "likes": 14
+      },
+      {
+        "id": 4,
+        "author": "BhavanaRao",
+        "city": "Bangalore",
+        "time": "1 day ago",
+        "text": "Stick the sustain pedal — many cheap keyboards skip this and the playing technique never develops correctly. Pedal is non-negotiable for serious learning.",
+        "likes": 9
       }
     ]
   },
@@ -2707,6 +5171,30 @@
         "time": "4 days ago",
         "text": "Validate first, then reframe with honest simplicity: 'Yes, different families make different choices about what to spend on. In our family we choose to spend on experiences and travel instead of gadgets. Neither is wrong.' Avoid 'we can't afford it' — it creates anxiety. 'We choose to spend differently' is more empowering.",
         "likes": 32
+      },
+      {
+        "id": 2,
+        "author": "IshaPandey",
+        "city": "Indore",
+        "time": "4 days ago",
+        "text": "Take him to volunteer at an NGO that supports kids with less. Direct exposure to gratitude beats any conversation. Has shifted my son's framing of 'lack' permanently.",
+        "likes": 27
+      },
+      {
+        "id": 3,
+        "author": "PreetiKaur",
+        "city": "Amritsar",
+        "time": "3 days ago",
+        "text": "Talk about 'wants vs needs' as an ongoing conversation, not a one-time lecture. Use real-life moments: 'is this a need or a want?' Builds the language naturally.",
+        "likes": 22
+      },
+      {
+        "id": 4,
+        "author": "GauriShah",
+        "city": "Ahmedabad",
+        "time": "14 hours ago",
+        "text": "Don't punish materialism — it's age-appropriate. Just don't reward it either. The neutral 'that's interesting that they have it' response defuses without preaching.",
+        "likes": 18
       }
     ]
   },
@@ -2740,6 +5228,30 @@
         "time": "2 days ago",
         "text": "Also important: explain that YouTube as a career requires millions of subscribers and is genuinely rare. Separate the creative passion (which you'll support) from the career goal (which can evolve). 'Let's learn video making — it's useful whatever career you choose.'",
         "likes": 27
+      },
+      {
+        "id": 3,
+        "author": "AnitaSrivastava",
+        "city": "Noida",
+        "time": "2 days ago",
+        "text": "We let our daughter make her first video (about her dog) — she scripted, filmed, edited (iMovie). The project itself was educational; she lost interest in 3 weeks but the skills stuck.",
+        "likes": 32
+      },
+      {
+        "id": 4,
+        "author": "VandanaMehra",
+        "city": "Lucknow",
+        "time": "1 day ago",
+        "text": "Don't make any of it public. 9-year-olds online is a safety issue, not just a discipline one. Family-only audience until 13+.",
+        "likes": 41
+      },
+      {
+        "id": 5,
+        "author": "KritikaArora",
+        "city": "Gurgaon",
+        "time": "14 hours ago",
+        "text": "Frame it as her 'broadcasting hobby', not 'becoming famous'. Career-ifying early kills creative joy. Most kid YouTubers shown publicly are damaged by it.",
+        "likes": 26
       }
     ]
   },
@@ -2765,6 +5277,30 @@
         "time": "5 days ago",
         "text": "Yes, seasonal adjustment makes sense. Switch to gel-based or water-based moisturiser in monsoon — cream-based ones can feel heavy and increase sweat/bacteria in high humidity. Keep sunscreen going regardless — UV levels remain high in monsoon even on cloudy days.",
         "likes": 16
+      },
+      {
+        "id": 2,
+        "author": "BhavanaRao",
+        "city": "Bangalore",
+        "time": "5 days ago",
+        "text": "Anti-fungal foot powder in shoes — feet sweat more in monsoon and athlete's foot in kids is common. Sprinkle before shoes go on, especially school shoes.",
+        "likes": 14
+      },
+      {
+        "id": 3,
+        "author": "SonalDesai",
+        "city": "Pune",
+        "time": "4 days ago",
+        "text": "Body acne can flare in monsoon — sweat + humidity. Switch body wash to one with 2% salicylic acid (for 8+yo) once a week.",
+        "likes": 11
+      },
+      {
+        "id": 4,
+        "author": "NandiniK",
+        "city": "Coimbatore",
+        "time": "14 hours ago",
+        "text": "Don't skip moisturiser — humidity surface-level doesn't mean skin is hydrated. Use a lighter gel formula but still daily.",
+        "likes": 8
       }
     ]
   },
@@ -2790,6 +5326,30 @@
         "time": "2 days ago",
         "text": "Tell him — 8-year-olds can absolutely understand in age-appropriate language: 'Your brain works a little differently and that means some things that are easy for others need extra strategies for you — but it also means you have some superpowers.' The diagnosis should feel like explanation, not label. Then: consult a paediatric psychiatrist about whether medication is recommended, and inform the school to request accommodations (extra time, seating, etc.).",
         "likes": 53
+      },
+      {
+        "id": 2,
+        "author": "ArchanaPillai",
+        "city": "Trivandrum",
+        "time": "2 days ago",
+        "text": "Join an ADHD parent support group — online ones like 'ADHD India' (Facebook) saved my sanity. Other parents will normalise the journey faster than any book.",
+        "likes": 38
+      },
+      {
+        "id": 3,
+        "author": "GauriShah",
+        "city": "Ahmedabad",
+        "time": "1 day ago",
+        "text": "Read 'Driven to Distraction' by Edward Hallowell — written by a paed psychiatrist who has ADHD himself. Best book to understand the inside experience and help your child reframe it positively.",
+        "likes": 32
+      },
+      {
+        "id": 4,
+        "author": "MeghaSinha",
+        "city": "Patna",
+        "time": "14 hours ago",
+        "text": "Medication is a tool, not a treatment. Behavioural therapy + school accommodations + (sometimes) medication is the comprehensive approach. Don't let anyone push you toward or away from meds — it's a careful clinical decision.",
+        "likes": 27
       }
     ]
   },
@@ -2815,6 +5375,30 @@
         "time": "6 days ago",
         "text": "Art journaling is genuinely therapeutic and there's research supporting it for children's emotional processing. Get a blank sketchbook, basic supplies, and set NO rules — no beautiful results required. Some kids draw literal events, others abstract feelings. Neither is wrong. Don't look at it without permission — the privacy is part of the safety.",
         "likes": 31
+      },
+      {
+        "id": 2,
+        "author": "SonalDesai",
+        "city": "Pune",
+        "time": "5 days ago",
+        "text": "We tried this with our 9yo and discovered through her drawings that she'd been worried about something at school for weeks she hadn't mentioned. Art journaling literally surfaces unspoken feelings.",
+        "likes": 24
+      },
+      {
+        "id": 3,
+        "author": "IshaPandey",
+        "city": "Indore",
+        "time": "4 days ago",
+        "text": "Don't analyse or 'interpret' her drawings. The privacy is the safety. If she chooses to share, listen. If she doesn't, that's also okay.",
+        "likes": 19
+      },
+      {
+        "id": 4,
+        "author": "KritikaArora",
+        "city": "Gurgaon",
+        "time": "14 hours ago",
+        "text": "A high-quality sketchbook (not flimsy paper) signals 'this matters'. Quality of materials = quality of investment. We gave a Moleskine and the daily use jumped 3x.",
+        "likes": 12
       }
     ]
   },
@@ -2840,6 +5424,30 @@
         "time": "4 days ago",
         "text": "The EWG 'Dirty Dozen' list (adapted for India) prioritises: strawberries, apples, grapes, spinach, peppers, and anything with thin edible skins — prioritise organic for these. 'Clean fifteen' (onions, avocado, cabbage, pineapple, mango) are safer conventional. If budget is tight, spending the organic premium on just 5–6 high-residue items is the most practical approach.",
         "likes": 29
+      },
+      {
+        "id": 2,
+        "author": "PreetiKaur",
+        "city": "Amritsar",
+        "time": "4 days ago",
+        "text": "Dairy and eggs are worth the premium for organic if you can swing it — pesticides and hormones concentrate in animal products. Vegetables less so.",
+        "likes": 18
+      },
+      {
+        "id": 3,
+        "author": "VandanaMehra",
+        "city": "Lucknow",
+        "time": "3 days ago",
+        "text": "Wash conventional produce in baking soda water (1 tsp/L for 15 min) — clinical studies show this removes ~80% of pesticide residue. Cheaper than buying organic.",
+        "likes": 22
+      },
+      {
+        "id": 4,
+        "author": "NandiniK",
+        "city": "Coimbatore",
+        "time": "1 day ago",
+        "text": "Local farmer market produce is often organic-by-default without the label or price premium. Build a relationship with one farmer — they tell you which crops they spray and which they don't.",
+        "likes": 16
       }
     ]
   },
@@ -2865,6 +5473,30 @@
         "time": "7 days ago",
         "text": "Skin tags in children are benign and medically harmless. Removal is elective. If you do remove: see a paediatric dermatologist, not a general salon. Techniques include cryotherapy (freeze) or ligation. Usually local anaesthesia only, no general anaesthesia needed for a small tag. No rush medically — only worth doing if it's getting irritated or he becomes self-conscious.",
         "likes": 18
+      },
+      {
+        "id": 2,
+        "author": "BhavanaRao",
+        "city": "Bangalore",
+        "time": "6 days ago",
+        "text": "Don't try home removal (string, OTC freeze kits) on children — risk of scarring or infection. Wait till he's older if it doesn't bother him.",
+        "likes": 12
+      },
+      {
+        "id": 3,
+        "author": "AnitaSrivastava",
+        "city": "Noida",
+        "time": "5 days ago",
+        "text": "If it gets caught on clothing or jewellery and tears, that's when it becomes urgent. Otherwise leave it. We've left our son's for 4 years with zero issues.",
+        "likes": 9
+      },
+      {
+        "id": 4,
+        "author": "RashmiNair",
+        "city": "Mumbai",
+        "time": "14 hours ago",
+        "text": "Make sure it IS a skin tag — moles can look similar in early stages. Dermatologist confirmation first, then decide on action.",
+        "likes": 7
       }
     ]
   },
@@ -2890,6 +5522,30 @@
         "time": "3 days ago",
         "text": "Yes! We've done screen-free Sundays for 8 months now. The first 3–4 weekends had the irritable Saturday-ish energy. By week 5–6 they stopped expecting screens and started planning their Sunday themselves the night before. The reset is real — they come back to weekday screens with much less intensity.",
         "likes": 37
+      },
+      {
+        "id": 2,
+        "author": "MeghaSinha",
+        "city": "Patna",
+        "time": "3 days ago",
+        "text": "Make a 'Sunday menu' list with the kids on Friday — give them activity ideas in advance. The 'I'm bored' moments drop dramatically with a pre-planned set of options.",
+        "likes": 21
+      },
+      {
+        "id": 3,
+        "author": "ArchanaPillai",
+        "city": "Trivandrum",
+        "time": "2 days ago",
+        "text": "Have a Sunday tradition — a family meal you cook together, a place you go (park, beach, grandparents). Anchor activities make the screen absence feel like presence of something.",
+        "likes": 18
+      },
+      {
+        "id": 4,
+        "author": "IshaPandey",
+        "city": "Indore",
+        "time": "14 hours ago",
+        "text": "Adults need this more than kids. We discovered our irritability was the screen withdrawal, not the kids'. Our quality of presence on screen-free days completely changed how the kids responded.",
+        "likes": 26
       }
     ]
   },
@@ -2915,6 +5571,30 @@
         "time": "5 days ago",
         "text": "Start 'group practice' now — playdates with 3+ children at a time, group activities like birthday parties and hobby classes where she's NOT the centre of attention. Role play at home: 'pretend there are 10 kids and the teacher, and wait for your turn.' Delayed gratification exercises (5 mins of waiting, then reward) also help with the adjustment.",
         "likes": 23
+      },
+      {
+        "id": 2,
+        "author": "GauriShah",
+        "city": "Ahmedabad",
+        "time": "5 days ago",
+        "text": "Look for 'mixed-age' activities — Sunday school, library story hour, sports classes. Only-children benefit from regularly being in groups they weren't born into.",
+        "likes": 19
+      },
+      {
+        "id": 3,
+        "author": "SonalDesai",
+        "city": "Pune",
+        "time": "4 days ago",
+        "text": "Sleepovers when she's a bit older — sharing toys, sharing space, sharing parents' attention for a night. We started at 6yo and the social maturation was visible.",
+        "likes": 14
+      },
+      {
+        "id": 4,
+        "author": "KritikaArora",
+        "city": "Gurgaon",
+        "time": "14 hours ago",
+        "text": "Don't compensate for 'only child' with overstimulation. Quiet, alone, focused play IS one of the gifts of being an only child. Don't apologise for it.",
+        "likes": 12
       }
     ]
   },
@@ -2940,6 +5620,30 @@
         "time": "4 days ago",
         "text": "Some that helped our friends' children: 'Two Homes' by Claire Masurel (young children), 'It's Not Your Fault, Koko Bear' by Vicki Lansky, 'Dinosaurs Divorce' by Laurene Brown. All deal with it gently and honestly. The consistent message children need to hear: the divorce is not your fault, both parents still love you, you have two homes.",
         "likes": 35
+      },
+      {
+        "id": 2,
+        "author": "PreetiKaur",
+        "city": "Amritsar",
+        "time": "4 days ago",
+        "text": "'The Invisible String' by Patrice Karst — not divorce-specific but powerful for any separation. We read it on hard days. Beautiful concept of connection across distance.",
+        "likes": 22
+      },
+      {
+        "id": 3,
+        "author": "VandanaMehra",
+        "city": "Lucknow",
+        "time": "3 days ago",
+        "text": "Children's book of feelings (Todd Parr's work especially) — open-ended feeling vocabulary helps her name what she's experiencing. Naming is half of healing.",
+        "likes": 18
+      },
+      {
+        "id": 4,
+        "author": "IshaPandey",
+        "city": "Indore",
+        "time": "1 day ago",
+        "text": "Family therapy for 4-5 sessions once the dust settles — even children who 'seem fine' benefit. A neutral adult who isn't either parent is a unique gift to a child of divorce.",
+        "likes": 24
       }
     ]
   },
@@ -2965,6 +5669,30 @@
         "time": "6 days ago",
         "text": "Children's eye tests use 'tumbling E' or picture charts instead of letters — the child points which way the E faces. For younger kids they use preferential looking tests. The optometrist may use eye drops to dilate pupils and test the true refractive state without any child input at all. It's non-invasive and doesn't hurt — just bright lights.",
         "likes": 22
+      },
+      {
+        "id": 2,
+        "author": "BhavanaRao",
+        "city": "Bangalore",
+        "time": "6 days ago",
+        "text": "Take a colouring book and crayons — dilation eye drops take 30-45 min to kick in and the waiting room can be tedious. Reduces test anxiety too.",
+        "likes": 14
+      },
+      {
+        "id": 3,
+        "author": "NandiniK",
+        "city": "Coimbatore",
+        "time": "5 days ago",
+        "text": "Dilated pupils make light sensitivity rough for 4-6 hours after. Bring sunglasses (cap with brim works too). Reading and screens are uncomfortable for a few hours post-test.",
+        "likes": 17
+      },
+      {
+        "id": 4,
+        "author": "GauriShah",
+        "city": "Ahmedabad",
+        "time": "14 hours ago",
+        "text": "Vision changes are sneaky — kids adapt and don't realise they can't see well. School screenings often pick this up before any 'symptom' appears. Trust the school's flag.",
+        "likes": 11
       }
     ]
   },
@@ -3009,6 +5737,46 @@
         "time": "23 hours ago",
         "text": "I parented from fear a lot in the early years — fear of germs, fear of falls, fear of other kids being 'bad influences'. I realize I was communicating that the world is dangerous, not manageable. My second child got a much more relaxed parent and she is notably more confident.",
         "likes": 47
+      },
+      {
+        "id": 4,
+        "author": "NandiniK",
+        "city": "Coimbatore",
+        "time": "20 hours ago",
+        "text": "Letting my kid 'win' at everything to keep her happy. By 7 she couldn't tolerate losing in the simplest games. We had to actively re-teach losing. Started by losing to her with grace, then started winning sometimes.",
+        "likes": 38
+      },
+      {
+        "id": 5,
+        "author": "KritikaArora",
+        "city": "Gurgaon",
+        "time": "14 hours ago",
+        "text": "Believing 'good parents have rule-following kids'. Spent his early years controlling everything. He grew into a teen who couldn't make decisions because I'd made them all. Painful realisation.",
+        "likes": 41
+      },
+      {
+        "id": 6,
+        "author": "SonalDesai",
+        "city": "Pune",
+        "time": "12 hours ago",
+        "text": "Putting my career growth on hold for 'the kids'. They didn't need me 24/7; I needed me. The resentment leaked into parenting more than my absence ever would have. Back at work, much better mom.",
+        "likes": 35
+      },
+      {
+        "id": 7,
+        "author": "ArchanaPillai",
+        "city": "Trivandrum",
+        "time": "8 hours ago",
+        "text": "Public correction of small things. Tying his shoes the 'right way' in front of his friends at 6. He still flinches at unsolicited help today at 11. Tiny moments compound.",
+        "likes": 33
+      },
+      {
+        "id": 8,
+        "author": "IshaPandey",
+        "city": "Indore",
+        "time": "4 hours ago",
+        "text": "Speaking about another parent (school dad we disagreed with) negatively in front of my kids. They internalised the dismissiveness. Took years to undo.",
+        "likes": 28
       }
     ]
   }
