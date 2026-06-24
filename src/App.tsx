@@ -126,7 +126,7 @@ function AppContent() {
 
   // Prevent body scroll when any modal/overlay is open
   useEffect(() => {
-    const anyModalOpen = isModalOpen || isNewPostOpen || isAuthOpen || isModerationOpen || isAdminOpen || isReportOpen || isProfileOpen || isMobileLeftSidebarOpen || isRightSidebarOpen;
+    const anyModalOpen = isModalOpen || isNewPostOpen || isAuthOpen || isModerationOpen || isAdminOpen || isReportOpen || isProfileOpen || isMobileLeftSidebarOpen || isRightSidebarOpen || showCompleteProfile;
     if (anyModalOpen) {
       document.body.style.overflow = 'hidden';
     } else {
@@ -135,7 +135,15 @@ function AppContent() {
     return () => {
       document.body.style.overflow = 'auto';
     };
-  }, [isModalOpen, isNewPostOpen, isAuthOpen, isModerationOpen, isAdminOpen, isReportOpen, isProfileOpen, isMobileLeftSidebarOpen, isRightSidebarOpen]);
+  }, [isModalOpen, isNewPostOpen, isAuthOpen, isModerationOpen, isAdminOpen, isReportOpen, isProfileOpen, isMobileLeftSidebarOpen, isRightSidebarOpen, showCompleteProfile]);
+
+  // Force profile completion for any logged-in user missing a child age
+  // (covers Google signups, partial signups, and users created before childAge existed)
+  useEffect(() => {
+    if (currentUser && !currentUser.childAge) {
+      setShowCompleteProfile(true);
+    }
+  }, [currentUser]);
   useEffect(() => {
     // Handle Google OAuth redirect token and password reset token
     const params = new URLSearchParams(window.location.search);
@@ -152,8 +160,9 @@ function AppContent() {
         .then(data => {
           if (data.token) {
             tokenStore.set(data.token);
-            localStorage.setItem('tuco_complete_profile', '1');
-            // Reload so initData runs again with the token in storage
+            // Reload so initData runs again with the token in storage.
+            // The profile-completion modal fires from currentUser, not a flag,
+            // so it survives reloads / new devices / cleared localStorage.
             window.location.replace(window.location.pathname);
           }
         })
@@ -178,9 +187,6 @@ function AppContent() {
             setCurrentUser(user);
             if (user.savedPosts) {
               setSavedPosts(user.savedPosts);
-            }
-            if (localStorage.getItem('tuco_complete_profile') && !user.childAge) {
-              setShowCompleteProfile(true);
             }
 
             // Load user's votes from API

@@ -34,7 +34,6 @@ export function CompleteProfileModal({ user, onComplete }: Props) {
     setLoading(true);
     try {
       const updated = await api.updateMe({ username: username.trim(), city: city.trim() || 'India', childAge });
-      localStorage.removeItem('tuco_complete_profile');
       onComplete(updated);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save. Please try again.');
