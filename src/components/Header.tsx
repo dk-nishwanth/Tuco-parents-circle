@@ -343,9 +343,10 @@ export function Header({
           ) : (
             <button
               onClick={onLoginClick}
-              className="w-8 h-8 md:w-9 md:h-9 bg-white border border-[#35B5EC] rounded-lg flex items-center justify-center text-xs md:text-[13px] font-display font-bold text-[#35B5EC] shadow-sm hover:bg-[#35B5EC]/5 transition-colors"
+              aria-label="Sign in"
+              className="w-8 h-8 md:w-9 md:h-9 bg-white border border-[#35B5EC] rounded-lg flex items-center justify-center text-[#35B5EC] shadow-sm hover:bg-[#35B5EC]/5 transition-colors"
             >
-              LA
+              <User className="w-4 h-4 md:w-[18px] md:h-[18px]" strokeWidth={2.25} />
             </button>
           )}
         </div>
