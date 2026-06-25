@@ -16,6 +16,7 @@ import { ThreadReviewConfirmation } from './components/ThreadReviewConfirmation'
 import { AdminToolsPanel } from './components/AdminToolsPanel';
 import { LoadingScreen } from './components/LoadingScreen';
 import { CompleteProfileModal } from './components/CompleteProfileModal';
+import { PublicProfilePage } from './components/PublicProfilePage';
 import { ProfileModal } from './components/ProfileModal';
 import { WarningModal } from './components/WarningModal';
 import { ReportModal } from './components/ReportModal';
@@ -1581,6 +1582,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/admin" element={<AdminRoute />} />
+      <Route path="/u/:username" element={<PublicProfilePage />} />
       <Route path="/" element={<AppContent />} />
       <Route path="/:category" element={<AppContent />} />
     </Routes>

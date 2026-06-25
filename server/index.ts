@@ -462,6 +462,28 @@ async function sendEmail(to: string, subject: string, html: string): Promise<boo
   }
 }
 
+const SITE_URL = process.env.FRONTEND_URL || 'https://community.tucokids.com';
+const SYSTEM_USER_EMAIL = 'seed@tucokids.internal';
+
+function escapeHtml(s: string): string {
+  return s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
+}
+
+function emailLayout(title: string, intro: string, ctaText: string, ctaUrl: string, body: string): string {
+  return `
+  <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 24px; background: #fafafa;">
+    <div style="background: white; border-radius: 16px; padding: 32px;">
+      <h1 style="color: #4D4747; font-size: 22px; margin: 0 0 16px;">${title}</h1>
+      <p style="color: #555; line-height: 1.5; font-size: 15px; margin: 0 0 16px;">${intro}</p>
+      ${body}
+      <div style="margin: 28px 0;">
+        <a href="${ctaUrl}" style="display: inline-block; background: #35B5EC; color: white; text-decoration: none; padding: 12px 24px; border-radius: 10px; font-weight: bold;">${ctaText}</a>
+      </div>
+      <p style="color: #999; font-size: 12px; margin-top: 24px;">You're receiving this because you're part of tuco Parents Circle. <a href="${SITE_URL}" style="color: #35B5EC;">Manage notifications</a></p>
+    </div>
+  </div>`;
+}
+
 // ------------------------------
 // STATIC FILES
 // ------------------------------
@@ -741,20 +763,38 @@ app.get('/api/conversations', optionalAuth, async (req: AuthRequest, res, next) 
   console.log('📄 Getting conversations...');
   try {
     const isMod = req.userRole === 'MODERATOR' || req.userRole === 'TUCO_TEAM';
-    console.log('👤 User role:', req.userRole, 'Is mod:', isMod);
-    // Fetch all conversations with ALL replies (including nested ones)
+    const sort = String(req.query.sort || 'recent');
+    console.log('👤 User role:', req.userRole, 'Is mod:', isMod, '| sort:', sort);
     const conversations = await prisma.conversation.findMany({
       where: isMod ? undefined : { moderationStatus: 'APPROVED' },
-      // We need to fetch all replies for the conversation, not just top-level
       include: {
-        replies: {
-          orderBy: { id: 'asc' },
-        },
+        replies: { orderBy: { id: 'asc' } },
       },
       orderBy: [{ isPinned: 'desc' }, { createdAt: 'desc' }],
     });
-    console.log('✅ Found', conversations.length, 'conversations');
-    res.status(200).json(conversations.map(formatConversation));
+
+    let ordered = conversations;
+    if (sort === 'trending') {
+      // Score = votes (recent thread bonus) + replies in last 7 days
+      const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+      ordered = [...conversations]
+        .map(c => {
+          const recentReplies = c.replies.filter(r => r.createdAt && r.createdAt.getTime() >= weekAgo).length;
+          const ageDays = (Date.now() - c.createdAt.getTime()) / (24 * 60 * 60 * 1000);
+          // Gravity-style decay: votes per day-old + recent reply velocity
+          const score = (c.votes + 1) / Math.pow(ageDays + 2, 1.4) + recentReplies * 3;
+          return { c, score };
+        })
+        .sort((a, b) => (a.c.isPinned === b.c.isPinned ? b.score - a.score : (a.c.isPinned ? -1 : 1)))
+        .map(x => x.c);
+    } else if (sort === 'top') {
+      ordered = [...conversations].sort((a, b) =>
+        a.isPinned === b.isPinned ? b.votes - a.votes : (a.isPinned ? -1 : 1)
+      );
+    }
+
+    console.log('✅ Found', ordered.length, 'conversations');
+    res.status(200).json(ordered.map(formatConversation));
   } catch (error) {
     console.error('❌ Error getting conversations:', error);
     next(error);
@@ -1008,6 +1048,7 @@ app.post('/api/conversations/:id/replies', authenticate, async (req: AuthRequest
     // Notify thread author
     console.log('🔍 Finding conversation...');
     const conversation = await prisma.conversation.findUnique({ where: { id: conversationId } });
+    const threadUrl = `${SITE_URL}/thread/${conversationId}`;
     if (conversation && conversation.authorId !== req.userId) {
       console.log('🔔 Creating notification for thread author...');
       await prisma.notification.create({
@@ -1020,6 +1061,22 @@ app.post('/api/conversations/:id/replies', authenticate, async (req: AuthRequest
           threadId: conversationId,
         },
       });
+      // Email the OP if they have a valid email and haven't opted out
+      const opUser = await prisma.user.findUnique({ where: { id: conversation.authorId } });
+      if (opUser?.email && opUser.email !== SYSTEM_USER_EMAIL && opUser.emailNotifications !== false) {
+        const preview = text.length > 240 ? text.slice(0, 240) + '…' : text;
+        sendEmail(
+          opUser.email,
+          `${user.username} replied to your thread`,
+          emailLayout(
+            `${user.username} replied to your thread`,
+            `Someone responded to <strong>"${escapeHtml(conversation.title)}"</strong> on tuco Parents Circle.`,
+            'Read the reply',
+            threadUrl,
+            `<blockquote style="border-left: 3px solid #35B5EC; padding: 8px 14px; margin: 16px 0; color: #555; background: #f7fbfd;">${escapeHtml(preview)}</blockquote>`
+          )
+        ).catch(err => console.error('Reply email failed:', err));
+      }
     }
 
     // Notify parent reply author if it's a nested reply
@@ -1037,6 +1094,61 @@ app.post('/api/conversations/:id/replies', authenticate, async (req: AuthRequest
             threadId: conversationId,
           },
         });
+        const parentUser = await prisma.user.findUnique({ where: { id: parentReply.authorId } });
+        if (parentUser?.email && parentUser.email !== SYSTEM_USER_EMAIL && parentUser.emailNotifications !== false) {
+          const preview = text.length > 240 ? text.slice(0, 240) + '…' : text;
+          sendEmail(
+            parentUser.email,
+            `${user.username} replied to your comment`,
+            emailLayout(
+              `${user.username} replied to your comment`,
+              `Someone responded to your comment on tuco Parents Circle.`,
+              'Read the reply',
+              threadUrl,
+              `<blockquote style="border-left: 3px solid #35B5EC; padding: 8px 14px; margin: 16px 0; color: #555; background: #f7fbfd;">${escapeHtml(preview)}</blockquote>`
+            )
+          ).catch(err => console.error('Nested reply email failed:', err));
+        }
+      }
+    }
+
+    // Parse @mentions and notify (in-app + email) the tagged users (max 5 per reply to avoid abuse)
+    const mentionMatches = Array.from(text.matchAll(/@([A-Za-z0-9_.\-]{3,30})/g)).slice(0, 5);
+    const mentionedUsernames = Array.from(new Set(mentionMatches.map(m => m[1])));
+    const notifiedIds = new Set<string>();
+    if (conversation) notifiedIds.add(conversation.authorId);
+    if (parentId) {
+      const p = await prisma.reply.findUnique({ where: { id: parentId }, select: { authorId: true } });
+      if (p) notifiedIds.add(p.authorId);
+    }
+    notifiedIds.add(req.userId!);
+    for (const uname of mentionedUsernames) {
+      const mentioned = await prisma.user.findFirst({ where: { username: uname } });
+      if (!mentioned || notifiedIds.has(mentioned.id)) continue;
+      notifiedIds.add(mentioned.id);
+      await prisma.notification.create({
+        data: {
+          userId: mentioned.id,
+          type: 'SYSTEM',
+          title: `${user.username} mentioned you`,
+          description: `${user.username} mentioned you in "${conversation?.title || 'a thread'}"`,
+          time: 'Just now',
+          threadId: conversationId,
+        },
+      });
+      if (mentioned.email && mentioned.email !== SYSTEM_USER_EMAIL && mentioned.emailNotifications !== false) {
+        const preview = text.length > 240 ? text.slice(0, 240) + '…' : text;
+        sendEmail(
+          mentioned.email,
+          `${user.username} mentioned you on tuco Parents Circle`,
+          emailLayout(
+            `${user.username} mentioned you`,
+            `You were tagged in a reply on <strong>"${escapeHtml(conversation?.title || 'a thread')}"</strong>.`,
+            'View the mention',
+            threadUrl,
+            `<blockquote style="border-left: 3px solid #35B5EC; padding: 8px 14px; margin: 16px 0; color: #555; background: #f7fbfd;">${escapeHtml(preview)}</blockquote>`
+          )
+        ).catch(err => console.error('Mention email failed:', err));
       }
     }
 
@@ -1372,6 +1484,55 @@ app.patch('/api/users/me', authenticate, async (req: AuthRequest, res, next) => 
     });
 
     res.status(200).json(formatUser(user));
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Public profile by username — used by /u/:username pages.
+// Returns only safe public fields plus the user's approved threads.
+app.get('/api/users/by-username/:username', async (req, res, next) => {
+  try {
+    const username = req.params.username;
+    const user = await prisma.user.findFirst({
+      where: { username },
+      select: {
+        id: true, username: true, city: true, role: true, badges: true,
+        createdAt: true, postCount: true, replyCount: true, totalUpvotes: true, trustScore: true,
+      },
+    });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const threads = await prisma.conversation.findMany({
+      where: { authorId: user.id, moderationStatus: 'APPROVED' },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+      include: { replies: { select: { id: true } } },
+    });
+
+    res.status(200).json({
+      user: {
+        id: user.id,
+        username: user.username,
+        city: user.city,
+        role: mapRole(user.role),
+        badges: user.badges || [],
+        createdAt: user.createdAt.toISOString(),
+        postCount: user.postCount,
+        replyCount: user.replyCount,
+        totalUpvotes: user.totalUpvotes,
+        trustScore: user.trustScore / 100,
+      },
+      threads: threads.map(t => ({
+        id: t.id,
+        title: t.title,
+        category: t.category,
+        votes: t.votes,
+        views: t.views,
+        replyCount: t.replies.length,
+        createdAt: t.createdAt.toISOString(),
+      })),
+    });
   } catch (error) {
     next(error);
   }

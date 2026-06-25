@@ -305,4 +305,33 @@ export const api = {
     if (!tokenStore.get()) return;
     await this.updateMe(user);
   },
+
+  // ── Public profile ──────────────────────────────────────────────────────────
+
+  async getPublicProfile(username: string): Promise<{
+    user: {
+      id: string;
+      username: string;
+      city: string;
+      role: string;
+      badges: any[];
+      createdAt: string;
+      postCount: number;
+      replyCount: number;
+      totalUpvotes: number;
+      trustScore: number;
+    };
+    threads: Array<{
+      id: number;
+      title: string;
+      category: string;
+      votes: number;
+      views: number;
+      replyCount: number;
+      createdAt: string;
+    }>;
+  }> {
+    const res = await fetch(`${API_BASE_URL}/users/by-username/${encodeURIComponent(username)}`);
+    return handleResponse(res);
+  },
 };

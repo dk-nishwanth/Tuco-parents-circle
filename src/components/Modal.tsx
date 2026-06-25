@@ -2,7 +2,8 @@ import React, { useState, FormEvent, useRef, useEffect } from 'react';
 import { CATEGORIES } from '../data/categories';
 import { Conversation, User as UserType, Notification, Reply } from '../types';
 import { getAvatarColor, getInitials, searchThreadsWithRanking, formatTimeAgo } from '../utils/helpers';
-import { Heart, MessageSquare, X, Eye, Bookmark, ChevronDown, Search, Bell, ArrowLeft, Menu, User, LogOut, Users } from 'lucide-react';
+import { Heart, MessageSquare, X, Eye, Bookmark, ChevronDown, Search, Bell, ArrowLeft, Menu, User, LogOut, Users, Share2 } from 'lucide-react';
+import { track } from '../utils/analytics';
 import tucoLogo from '../assets/tuco-logo.webp';
 
 interface ModalProps {
@@ -316,6 +317,7 @@ export function Modal({
   const [errorMessage, setErrorMessage] = useState('');
   const [isSortOpen, setIsSortOpen] = useState(false);
   const [replySort, setReplySort] = useState<'new' | 'top' | 'old'>('new');
+  const [shareCopied, setShareCopied] = useState(false);
   const [searchTerm, setSearchTerm] = useState(propsSearchTerm || '');
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotificationsDropdown, setShowNotificationsDropdown] = useState(false);
@@ -696,7 +698,17 @@ export function Modal({
               </div>
               <div>
                 <h4 className="font-bold text-[15px] text-[#4D4747] leading-none mb-1">
-                  {thread.op.author}
+                  <a
+                    href={`/u/${encodeURIComponent(thread.op.author)}`}
+                    onClick={e => {
+                      e.preventDefault();
+                      onClose();
+                      setTimeout(() => { window.location.href = `/u/${encodeURIComponent(thread.op.author)}`; }, 150);
+                    }}
+                    className="hover:text-[#35B5EC] hover:underline"
+                  >
+                    {thread.op.author}
+                  </a>
                 </h4>
                 <p className="text-[12px] text-neutral-400 font-medium leading-none">
                   {thread.op.city}
@@ -717,9 +729,41 @@ export function Modal({
           </p>
 
           <div className="flex items-center justify-end gap-5 pt-5 border-t border-neutral-100">
-            <Bookmark 
-              className={`w-5 h-5 cursor-pointer transition-colors ${savedPosts.includes(thread.id) ? 'text-[#EB3200] fill-current' : 'text-[#4D4747] hover:text-neutral-500'}`} 
-              strokeWidth={1.5} 
+            <button
+              type="button"
+              aria-label="Share this thread"
+              title="Share"
+              onClick={async () => {
+                const url = `${window.location.origin}/thread/${thread.id}`;
+                const shareData = {
+                  title: thread.title,
+                  text: `${thread.title} — tuco Parents Circle`,
+                  url,
+                };
+                try {
+                  if (navigator.share && navigator.canShare?.(shareData)) {
+                    await navigator.share(shareData);
+                    track('share_post', { thread_id: thread.id, method: 'native' });
+                  } else {
+                    await navigator.clipboard.writeText(url);
+                    track('share_post', { thread_id: thread.id, method: 'clipboard' });
+                    setShareCopied(true);
+                    setTimeout(() => setShareCopied(false), 2000);
+                  }
+                } catch {
+                  // user cancelled — no-op
+                }
+              }}
+              className="text-[#4D4747] hover:text-[#35B5EC] transition-colors"
+            >
+              <Share2 className="w-5 h-5" strokeWidth={1.5} />
+            </button>
+            {shareCopied && (
+              <span className="text-xs text-[#35B5EC] font-medium">Link copied!</span>
+            )}
+            <Bookmark
+              className={`w-5 h-5 cursor-pointer transition-colors ${savedPosts.includes(thread.id) ? 'text-[#EB3200] fill-current' : 'text-[#4D4747] hover:text-neutral-500'}`}
+              strokeWidth={1.5}
               onClick={() => {
                 if (!currentUser) {
                   onLoginClick?.();

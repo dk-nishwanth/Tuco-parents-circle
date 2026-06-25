@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { CATEGORIES, CATEGORY_COLORS } from '../data/categories';
 import { Conversation, User } from '../types';
 import { getAvatarColor, getInitials, getAuthorMeta } from '../utils/helpers';
@@ -122,7 +123,16 @@ export function ThreadCard({
               {getInitials(thread.op.author)}
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="text-[12px] font-sans font-medium text-[#4D4747]">By {thread.op.author}</span>
+              <span className="text-[12px] font-sans font-medium text-[#4D4747]">
+                By{' '}
+                <Link
+                  to={`/u/${encodeURIComponent(thread.op.author)}`}
+                  onClick={e => e.stopPropagation()}
+                  className="hover:text-[#35B5EC] hover:underline"
+                >
+                  {thread.op.author}
+                </Link>
+              </span>
               <AuthorBadges badges={opBadges} role={opRole} />
               {!isLoggedIn && (
                 <span
