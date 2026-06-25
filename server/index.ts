@@ -488,7 +488,7 @@ app.get('/api/health', (req, res) => {
 
 // In-memory store for password reset tokens (token -> { userId, expiry })
 const passwordResetTokens = new Map<string, { userId: string; expiry: number }>();
-const oauthCodes = new Map<string, { token: string; expiresAt: number }>();
+const oauthCodes = new Map<string, { token: string; expiresAt: number; isNew: boolean }>();
 
 const signupSchema = z.object({
   email: z.string().email(),
@@ -676,7 +676,7 @@ app.post('/api/auth/oauth-token', authLimiter, (req, res) => {
   if (!record || Date.now() > record.expiresAt) {
     return res.status(400).json({ error: 'Invalid or expired code' });
   }
-  res.status(200).json({ token: record.token });
+  res.status(200).json({ token: record.token, isNew: record.isNew });
 });
 
 // Google OAuth
@@ -704,7 +704,9 @@ app.get('/api/auth/google/callback', async (req, res, next) => {
     const { email, name, sub: googleId } = payload;
 
     let user = await prisma.user.findUnique({ where: { email } });
+    let isNew = false;
     if (!user) {
+      isNew = true;
       const baseUsername = (name || email.split('@')[0]).replace(/[^a-zA-Z0-9_\-. ]/g, '').slice(0, 28) || 'Parent';
       const username = `${baseUsername}${Math.floor(Math.random() * 900 + 100)}`;
       user = await prisma.user.create({
@@ -724,7 +726,7 @@ app.get('/api/auth/google/callback', async (req, res, next) => {
     const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET as string, { expiresIn: '30d' });
     // Exchange code pattern: store token server-side, redirect with a one-time code
     const oauthCode = crypto.randomBytes(16).toString('hex');
-    oauthCodes.set(oauthCode, { token, expiresAt: Date.now() + 5 * 60 * 1000 });
+    oauthCodes.set(oauthCode, { token, expiresAt: Date.now() + 5 * 60 * 1000, isNew });
     res.redirect(`${FRONTEND_URL}?oauth_code=${oauthCode}`);
   } catch (error) {
     next(error);

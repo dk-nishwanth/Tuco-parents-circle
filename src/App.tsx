@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Routes, Route, useParams, useNavigate, useLocation } from 'react-router-dom';
-import { track, setAnalyticsUser } from './utils/analytics';
+import { track, setAnalyticsUser, trackPageView } from './utils/analytics';
 import { AdminPanel } from './components/AdminPanel';
 import { Header } from './components/Header';
 import { LeftSidebar } from './components/LeftSidebar';
@@ -150,6 +150,12 @@ function AppContent() {
   useEffect(() => {
     setAnalyticsUser(currentUser?.id ?? null);
   }, [currentUser?.id]);
+
+  // Fire a manual GA4 page_view on every SPA route change.
+  // Without this, only the initial document load is counted; category nav is invisible.
+  useEffect(() => {
+    trackPageView(location.pathname + location.search);
+  }, [location.pathname, location.search]);
   useEffect(() => {
     // Handle Google OAuth redirect token and password reset token
     const params = new URLSearchParams(window.location.search);
@@ -166,7 +172,10 @@ function AppContent() {
         .then(data => {
           if (data.token) {
             tokenStore.set(data.token);
-            track('login', { method: 'google' });
+            if (data.isNew) {
+              track('sign_up', { method: 'google' });
+            }
+            track('login', { method: 'google', is_new_user: !!data.isNew });
             // Reload so initData runs again with the token in storage.
             // The profile-completion modal fires from currentUser, not a flag,
             // so it survives reloads / new devices / cleared localStorage.
@@ -485,6 +494,10 @@ function AppContent() {
       });
     } catch (error) {
       console.error('Signup failed:', error);
+      track('sign_up_failed', {
+        method: 'email',
+        error: error instanceof Error ? error.message.slice(0, 100) : 'unknown',
+      });
       setWarningModal({
         isOpen: true,
         type: 'error',
@@ -519,10 +532,15 @@ function AppContent() {
       });
     } catch (error) {
       console.error('Login failed:', error);
+      track('login_failed', {
+        method: 'email',
+        error: error instanceof Error ? error.message.slice(0, 100) : 'unknown',
+      });
       throw error; // let AuthModal show inline error
     }
   };
   const handleLogout = () => {
+    track('logout');
     setSessionCredentials(null);
     api.logout();
     setCurrentUser(null);
@@ -567,13 +585,17 @@ function AppContent() {
   const handleThreadOpen = async (threadId: number) => {
     const updatedThread = conversations.find(c => c.id === threadId);
     const newViews = (updatedThread?.views || 0) + 1;
-    
+
     setConversations(prev => {
       return prev.map(c => (c.id === threadId ? { ...c, views: newViews } : c));
     });
-    
+
     setSelectedThreadId(threadId);
     setIsModalOpen(true);
+    track('thread_opened', {
+      thread_id: threadId,
+      category: updatedThread?.category,
+    });
     
     // Save to backend
     try {
@@ -649,6 +671,9 @@ function AppContent() {
         conversationId: threadId,
         type: type.toUpperCase() as 'UP' | 'DOWN',
       });
+      // 'undone' fires when the user clicks the same vote again to remove it.
+      const action = previousState === type ? 'undone' : 'set';
+      track('vote', { target: 'thread', type, action, thread_id: threadId });
       // Refresh data from server to ensure consistency
       await refreshData();
     } catch (error) {
@@ -692,6 +717,11 @@ function AppContent() {
       await api.vote({
         replyId,
         type: 'UP',
+      });
+      track('reply_liked', {
+        action: isLiked ? 'undone' : 'set',
+        thread_id: threadId,
+        reply_id: replyId,
       });
       await refreshData();
     } catch (error) {

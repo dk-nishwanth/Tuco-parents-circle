@@ -29,3 +29,18 @@ export function setAnalyticsUser(userId: string | null): void {
     // ignore
   }
 }
+
+// Fire a manual page_view for SPA route changes.
+// gtag's auto-page-view only fires once on initial document load.
+export function trackPageView(path: string): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.gtag?.('event', 'page_view', {
+      page_path: path,
+      page_location: window.location.href,
+      page_title: document.title,
+    });
+  } catch {
+    // ignore
+  }
+}
