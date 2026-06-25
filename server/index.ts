@@ -1490,10 +1490,14 @@ app.patch('/api/users/me', authenticate, async (req: AuthRequest, res, next) => 
 });
 
 // Public profile by username — used by /u/:username pages.
-// Returns only safe public fields plus the user's approved threads.
+// Returns safe public fields + the user's approved threads.
+// Also serves seed-data authors who appear as opAuthor strings but
+// don't have their own User row (so profile links don't dead-end).
 app.get('/api/users/by-username/:username', async (req, res, next) => {
   try {
     const username = req.params.username;
+
+    // Primary path: real registered user
     const user = await prisma.user.findFirst({
       where: { username },
       select: {
@@ -1501,29 +1505,65 @@ app.get('/api/users/by-username/:username', async (req, res, next) => {
         createdAt: true, postCount: true, replyCount: true, totalUpvotes: true, trustScore: true,
       },
     });
-    if (!user) return res.status(404).json({ error: 'User not found' });
 
-    const threads = await prisma.conversation.findMany({
-      where: { authorId: user.id, moderationStatus: 'APPROVED' },
+    if (user) {
+      const threads = await prisma.conversation.findMany({
+        where: { authorId: user.id, moderationStatus: 'APPROVED' },
+        orderBy: { createdAt: 'desc' },
+        take: 50,
+        include: { replies: { select: { id: true } } },
+      });
+      return res.status(200).json({
+        user: {
+          id: user.id,
+          username: user.username,
+          city: user.city,
+          role: mapRole(user.role),
+          badges: user.badges || [],
+          createdAt: user.createdAt.toISOString(),
+          postCount: user.postCount,
+          replyCount: user.replyCount,
+          totalUpvotes: user.totalUpvotes,
+          trustScore: user.trustScore / 100,
+        },
+        threads: threads.map(t => ({
+          id: t.id,
+          title: t.title,
+          category: t.category,
+          votes: t.votes,
+          views: t.views,
+          replyCount: t.replies.length,
+          createdAt: t.createdAt.toISOString(),
+        })),
+      });
+    }
+
+    // Fallback: synthesise a profile from seeded threads that bear this opAuthor
+    const seedThreads = await prisma.conversation.findMany({
+      where: { opAuthor: username, moderationStatus: 'APPROVED' },
       orderBy: { createdAt: 'desc' },
       take: 50,
       include: { replies: { select: { id: true } } },
     });
+    if (seedThreads.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
 
-    res.status(200).json({
+    const totalVotes = seedThreads.reduce((sum, t) => sum + (t.votes || 0), 0);
+    return res.status(200).json({
       user: {
-        id: user.id,
-        username: user.username,
-        city: user.city,
-        role: mapRole(user.role),
-        badges: user.badges || [],
-        createdAt: user.createdAt.toISOString(),
-        postCount: user.postCount,
-        replyCount: user.replyCount,
-        totalUpvotes: user.totalUpvotes,
-        trustScore: user.trustScore / 100,
+        id: `seed-${username}`,
+        username,
+        city: seedThreads[0].opCity || 'India',
+        role: 'MEMBER',
+        badges: [],
+        createdAt: seedThreads[seedThreads.length - 1].createdAt.toISOString(),
+        postCount: seedThreads.length,
+        replyCount: 0,
+        totalUpvotes: totalVotes,
+        trustScore: 0.5,
       },
-      threads: threads.map(t => ({
+      threads: seedThreads.map(t => ({
         id: t.id,
         title: t.title,
         category: t.category,
