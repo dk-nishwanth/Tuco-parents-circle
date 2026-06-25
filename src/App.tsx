@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Routes, Route, useParams, useNavigate, useLocation } from 'react-router-dom';
+import { track, setAnalyticsUser } from './utils/analytics';
 import { AdminPanel } from './components/AdminPanel';
 import { Header } from './components/Header';
 import { LeftSidebar } from './components/LeftSidebar';
@@ -144,6 +145,11 @@ function AppContent() {
       setShowCompleteProfile(true);
     }
   }, [currentUser]);
+
+  // Identify the logged-in user in GA4 (uses the opaque user id, not PII).
+  useEffect(() => {
+    setAnalyticsUser(currentUser?.id ?? null);
+  }, [currentUser?.id]);
   useEffect(() => {
     // Handle Google OAuth redirect token and password reset token
     const params = new URLSearchParams(window.location.search);
@@ -160,6 +166,7 @@ function AppContent() {
         .then(data => {
           if (data.token) {
             tokenStore.set(data.token);
+            track('login', { method: 'google' });
             // Reload so initData runs again with the token in storage.
             // The profile-completion modal fires from currentUser, not a flag,
             // so it survives reloads / new devices / cleared localStorage.
@@ -461,13 +468,14 @@ function AppContent() {
   const handleSignup = async (email: string, username: string, city: string, childAge: string, password: string) => {
     try {
       const { user, token } = await api.signup(email, password, username, city, childAge);
-      
+
       // User is already logged in and token is stored by api.signup()
       const updatedUsers = { ...users, [user.id]: user };
       setUsers(updatedUsers);
       setCurrentUser(user);
       setSessionCredentials({ email: user.email, password });
-      
+      track('sign_up', { method: 'email' });
+
       setIsAuthOpen(false);
       setWarningModal({
         isOpen: true,
@@ -489,12 +497,13 @@ function AppContent() {
   const handleLogin = async (email: string, password: string) => {
     try {
       const { user, token } = await api.login(email, password);
-      
+
       // User is already logged in and token is stored by api.login()
       const updatedUsers = { ...users, [user.id]: user };
       setUsers(updatedUsers);
       setCurrentUser(user);
       setSessionCredentials({ email, password });
+      track('login', { method: 'email' });
       
       // Load user's saved posts
       if (user.savedPosts) {
@@ -760,6 +769,7 @@ function AppContent() {
         image,
         parentId,
       });
+      track('reply_created', { is_nested: !!parentId });
 
       const newReply: Reply = {
         id: createdReply.id || Date.now() + Math.random(),
@@ -979,6 +989,7 @@ function AppContent() {
         greyAreaFlags: analysis.greyAreaFlags,
         reviewPriority: finalReviewPriority,
       });
+      track('post_created', { category, moderation_status: moderationStatus });
 
       if (moderationStatus === 'rejected') {
         setWarningModal({

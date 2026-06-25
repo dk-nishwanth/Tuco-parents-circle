@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { User } from '../types';
 import { api } from '../utils/api';
+import { track } from '../utils/analytics';
 
 interface Props {
   user: User;
@@ -34,6 +35,7 @@ export function CompleteProfileModal({ user, onComplete }: Props) {
     setLoading(true);
     try {
       const updated = await api.updateMe({ username: username.trim(), city: city.trim() || 'India', childAge });
+      track('profile_completed', { child_age: childAge });
       onComplete(updated);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save. Please try again.');
