@@ -55,7 +55,10 @@ model Conversation {
   authorId         String
   greyAreaFlags    String[]
   reviewPriority   Int?
-  author           User             @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  // Restrict (not Cascade): deleting a user with conversations is blocked at the DB level.
+  // This prevents accidental wipes (e.g. if the seed user is deleted via raw SQL).
+  // To delete a user with content, their content must be reassigned or deleted first.
+  author           User             @relation(fields: [authorId], references: [id], onDelete: Restrict)
   replies          Reply[]
   votesRelation    Vote[]           @relation("VoteToConversation")
 }
@@ -75,7 +78,8 @@ model Reply {
   moderationStatus ModerationStatus @default(PENDING)
   parentId         Int?
   createdAt        DateTime         @default(now())
-  authorUser       User             @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  // Same protection as Conversation.author — blocks accidental user-deletion cascades.
+  authorUser       User             @relation(fields: [authorId], references: [id], onDelete: Restrict)
   conversation     Conversation     @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   parent           Reply?           @relation("ReplyToReply", fields: [parentId], references: [id], onDelete: Cascade)
   replies          Reply[]          @relation("ReplyToReply")
