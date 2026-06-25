@@ -395,7 +395,9 @@ const formatReply = (r: any, allReplies: any[]): any => ({
   author: r.author,
   authorId: r.authorId,
   city: r.city,
-  time: r.time,
+  // Always compute relative time from createdAt so the label stays accurate
+  // across reloads. The stored r.time is ignored unless createdAt is missing.
+  time: r.createdAt ? formatRelativeTime(r.createdAt) : (r.time || 'just now'),
   text: r.text,
   image: r.image,
   likes: r.likes || 0,
@@ -426,7 +428,8 @@ const formatConversation = (c: any) => {
     op: {
       author: c.opAuthor,
       city: c.opCity,
-      time: c.opTime,
+      // Always compute from createdAt so labels never go stale.
+      time: c.createdAt ? formatRelativeTime(c.createdAt) : (c.opTime || 'just now'),
       text: c.opText,
       image: c.opImage,
       authorRole: mapRole(c.opAuthorRole),
@@ -467,6 +470,26 @@ const SYSTEM_USER_EMAIL = 'seed@tucokids.internal';
 
 function escapeHtml(s: string): string {
   return s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
+}
+
+// Convert a Date to a relative-time string. Computed at response time so
+// it's always current — never stored in the DB.
+function formatRelativeTime(date: Date | null | undefined, fallback = 'just now'): string {
+  if (!date) return fallback;
+  const diffSec = Math.max(0, Math.round((Date.now() - new Date(date).getTime()) / 1000));
+  if (diffSec < 45) return 'just now';
+  const diffMin = Math.round(diffSec / 60);
+  if (diffMin < 60) return `${diffMin} minute${diffMin === 1 ? '' : 's'} ago`;
+  const diffHr = Math.round(diffMin / 60);
+  if (diffHr < 24) return `${diffHr} hour${diffHr === 1 ? '' : 's'} ago`;
+  const diffDay = Math.round(diffHr / 24);
+  if (diffDay < 7) return `${diffDay} day${diffDay === 1 ? '' : 's'} ago`;
+  const diffWk = Math.round(diffDay / 7);
+  if (diffWk < 5) return `${diffWk} week${diffWk === 1 ? '' : 's'} ago`;
+  const diffMo = Math.round(diffDay / 30);
+  if (diffMo < 12) return `${diffMo} month${diffMo === 1 ? '' : 's'} ago`;
+  const diffYr = Math.round(diffDay / 365);
+  return `${diffYr} year${diffYr === 1 ? '' : 's'} ago`;
 }
 
 function emailLayout(title: string, intro: string, ctaText: string, ctaUrl: string, body: string): string {
@@ -1161,7 +1184,8 @@ app.post('/api/conversations/:id/replies', authenticate, async (req: AuthRequest
       id: reply.id,
       author: reply.author,
       city: reply.city,
-      time: reply.time,
+      time: formatRelativeTime(reply.createdAt),
+      createdAt: reply.createdAt ? reply.createdAt.toISOString() : new Date().toISOString(),
       text: reply.text,
       image: reply.image,
       likes: reply.likes || 0,
