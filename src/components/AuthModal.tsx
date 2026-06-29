@@ -155,7 +155,21 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin, initialMode, ini
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
               <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" strokeWidth={1.5} />
-              <p className="text-sm text-red-600 font-medium">{error}</p>
+              <div className="flex-1">
+                <p className="text-sm text-red-600 font-medium">{error}</p>
+                {mode === 'login' && (
+                  <p className="text-xs text-neutral-600 mt-1.5">
+                    Signed up with Google?{' '}
+                    <a
+                      href="/api/auth/google"
+                      className="text-tuco-cyan font-semibold hover:underline"
+                    >
+                      Continue with Google
+                    </a>{' '}
+                    instead.
+                  </p>
+                )}
+              </div>
             </div>
           )}
           {success && (
