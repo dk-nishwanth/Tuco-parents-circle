@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { X, Mail, Lock, MapPin, User, AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react';
+import { track } from '../utils/analytics';
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -21,6 +22,23 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin, initialMode, ini
   const [showPassword, setShowPassword] = useState(false);
   const [resetToken, setResetToken] = useState(initialResetToken || '');
   const [newPassword, setNewPassword] = useState('');
+
+  // Signup funnel: fire once per modal-open when the user first types a character.
+  const signupStartedRef = useRef(false);
+  const markSignupStarted = () => {
+    if (signupStartedRef.current) return;
+    signupStartedRef.current = true;
+    track('signup_form_started');
+  };
+
+  // Fire auth_modal_opened whenever the modal opens (and reset the "started" flag).
+  useEffect(() => {
+    if (isOpen) {
+      signupStartedRef.current = false;
+      track('auth_modal_opened', { initial_mode: mode });
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const handleForgotSubmit = async (e: React.FormEvent) => {
@@ -69,6 +87,7 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin, initialMode, ini
     e.preventDefault();
     setError('');
     setLoading(true);
+    track('signup_form_submitted');
     if (!email.includes('@')) {
       setError('Please enter a valid email');
       setLoading(false);
@@ -317,7 +336,7 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin, initialMode, ini
                     type="email"
                     placeholder="mom@example.com"
                     value={email}
-                    onChange={e => setEmail(e.target.value)}
+                    onChange={e => { markSignupStarted(); setEmail(e.target.value); }}
                     className="w-full pl-10 pr-4 py-2.5 border border-neutral-200 rounded-lg outline-none text-sm focus:border-tuco-cyan focus:ring-2 focus:ring-tuco-cyan/10"
                   />
                 </div>
@@ -332,7 +351,7 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin, initialMode, ini
                     type={showPassword ? 'text' : 'password'}
                     placeholder="At least 6 characters"
                     value={password}
-                    onChange={e => setPassword(e.target.value)}
+                    onChange={e => { markSignupStarted(); setPassword(e.target.value); }}
                     className="w-full pl-10 pr-10 py-2.5 border border-neutral-200 rounded-lg outline-none text-sm focus:border-tuco-cyan focus:ring-2 focus:ring-tuco-cyan/10"
                   />
                   <button type="button" onClick={() => setShowPassword(p => !p)} className="absolute right-3 top-3 text-neutral-400 hover:text-neutral-600">
@@ -350,7 +369,7 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin, initialMode, ini
                     type="text"
                     placeholder="e.g. PriyasMom, ArjunsDad"
                     value={username}
-                    onChange={e => setUsername(e.target.value)}
+                    onChange={e => { markSignupStarted(); setUsername(e.target.value); }}
                     className="w-full pl-10 pr-4 py-2.5 border border-neutral-200 rounded-lg outline-none text-sm focus:border-tuco-cyan focus:ring-2 focus:ring-tuco-cyan/10"
                   />
                 </div>
@@ -366,7 +385,7 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin, initialMode, ini
                     type="text"
                     placeholder="e.g. Bangalore, Mumbai"
                     value={city}
-                    onChange={e => setCity(e.target.value)}
+                    onChange={e => { markSignupStarted(); setCity(e.target.value); }}
                     className="w-full pl-10 pr-4 py-2.5 border border-neutral-200 rounded-lg outline-none text-sm focus:border-tuco-cyan focus:ring-2 focus:ring-tuco-cyan/10"
                   />
                 </div>
@@ -377,7 +396,7 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin, initialMode, ini
                 </label>
                 <select
                   value={childAge}
-                  onChange={e => setChildAge(e.target.value)}
+                  onChange={e => { markSignupStarted(); setChildAge(e.target.value); }}
                   className="w-full px-4 py-2.5 border border-neutral-200 rounded-lg outline-none text-sm focus:border-tuco-cyan focus:ring-2 focus:ring-tuco-cyan/10"
                 >
                   <option value="">Select age...</option>
