@@ -315,20 +315,33 @@ export function Modal({
   // Auto-restore any draft this user started on this thread — including drafts
   // preserved across a Google OAuth reload that would otherwise wipe React state.
   const draftKey = thread ? `tuco_draft_reply_${thread.id}` : '';
-  const [replyText, setReplyText] = useState(() => {
-    try { return draftKey ? sessionStorage.getItem(draftKey) || '' : ''; }
-    catch { return ''; }
-  });
+  const [replyText, setReplyText] = useState('');
   const [replyImage, setReplyImage] = useState<string | undefined>(undefined);
   const [errorMessage, setErrorMessage] = useState('');
   const [isSortOpen, setIsSortOpen] = useState(false);
   const [replySort, setReplySort] = useState<'new' | 'top' | 'old'>('new');
   const [shareCopied, setShareCopied] = useState(false);
 
-  // Persist the current draft on every keystroke so a full-page reload
-  // (Google OAuth, accidental refresh, network hiccup) doesn't lose it.
+  // Load this thread's saved draft whenever the thread becomes available.
+  // This can't be done in the useState initializer above because on a fresh
+  // page load (e.g. after the Google OAuth reload) the component first mounts
+  // while `thread` is still null — so draftKey is empty and there is nothing to
+  // read. Once conversations load and the thread appears, we pull the draft in.
+  const justLoadedDraftRef = useRef(false);
   useEffect(() => {
     if (!draftKey) return;
+    try { setReplyText(sessionStorage.getItem(draftKey) || ''); }
+    catch { setReplyText(''); }
+    justLoadedDraftRef.current = true;
+  }, [draftKey]);
+
+  // Persist the current draft on every keystroke so a full-page reload
+  // (Google OAuth, accidental refresh, network hiccup) doesn't lose it.
+  // Skip the pass that immediately follows a load so we never overwrite the
+  // freshly-restored draft with the empty value it briefly held before.
+  useEffect(() => {
+    if (!draftKey) return;
+    if (justLoadedDraftRef.current) { justLoadedDraftRef.current = false; return; }
     try {
       if (replyText) sessionStorage.setItem(draftKey, replyText);
       else sessionStorage.removeItem(draftKey);

@@ -184,7 +184,15 @@ function AppContent() {
             const savedReturn = sessionStorage.getItem('tuco_return_url');
             sessionStorage.removeItem('tuco_return_url');
             const returnTo = savedReturn && savedReturn.startsWith('/') ? savedReturn : window.location.pathname;
-            window.location.replace(returnTo);
+            // Put the return URL (including any #thread-N hash) in place, then
+            // hard-reload. We must reload — not just location.replace — because
+            // when the thread was opened from the homepage the return URL
+            // differs from the current one ONLY by hash, and a hash-only
+            // navigation does not reboot the app. Without a real reload getMe()
+            // never runs, currentUser stays null, and the restored draft can't
+            // be posted (clicking Comment just re-opens the login).
+            window.history.replaceState({}, '', returnTo);
+            window.location.reload();
           }
         })
         .catch(() => {});
@@ -1374,14 +1382,18 @@ function AppContent() {
         thread={selectedThread}
         isOpen={isModalOpen}
         onClose={() => {
-          // If we added a history entry, go back to remove it
+          // Strip the #thread-N hash by REPLACING the current history entry
+          // rather than calling history.back(). After a Google OAuth round-trip
+          // the back-stack still contains the Google login pages, so
+          // history.back() would bounce the user to Google instead of the feed.
+          // replaceState rewrites the URL in place and we close the modal via
+          // state, which lands reliably on the home/category feed every time.
           if (window.location.hash.startsWith('#thread-')) {
-            window.history.back();
-          } else {
-            setIsModalOpen(false);
-            setSelectedThreadId(null);
-            setActiveReplyTo(null);
+            window.history.replaceState({}, '', window.location.pathname + window.location.search);
           }
+          setIsModalOpen(false);
+          setSelectedThreadId(null);
+          setActiveReplyTo(null);
         }}
         onAddReply={handleAddReply}
         onLikeReply={handleLikeReply}
