@@ -58,8 +58,15 @@ function SearchInput({
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && suggestions.length > 0) {
-      onSuggestionSelect?.(suggestions[0].id);
+    // Enter closes the suggestions dropdown and defers to the search-results
+    // page (which is already active while searchTerm has content). We used to
+    // auto-open the top-ranked thread here, which felt like "search only ever
+    // opens one thread" — the results page shows the full ranked list instead.
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      setShowSuggestions(false);
+      (e.target as HTMLInputElement).blur();
+    } else if (e.key === 'Escape') {
       setShowSuggestions(false);
     }
   };

@@ -153,37 +153,134 @@ export function formatTimeAgo(dateString: string | undefined): string {
   return `${Math.floor(seconds / 31536000)} years ago`;
 }
 
+// Common English words we shouldn't score. Kept small on purpose — anything
+// domain-specific ("kids", "child", "food") stays in for signal.
+const STOPWORDS = new Set([
+  'a', 'an', 'the', 'and', 'or', 'but', 'if', 'is', 'it', 'in', 'to', 'for',
+  'of', 'on', 'at', 'be', 'i', 'my', 'me', 'we', 'us', 'you', 'your',
+  'do', 'does', 'this', 'that', 'was', 'are', 'with', 'how', 'what',
+  'when', 'where', 'why', 'so', 'as', 'by', 'from', 'about',
+]);
+
+function normalize(s: string): string {
+  return (s || '').toLowerCase();
+}
+
+// Simple English-plural normalization: 'kids' → 'kid', 'babies' → 'babie'.
+// Not linguistically perfect but stops obvious singular/plural misses.
+function stem(word: string): string {
+  if (word.length <= 3) return word;
+  if (word.endsWith('ies')) return word.slice(0, -3) + 'y';
+  if (word.endsWith('es')) return word.slice(0, -2);
+  if (word.endsWith('s')) return word.slice(0, -1);
+  return word;
+}
+
+function tokenize(input: string): string[] {
+  return normalize(input)
+    .split(/[^\w']+/)
+    .filter(t => t.length >= 2 && !STOPWORDS.has(t));
+}
+
+// Count how many times any of the words appears in text, plus word-boundary
+// and prefix awareness. Word-boundary matches score higher than substring.
+function tokenScore(text: string, tokens: string[]): { matched: number; hits: number } {
+  if (!text || tokens.length === 0) return { matched: 0, hits: 0 };
+  const normalizedText = normalize(text);
+  const words = normalizedText.split(/[^\w']+/).filter(Boolean);
+  const stemmedWords = words.map(stem);
+
+  let matched = 0;
+  let hits = 0;
+  for (const raw of tokens) {
+    const t = stem(raw);
+    let tokenMatched = false;
+    // Whole-word or stem match (strongest)
+    for (const w of stemmedWords) {
+      if (w === t) { hits += 3; tokenMatched = true; }
+      else if (w.startsWith(t) && t.length >= 3) { hits += 2; tokenMatched = true; }
+    }
+    // Substring fallback (weakest)
+    if (!tokenMatched && normalizedText.includes(raw)) {
+      hits += 1;
+      tokenMatched = true;
+    }
+    if (tokenMatched) matched++;
+  }
+  return { matched, hits };
+}
+
 export function searchThreadsWithRanking(
   threads: Conversation[],
   query: string,
   limit: number = 10
 ): Conversation[] {
-  if (!query.trim()) return [];
-  const queryLower = query.toLowerCase();
+  const rawQuery = normalize(query).trim();
+  if (!rawQuery) return [];
+  const tokens = tokenize(rawQuery);
+  const isSingleWord = tokens.length <= 1;
+
   const scored = threads
-    .filter(thread => {
-      return !thread.moderationStatus || thread.moderationStatus === 'approved';
-    })
+    .filter(thread => !thread.moderationStatus || thread.moderationStatus === 'approved')
     .map(thread => {
+      const title = normalize(thread.title);
+      const opText = normalize(thread.op?.text || '');
+      const category = normalize(thread.category || '');
+      const author = normalize(thread.op?.author || '');
+
       let score = 0;
-      const titleMatch = thread.title.toLowerCase().includes(queryLower);
-      if (titleMatch) {
-        score += thread.title.toLowerCase().startsWith(queryLower) ? 100 : 50;
+
+      // 1. Exact-phrase matches (strongest signal for multi-word queries)
+      if (title.includes(rawQuery)) {
+        score += title.startsWith(rawQuery) ? 200 : 120;
       }
-      if (thread.op.text.toLowerCase().includes(queryLower)) {
-        score += 30;
+      if (opText.includes(rawQuery)) score += 50;
+      if (category.includes(rawQuery)) score += 60;
+      if (author.includes(rawQuery)) score += 40;
+
+      // 2. Per-token matches (handles multi-word queries + similar words)
+      if (tokens.length > 0) {
+        const titleScore = tokenScore(title, tokens);
+        const opScore = tokenScore(opText, tokens);
+        const categoryScore = tokenScore(category, tokens);
+        const authorScore = tokenScore(author, tokens);
+
+        // Weight by field importance: title >> category > op text > author
+        score += titleScore.hits * 15;
+        score += categoryScore.hits * 10;
+        score += opScore.hits * 6;
+        score += authorScore.hits * 4;
+
+        // Coverage bonus — reward threads that match ALL query tokens
+        const anyFieldMatched = Math.max(
+          titleScore.matched, opScore.matched, categoryScore.matched, authorScore.matched
+        );
+        if (tokens.length > 1 && anyFieldMatched === tokens.length) {
+          score += 40;
+        }
+
+        // Reply body matches (capped to avoid one long thread dominating)
+        let replyHits = 0;
+        for (const r of thread.replies || []) {
+          const rs = tokenScore(r.text || '', tokens);
+          replyHits += rs.hits;
+          if (replyHits >= 30) break;
+        }
+        score += Math.min(replyHits * 2, 30);
       }
-      const replyMatches = thread.replies.filter(r =>
-        r.text.toLowerCase().includes(queryLower)
-      ).length;
-      score += replyMatches * 10;
-      // Only apply engagement bonuses if the post already has a text match
+
+      // 3. Engagement boosts — only when the post already had a text match,
+      // so a popular unrelated thread never leaks in.
       if (score > 0) {
-        if (thread.views > 100) score += 20;
-        if (thread.replies.length > 5) score += 15;
-        if (thread.isPinned) score += 25;
+        score += Math.min((thread.votes || 0) * 0.5, 25);
+        score += Math.min((thread.replies?.length || 0) * 1.5, 20);
+        if (thread.isPinned) score += 15;
       }
-      return { thread, score };
+
+      // Single-word bare queries need a much higher floor to be considered
+      // useful — filters out threads that only weakly match one word.
+      const floor = isSingleWord ? 8 : 4;
+      return { thread, score: score >= floor ? score : 0 };
     })
     .filter(item => item.score > 0)
     .sort((a, b) => b.score - a.score)
