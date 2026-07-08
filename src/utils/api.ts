@@ -67,6 +67,15 @@ export const api = {
 
   async getMe(): Promise<User> {
     const res = await fetch(`${API_BASE_URL}/auth/me`, { headers: authHeaders() });
+    // Only discard the saved token when it is genuinely rejected (expired /
+    // invalid). A transient failure (server restart → 502, mobile network
+    // blip, 5xx) must NOT log the user out — otherwise they silently lose
+    // their session and are forced to sign in again, which shows up as repeat
+    // logins and "why am I logged out?" churn. The caller keeps the token and
+    // simply retries on the next load.
+    if (res.status === 401 || res.status === 403) {
+      tokenStore.clear();
+    }
     return handleResponse<User>(res);
   },
 

@@ -256,8 +256,11 @@ function AppContent() {
               console.error('Failed to load notifications:', error);
             }
           } catch (error) {
-            console.error('Failed to restore session:', error);
-            tokenStore.clear();
+            // Do NOT clear the token here. api.getMe() already drops it on a
+            // real 401/403 (expired/invalid). Any other failure is transient
+            // (server restart, 5xx, offline) — keep the token so the session
+            // is restored on the next load instead of forcing a re-login.
+            console.error('Failed to restore session (keeping token for retry):', error);
           }
         }
 
