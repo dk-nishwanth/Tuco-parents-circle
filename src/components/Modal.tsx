@@ -530,8 +530,10 @@ export function Modal({
             </div>
           </div>
 
-          {/* Right: Actions */}
-          <div className="flex items-center gap-1 md:gap-2 shrink-0">
+          {/* Right: Actions — ml-auto keeps this pinned to the right edge on
+              desktop so the header stays visually balanced when the search
+              box is capped at max-w-sm and doesn't fill remaining space. */}
+          <div className="flex items-center gap-1 md:gap-2 shrink-0 ml-auto">
             <div className="relative" ref={notificationsRef}>
               <button
                 onClick={() => setShowNotificationsDropdown(!showNotificationsDropdown)}
