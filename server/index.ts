@@ -918,18 +918,45 @@ app.post('/api/conversations', authenticate, async (req: AuthRequest, res, next)
 app.patch('/api/conversations/:id', optionalAuth, async (req: AuthRequest, res, next) => {
   try {
     const id = parseInt(req.params.id);
+    if (Number.isNaN(id)) {
+      return res.status(400).json({ error: 'Invalid conversation id' });
+    }
     const { votes, views, isPinned, isFeatured, featuredLabel, moderationStatus, moderationReason, moderatedBy } = req.body;
 
     const isMod = req.userRole === 'MODERATOR' || req.userRole === 'TUCO_TEAM';
 
+    const wantsModChange =
+      moderationStatus !== undefined || isPinned !== undefined || isFeatured !== undefined ||
+      featuredLabel !== undefined || votes !== undefined || moderationReason !== undefined ||
+      moderatedBy !== undefined;
+
+    // View counting is server-side only: opening a thread fires a +1. We ignore the
+    // client-supplied `views` number (advisory) and increment in the DB instead.
+    // Use updateMany so a stale/deleted thread id that isn't in the DB no-ops cleanly
+    // (count 0) rather than throwing Prisma P2025 — the old prisma.update() threw on
+    // every open of such a thread and spammed the error log (e.g. /api/conversations/1).
+    if (views !== undefined && !wantsModChange) {
+      await prisma.conversation.updateMany({
+        where: { id },
+        data: { views: { increment: 1 } },
+      });
+      const conversation = await prisma.conversation.findUnique({
+        where: { id },
+        include: { replies: true },
+      });
+      if (!conversation) {
+        return res.status(404).json({ error: 'Conversation not found' });
+      }
+      return res.status(200).json(formatConversation(conversation));
+    }
+
     // Mod-only fields
-    if ((moderationStatus || isPinned !== undefined || isFeatured !== undefined || featuredLabel !== undefined || votes !== undefined) && !isMod) {
+    if (wantsModChange && !isMod) {
       return res.status(403).json({ error: 'Moderator access required' });
     }
 
     const updateData: any = {};
     if (votes !== undefined && isMod) updateData.votes = votes;
-    if (views !== undefined && isMod) updateData.views = views; // view counting is server-side only
     if (isPinned !== undefined) updateData.isPinned = isPinned;
     if (isFeatured !== undefined) updateData.isFeatured = isFeatured;
     if (featuredLabel !== undefined) updateData.featuredLabel = featuredLabel;
