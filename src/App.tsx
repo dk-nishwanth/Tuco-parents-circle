@@ -95,6 +95,17 @@ function AppContent() {
   const [isAuthOpen, setIsAuthOpen] = useState<boolean>(false);
   const [authInitialMode, setAuthInitialMode] = useState<'login' | 'signup' | 'forgot' | 'reset'>('login');
   const [authResetToken, setAuthResetToken] = useState<string>('');
+
+  // Open the auth popup in a specific mode. A guest prompted mid-action
+  // (comment/vote/reply/save/new post) is almost always a NEW user — returning
+  // users are already auto-logged-in via their saved token — so those prompts
+  // open in 'signup'. Explicit "Sign in" buttons pass 'login'. This is the
+  // single biggest conversion fix: it stops new users from landing on a login
+  // form and failing with an account that doesn't exist yet.
+  const openAuth = (mode: 'login' | 'signup' = 'signup') => {
+    setAuthInitialMode(mode);
+    setIsAuthOpen(true);
+  };
   const [isModerationOpen, setIsModerationOpen] = useState<boolean>(false);
   const [isAdminOpen, setIsAdminOpen] = useState<boolean>(false);
   const [isReportOpen, setIsReportOpen] = useState<boolean>(false);
@@ -391,7 +402,7 @@ function AppContent() {
 
   const toggleSavedPost = (threadId: number) => {
     if (!currentUser) {
-      setIsAuthOpen(true);
+      openAuth('signup');
       return;
     }
     let newSaved: number[];
@@ -638,7 +649,7 @@ function AppContent() {
   }, [isModalOpen]);
   const handleVote = async (threadId: number, type: 'up' | 'down') => {
     if (!currentUser) {
-      setIsAuthOpen(true);
+      openAuth('signup');
       return;
     }
     
@@ -696,7 +707,7 @@ function AppContent() {
 
   const handleLikeReply = async (threadId: number, replyId: number) => {
     if (!currentUser) {
-      setIsAuthOpen(true);
+      openAuth('signup');
       return;
     }
 
@@ -787,7 +798,7 @@ function AppContent() {
     parentId?: number
   ) => {
     if (!currentUser) {
-      setIsAuthOpen(true);
+      openAuth('signup');
       return;
     }
 
@@ -878,7 +889,7 @@ function AppContent() {
   };
   const handleReportReply = (threadId: number, replyId: number) => {
     if (!currentUser) {
-      setIsAuthOpen(true);
+      openAuth('signup');
       return;
     }
     setReportTarget({ type: 'reply', id: replyId });
@@ -914,7 +925,7 @@ function AppContent() {
   };
   const handleEditReply = async (threadId: number, replyId: number, newText: string) => {
     if (!currentUser) {
-      setIsAuthOpen(true);
+      openAuth('signup');
       return;
     }
     
@@ -949,7 +960,7 @@ function AppContent() {
   };
   const handleDeleteReply = async (threadId: number, replyId: number) => {
     if (!currentUser) {
-      setIsAuthOpen(true);
+      openAuth('signup');
       return;
     }
     
@@ -989,7 +1000,7 @@ function AppContent() {
     image?: string
   ) => {
     if (!currentUser) {
-      setIsAuthOpen(true);
+      openAuth('signup');
       return;
     }
     if (currentUser.role === 'tuco_team') {
@@ -1224,7 +1235,7 @@ function AppContent() {
   };
 
   const openNewPost = () => {
-    if (!currentUser) setIsAuthOpen(true);
+    if (!currentUser) openAuth('signup');
     else setIsNewPostOpen(true);
   };
 
@@ -1245,7 +1256,7 @@ function AppContent() {
         onNewPostClick={openNewPost}
         currentUser={currentUser}
         onLogout={handleLogout}
-        onLoginClick={() => setIsAuthOpen(true)}
+        onLoginClick={() => openAuth('login')}
         onModerationClick={() => setIsModerationOpen(true)}
         onAdminClick={() => navigate('/admin')}
         onProfileClick={() => setIsProfileOpen(true)}
@@ -1346,7 +1357,7 @@ function AppContent() {
                 onCategoryChange={handleCategoryChange}
                 onOpenRightSidebar={() => setIsRightSidebarOpen(true)}
                 isLoggedIn={!!currentUser}
-                onJoinClick={() => setIsAuthOpen(true)}
+                onJoinClick={() => openAuth('signup')}
               />
             )}
           </div>
@@ -1376,7 +1387,7 @@ function AppContent() {
         </div>
       </footer>
       {!currentUser && (
-        <GuestPromptBanner onSignIn={() => setIsAuthOpen(true)} onNewPost={openNewPost} />
+        <GuestPromptBanner onSignIn={() => openAuth('signup')} onNewPost={openNewPost} />
       )}
       <Modal
         thread={selectedThread}
@@ -1410,7 +1421,7 @@ function AppContent() {
         conversations={visibleConversations}
         onNewPostClick={openNewPost}
         onLogout={handleLogout}
-        onLoginClick={() => setIsAuthOpen(true)}
+        onLoginClick={() => openAuth('login')}
         onModerationClick={() => setIsModerationOpen(true)}
         onAdminClick={() => navigate('/admin')}
         onProfileClick={() => setIsProfileOpen(true)}

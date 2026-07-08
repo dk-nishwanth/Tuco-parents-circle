@@ -31,13 +31,20 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin, initialMode, ini
     track('signup_form_started');
   };
 
-  // Fire auth_modal_opened whenever the modal opens (and reset the "started" flag).
+  // Sync the mode to whatever the caller asked for each time the modal opens,
+  // and fire auth_modal_opened. Without this, the mode from a previous open
+  // would stick (the component stays mounted between opens) and openAuth('signup')
+  // from App would be ignored.
   useEffect(() => {
     if (isOpen) {
+      const startMode = initialMode || 'login';
+      setMode(startMode);
+      setError('');
+      setSuccess('');
       signupStartedRef.current = false;
-      track('auth_modal_opened', { initial_mode: mode });
+      track('auth_modal_opened', { initial_mode: startMode });
     }
-  }, [isOpen]);
+  }, [isOpen, initialMode]);
 
   // Persist the current URL (with hash/search) so we can return the user to
   // the same thread after Google OAuth. Without this, the OAuth reload lands
@@ -100,7 +107,11 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin, initialMode, ini
     setError('');
     setLoading(true);
     track('signup_form_submitted');
-    if (!email.includes('@')) {
+    // Trim so stray leading/trailing spaces don't cause confusing rejections
+    // (and match what the server stores).
+    const cleanEmail = email.trim();
+    const cleanUsername = username.trim();
+    if (!cleanEmail.includes('@')) {
       setError('Please enter a valid email');
       setLoading(false);
       return;
@@ -110,8 +121,8 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin, initialMode, ini
       setLoading(false);
       return;
     }
-    if (username.length < 3) {
-      setError('Username must be at least 3 characters');
+    if (cleanUsername.length < 3) {
+      setError('Please pick a pen-name with at least 3 characters');
       setLoading(false);
       return;
     }
@@ -120,7 +131,7 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin, initialMode, ini
       setLoading(false);
       return;
     }
-    await onSignup(email, username, city, childAge, password);
+    await onSignup(cleanEmail, cleanUsername, city.trim(), childAge, password);
     setLoading(false);
   };
   const handleLoginSubmit = async (e: React.FormEvent) => {
@@ -182,6 +193,30 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin, initialMode, ini
               </button>
             </div>
           )}
+          {/* Google is the highest-converting path — make it the prominent,
+              one-tap primary option above the email form. */}
+          {(mode === 'login' || mode === 'signup') && (
+            <div className="mb-5">
+              <a
+                href="/api/auth/google"
+                onClick={saveReturnUrl}
+                className="flex items-center justify-center gap-3 w-full py-3 rounded-xl border-2 border-neutral-200 bg-white hover:border-tuco-cyan hover:bg-neutral-50 transition-all text-sm font-display font-black text-neutral-800 shadow-sm"
+              >
+                <svg className="w-5 h-5" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                Continue with Google
+              </a>
+              <div className="flex items-center gap-3 my-4">
+                <div className="flex-1 h-px bg-neutral-150" />
+                <span className="text-xs text-neutral-400 font-medium">or use email</span>
+                <div className="flex-1 h-px bg-neutral-150" />
+              </div>
+            </div>
+          )}
           {}
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
@@ -189,17 +224,28 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin, initialMode, ini
               <div className="flex-1">
                 <p className="text-sm text-red-600 font-medium">{error}</p>
                 {mode === 'login' && (
-                  <p className="text-xs text-neutral-600 mt-1.5">
-                    Signed up with Google?{' '}
-                    <a
-                      href="/api/auth/google"
-                      onClick={saveReturnUrl}
-                      className="text-tuco-cyan font-semibold hover:underline"
+                  <>
+                    <p className="text-xs text-neutral-600 mt-1.5">
+                      Signed up with Google?{' '}
+                      <a
+                        href="/api/auth/google"
+                        onClick={saveReturnUrl}
+                        className="text-tuco-cyan font-semibold hover:underline"
+                      >
+                        Continue with Google
+                      </a>{' '}
+                      instead.
+                    </p>
+                    {/* Most failed logins are people who never made an account.
+                        Give them a one-tap path into signup, keeping their email. */}
+                    <button
+                      type="button"
+                      onClick={() => { setMode('signup'); setError(''); setSuccess(''); }}
+                      className="mt-2 w-full py-2 rounded-lg bg-tuco-cyan text-white text-xs font-display font-black hover:bg-tuco-cyan-hover transition-all"
                     >
-                      Continue with Google
-                    </a>{' '}
-                    instead.
-                  </p>
+                      New here? Create your account →
+                    </button>
+                  </>
                 )}
               </div>
             </div>
@@ -440,22 +486,6 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin, initialMode, ini
               </p>
             </form>
           )}
-          {(mode === 'login' || mode === 'signup') && <div className="mt-4 pt-4 border-t border-neutral-100">
-            <a
-              href="/api/auth/google"
-              onClick={saveReturnUrl}
-              className="flex items-center justify-center gap-3 w-full py-2.5 border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors text-sm font-semibold text-neutral-700"
-            >
-              <svg className="w-4 h-4" viewBox="0 0 24 24">
-                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
-                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-              </svg>
-              Continue with Google
-            </a>
-          </div>}
-
           {(mode === 'login' || mode === 'signup') && <p className="text-xs text-neutral-500 text-center mt-6 pt-6 border-t border-neutral-150">
             By signing up, you agree to our{' '}
             <a href="#" className="text-tuco-cyan font-bold hover:underline">

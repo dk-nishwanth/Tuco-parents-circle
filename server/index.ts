@@ -538,7 +538,7 @@ const oauthCodes = new Map<string, { token: string; expiresAt: number; isNew: bo
 const signupSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
-  username: z.string().min(3).max(30).regex(/^[a-zA-Z0-9_\-. ]+$/, 'Username can only contain letters, numbers, spaces, underscores, hyphens, and dots'),
+  username: z.string().trim().min(3).max(30).regex(/^[\p{L}\p{N}_\-.'’ ]+$/u, 'Username can only contain letters, numbers, spaces, and _ - . \''),
   city: z.string().max(100).optional(),
   childAge: z.string().max(50).optional(),
 });
