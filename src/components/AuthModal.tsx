@@ -39,6 +39,18 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin, initialMode, ini
     }
   }, [isOpen]);
 
+  // Persist the current URL (with hash/search) so we can return the user to
+  // the same thread after Google OAuth. Without this, the OAuth reload lands
+  // them on the homepage and their draft reply is lost.
+  const saveReturnUrl = () => {
+    try {
+      const returnUrl = window.location.pathname + window.location.search + window.location.hash;
+      sessionStorage.setItem('tuco_return_url', returnUrl);
+    } catch {
+      // ignore — sessionStorage may be blocked in private mode
+    }
+  };
+
   if (!isOpen) return null;
 
   const handleForgotSubmit = async (e: React.FormEvent) => {
@@ -181,6 +193,7 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin, initialMode, ini
                     Signed up with Google?{' '}
                     <a
                       href="/api/auth/google"
+                      onClick={saveReturnUrl}
                       className="text-tuco-cyan font-semibold hover:underline"
                     >
                       Continue with Google
@@ -430,6 +443,7 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin, initialMode, ini
           {(mode === 'login' || mode === 'signup') && <div className="mt-4 pt-4 border-t border-neutral-100">
             <a
               href="/api/auth/google"
+              onClick={saveReturnUrl}
               className="flex items-center justify-center gap-3 w-full py-2.5 border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors text-sm font-semibold text-neutral-700"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24">

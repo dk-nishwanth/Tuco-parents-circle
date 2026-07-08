@@ -312,12 +312,28 @@ export function Modal({
   onSavePostClick,
   savedPosts = [],
 }: ModalProps) {
-  const [replyText, setReplyText] = useState('');
+  // Auto-restore any draft this user started on this thread — including drafts
+  // preserved across a Google OAuth reload that would otherwise wipe React state.
+  const draftKey = thread ? `tuco_draft_reply_${thread.id}` : '';
+  const [replyText, setReplyText] = useState(() => {
+    try { return draftKey ? sessionStorage.getItem(draftKey) || '' : ''; }
+    catch { return ''; }
+  });
   const [replyImage, setReplyImage] = useState<string | undefined>(undefined);
   const [errorMessage, setErrorMessage] = useState('');
   const [isSortOpen, setIsSortOpen] = useState(false);
   const [replySort, setReplySort] = useState<'new' | 'top' | 'old'>('new');
   const [shareCopied, setShareCopied] = useState(false);
+
+  // Persist the current draft on every keystroke so a full-page reload
+  // (Google OAuth, accidental refresh, network hiccup) doesn't lose it.
+  useEffect(() => {
+    if (!draftKey) return;
+    try {
+      if (replyText) sessionStorage.setItem(draftKey, replyText);
+      else sessionStorage.removeItem(draftKey);
+    } catch { /* ignore */ }
+  }, [draftKey, replyText]);
   const [searchTerm, setSearchTerm] = useState(propsSearchTerm || '');
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotificationsDropdown, setShowNotificationsDropdown] = useState(false);
@@ -384,6 +400,7 @@ export function Modal({
       setReplyText('');
       setReplyImage(undefined);
       setErrorMessage('');
+      try { if (draftKey) sessionStorage.removeItem(draftKey); } catch { /* ignore */ }
     }
   };
 

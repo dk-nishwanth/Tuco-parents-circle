@@ -177,10 +177,14 @@ function AppContent() {
               track('sign_up', { method: 'google' });
             }
             track('login', { method: 'google', is_new_user: !!data.isNew });
-            // Reload so initData runs again with the token in storage.
-            // The profile-completion modal fires from currentUser, not a flag,
-            // so it survives reloads / new devices / cleared localStorage.
-            window.location.replace(window.location.pathname);
+            // If the user started the OAuth flow from inside a thread, AuthModal
+            // stashed the original URL (with #thread-N hash) so we can return
+            // them to exactly where they were — otherwise their draft reply
+            // vanishes and they land on the homepage.
+            const savedReturn = sessionStorage.getItem('tuco_return_url');
+            sessionStorage.removeItem('tuco_return_url');
+            const returnTo = savedReturn && savedReturn.startsWith('/') ? savedReturn : window.location.pathname;
+            window.location.replace(returnTo);
           }
         })
         .catch(() => {});
