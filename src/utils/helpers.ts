@@ -1,4 +1,12 @@
-import { Conversation, DateFilter, User, BadgeType, UserRole } from '../types';
+import { Conversation, DateFilter, User, BadgeType, UserRole, Reply } from '../types';
+
+// Count every reply in a thread, including nested ones. The server nests child
+// replies under their parent, so `thread.replies.length` only counts root-level
+// comments and undercounts total engagement everywhere it's shown.
+export function countAllReplies(replies: Reply[] | undefined): number {
+  if (!replies || replies.length === 0) return 0;
+  return replies.reduce((total, r) => total + 1 + countAllReplies(r.replies), 0);
+}
 const AVATAR_COLORS = [
   '#FFE259',
   '#FFE259',

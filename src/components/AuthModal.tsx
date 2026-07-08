@@ -41,10 +41,14 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin, initialMode, ini
       setMode(startMode);
       setError('');
       setSuccess('');
+      // Prefill the reset token from the email link. App strips ?reset_token
+      // from the URL and passes it here; without copying it into state the
+      // reset form's token field stays empty and password reset is impossible.
+      if (initialResetToken) setResetToken(initialResetToken);
       signupStartedRef.current = false;
       track('auth_modal_opened', { initial_mode: startMode });
     }
-  }, [isOpen, initialMode]);
+  }, [isOpen, initialMode, initialResetToken]);
 
   // Persist the current URL (with hash/search) so we can return the user to
   // the same thread after Google OAuth. Without this, the OAuth reload lands
@@ -138,13 +142,17 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin, initialMode, ini
     e.preventDefault();
     setError('');
     setLoading(true);
-    if (!email || !password) {
+    const cleanEmail = email.trim();
+    if (!cleanEmail || !password) {
       setError('Please enter email and password');
       setLoading(false);
       return;
     }
     try {
-      await onLogin(email, password);
+      // Trim so mobile-autofill trailing spaces don't fail the server's
+      // z.string().email() check before it normalizes — that surfaces as a
+      // confusing "invalid email or password" even when the account exists.
+      await onLogin(cleanEmail, password);
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed. Please try again.');

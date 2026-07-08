@@ -380,16 +380,16 @@ export function detectEnglish(text: string): boolean {
 
 export function detectGreyAreas(content: string): GreyAreaFlag[] {
   const flags: GreyAreaFlag[] = [];
-  if (RELIGIOUS_CULTURAL_PATTERNS.some(p => p.test(content))) {
+  if (RELIGIOUS_CULTURAL_PATTERNS.some(p => { p.lastIndex = 0; return p.test(content); })) {
     flags.push('religious_cultural');
   }
-  if (MENTAL_HEALTH_PATTERNS.some(p => p.test(content))) {
+  if (MENTAL_HEALTH_PATTERNS.some(p => { p.lastIndex = 0; return p.test(content); })) {
     flags.push('mental_health');
   }
   if (detectEnglish(content)) {
     flags.push('english');
   }
-  if (NEGATIVE_TUCO_PATTERNS.some(p => p.test(content))) {
+  if (NEGATIVE_TUCO_PATTERNS.some(p => { p.lastIndex = 0; return p.test(content); })) {
     flags.push('negative_tuco_review');
   }
   return flags;
@@ -431,47 +431,39 @@ export function analyzeContent(postContent: string, category: string): Moderatio
   if (lowerContent.includes('fuck') || lowerContent.includes('shit')) {
     return { outcome: 'CLEAR_VIOLATION', greyAreaFlags };
   }
-  if (lowerContent.includes('why') && lowerContent.includes('hell')) {
+  // NOTE: removed the crude `includes('hell')` checks — they matched "hello",
+  // "shell", etc. and wrongly rejected normal posts like "say hello!". Real
+  // profanity ("what the hell") is still caught by the /the\s*hell/ entry in
+  // BAD_WORD_PATTERNS below.
+  if (BAD_WORD_PATTERNS.some(p => { p.lastIndex = 0; return p.test(postContent); })) {
     return { outcome: 'CLEAR_VIOLATION', greyAreaFlags };
   }
-  if (lowerContent.includes('what') && lowerContent.includes('hell')) {
+  if (MEDICAL_PRESCRIPTION_PATTERNS.some(p => { p.lastIndex = 0; return p.test(postContent); })) {
     return { outcome: 'CLEAR_VIOLATION', greyAreaFlags };
   }
-  if (lowerContent.includes('how') && lowerContent.includes('hell')) {
+  if (DIAGNOSIS_PATTERNS.some(p => { p.lastIndex = 0; return p.test(postContent); })) {
     return { outcome: 'CLEAR_VIOLATION', greyAreaFlags };
   }
-  if (lowerContent.includes('who') && lowerContent.includes('hell')) {
+  if (PERSONAL_INFO_PATTERNS.some(p => { p.lastIndex = 0; return p.test(postContent); })) {
     return { outcome: 'CLEAR_VIOLATION', greyAreaFlags };
   }
-  if (BAD_WORD_PATTERNS.some(p => p.test(postContent))) {
+  if (BRAND_PROMOTION_PATTERNS.some(p => { p.lastIndex = 0; return p.test(postContent); })) {
     return { outcome: 'CLEAR_VIOLATION', greyAreaFlags };
   }
-  if (MEDICAL_PRESCRIPTION_PATTERNS.some(p => p.test(postContent))) {
+  if (PERSONAL_ATTACK_PATTERNS.some(p => { p.lastIndex = 0; return p.test(postContent); })) {
     return { outcome: 'CLEAR_VIOLATION', greyAreaFlags };
   }
-  if (DIAGNOSIS_PATTERNS.some(p => p.test(postContent))) {
+  if (DELIVERY_COMPLAINT_PATTERNS.some(p => { p.lastIndex = 0; return p.test(postContent); })) {
     return { outcome: 'CLEAR_VIOLATION', greyAreaFlags };
   }
-  if (PERSONAL_INFO_PATTERNS.some(p => p.test(postContent))) {
+  if (PHOTO_CONSENT_PATTERNS.some(p => { p.lastIndex = 0; return p.test(postContent); })) {
     return { outcome: 'CLEAR_VIOLATION', greyAreaFlags };
   }
-  if (BRAND_PROMOTION_PATTERNS.some(p => p.test(postContent))) {
-    return { outcome: 'CLEAR_VIOLATION', greyAreaFlags };
-  }
-  if (PERSONAL_ATTACK_PATTERNS.some(p => p.test(postContent))) {
-    return { outcome: 'CLEAR_VIOLATION', greyAreaFlags };
-  }
-  if (DELIVERY_COMPLAINT_PATTERNS.some(p => p.test(postContent))) {
-    return { outcome: 'CLEAR_VIOLATION', greyAreaFlags };
-  }
-  if (PHOTO_CONSENT_PATTERNS.some(p => p.test(postContent))) {
-    return { outcome: 'CLEAR_VIOLATION', greyAreaFlags };
-  }
-  if (MISINFORMATION_PATTERNS.some(p => p.test(postContent))) {
+  if (MISINFORMATION_PATTERNS.some(p => { p.lastIndex = 0; return p.test(postContent); })) {
     return { outcome: 'CLEAR_VIOLATION', greyAreaFlags };
   }
 
-  if (SPAM_PATTERNS.some(p => p.test(postContent))) {
+  if (SPAM_PATTERNS.some(p => { p.lastIndex = 0; return p.test(postContent); })) {
     return {
       outcome: 'UNCERTAIN',
       greyAreaFlags,

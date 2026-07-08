@@ -385,7 +385,7 @@ const formatUser = (u: any) => ({
   replyCount: u.replyCount || 0,
   totalUpvotes: u.totalUpvotes || 0,
   trustScore: (u.trustScore || 0) / 100, // stored as 0-100 in DB, frontend expects 0-1
-  emailNotifications: u.emailNotifications || true,
+  emailNotifications: u.emailNotifications ?? true,
   savedPosts: u.savedPosts || [],
 });
 
@@ -411,7 +411,13 @@ const formatReply = (r: any, allReplies: any[]): any => ({
 
 // Convert Prisma conversation to frontend Conversation shape
 const formatConversation = (c: any) => {
-  const allReplies = c.replies || [];
+  // Drop replies a moderator has REJECTED so they actually disappear for
+  // everyone (reads previously returned all replies regardless of status, so
+  // "reject" had no effect). PENDING/APPROVED stay visible as before, so no
+  // existing content is hidden. Rejecting a reply also hides its child subtree.
+  const allReplies = (c.replies || []).filter(
+    (r: any) => (r.moderationStatus || 'PENDING') !== 'REJECTED'
+  );
   // Root replies are those without parent
   const rootReplies = allReplies.filter((r: any) => !r.parentId);
 
@@ -666,7 +672,11 @@ app.post('/api/auth/forgot-password', authLimiter, async (req, res, next) => {
     const { email } = req.body;
     if (!email) return res.status(400).json({ error: 'Email is required' });
 
-    const user = await prisma.user.findUnique({ where: { email } });
+    // Normalize exactly like signup/login store it, otherwise a mixed-case or
+    // space-padded address (common on mobile autofill) silently misses and the
+    // reset email is never sent — while the UI still shows "sent".
+    const normalEmail = String(email).trim().toLowerCase();
+    const user = await prisma.user.findUnique({ where: { email: normalEmail } });
     // Always return success to prevent email enumeration
     if (!user) return res.status(200).json({ message: 'If that email exists, a reset link has been sent.' });
 
@@ -746,7 +756,10 @@ app.get('/api/auth/google/callback', async (req, res, next) => {
     const payload = ticket.getPayload();
     if (!payload || !payload.email) return res.redirect(`${FRONTEND_URL}?auth_error=invalid_token`);
 
-    const { email, name, sub: googleId } = payload;
+    const { email: rawEmail, name, sub: googleId } = payload;
+    // Normalize to match how email signup/login store & look up addresses, so a
+    // Google account and a later email login resolve to the SAME user row.
+    const email = String(rawEmail).trim().toLowerCase();
 
     let user = await prisma.user.findUnique({ where: { email } });
     let isNew = false;
@@ -1162,9 +1175,14 @@ app.post('/api/conversations/:id/replies', authenticate, async (req: AuthRequest
       }
     }
 
-    // Parse @mentions and notify (in-app + email) the tagged users (max 5 per reply to avoid abuse)
-    const mentionMatches = Array.from(text.matchAll(/@([A-Za-z0-9_.\-]{3,30})/g)).slice(0, 5);
-    const mentionedUsernames = Array.from(new Set(mentionMatches.map(m => m[1])));
+    // Parse @mentions and notify (in-app + email) the tagged users (max 5 per reply to avoid abuse).
+    // Usernames may contain Unicode letters, spaces and apostrophes (e.g. Google
+    // names like "Priya Sharma542"), so a fixed ASCII regex can't capture them.
+    // Grab the run of text after each '@', then resolve it to a real account by
+    // trying the longest matching username first (multi-word → single word).
+    const mentionCandidates = Array.from(text.matchAll(/@([\p{L}\p{N}_.'’ \-]{2,40})/gu))
+      .map(m => m[1])
+      .slice(0, 10);
     const notifiedIds = new Set<string>();
     if (conversation) notifiedIds.add(conversation.authorId);
     if (parentId) {
@@ -1172,10 +1190,20 @@ app.post('/api/conversations/:id/replies', authenticate, async (req: AuthRequest
       if (p) notifiedIds.add(p.authorId);
     }
     notifiedIds.add(req.userId!);
-    for (const uname of mentionedUsernames) {
-      const mentioned = await prisma.user.findFirst({ where: { username: uname } });
+    let mentionCount = 0;
+    for (const cand of mentionCandidates) {
+      if (mentionCount >= 5) break;
+      const words = cand.trim().split(/\s+/);
+      let mentioned: Awaited<ReturnType<typeof prisma.user.findFirst>> = null;
+      for (let n = Math.min(words.length, 4); n >= 1; n--) {
+        const uname = words.slice(0, n).join(' ');
+        if (uname.length < 2) continue;
+        mentioned = await prisma.user.findFirst({ where: { username: { equals: uname, mode: 'insensitive' } } });
+        if (mentioned) break;
+      }
       if (!mentioned || notifiedIds.has(mentioned.id)) continue;
       notifiedIds.add(mentioned.id);
+      mentionCount++;
       await prisma.notification.create({
         data: {
           userId: mentioned.id,
@@ -1723,12 +1751,31 @@ app.post('/api/chat', optionalAuth, async (req: AuthRequest, res, next) => {
 app.post('/api/reports', authenticate, async (req: AuthRequest, res, next) => {
   try {
     const { targetType, targetId, reason, details } = req.body;
-    // Log to moderation log
+    const normalizedType = targetType === 'thread' ? 'CONVERSATION' : 'REPLY';
+    const targetIdNum = parseInt(targetId);
+    // Guard a non-numeric id: parseInt(...) → NaN previously reached Prisma and
+    // threw a 500 instead of a clean validation error.
+    if (Number.isNaN(targetIdNum)) {
+      return res.status(400).json({ error: 'Invalid report target' });
+    }
+    // Dedup: one open flag per reporter per target, so a user can't spam the
+    // moderation log by reporting the same item repeatedly.
+    const existing = await prisma.moderationLog.findFirst({
+      where: {
+        moderatorId: req.userId!,
+        targetType: normalizedType,
+        targetId: targetIdNum,
+        action: 'FLAGGED',
+      },
+    });
+    if (existing) {
+      return res.status(200).json({ success: true, alreadyReported: true });
+    }
     await prisma.moderationLog.create({
       data: {
         moderatorId: req.userId!,
-        targetType: targetType === 'thread' ? 'CONVERSATION' : 'REPLY',
-        targetId: parseInt(targetId),
+        targetType: normalizedType,
+        targetId: targetIdNum,
         action: 'FLAGGED',
         reason: `${reason}: ${details}`,
       },
@@ -1778,7 +1825,11 @@ app.get('/apps/community', verifyShopifyProxy, (req, res) => {
 // ------------------------------
 
 function requireAdmin(req: AuthRequest, res: any, next: any) {
-  if (req.userRole !== 'TUCO_TEAM' && req.userRole !== 'MODERATOR') {
+  // Admin endpoints include changing user roles and deleting users, so they are
+  // restricted to TUCO_TEAM only. Previously MODERATOR passed too, which let a
+  // moderator self-escalate to TUCO_TEAM or delete members. Moderators do
+  // content moderation via requireModerator, not user management.
+  if (req.userRole !== 'TUCO_TEAM') {
     return res.status(403).json({ error: 'Admin access required' });
   }
   next();

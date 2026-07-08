@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { CATEGORIES, CATEGORY_COLORS } from '../data/categories';
 import { Conversation, User } from '../types';
-import { getAvatarColor, getInitials, getAuthorMeta } from '../utils/helpers';
+import { getAvatarColor, getInitials, getAuthorMeta, countAllReplies } from '../utils/helpers';
 import { AuthorBadges } from './AuthorBadges';
 import {
   Eye,
@@ -162,11 +162,11 @@ export function ThreadCard({
             </button>
             <div className="flex items-center gap-1.5 text-[#4D4747]">
               <MessageSquare className="w-4 h-4 text-[#4D4747]" strokeWidth={2} />
-              <span className="text-[11px] font-sans font-medium text-neutral-500">{thread.replies.length} Replies</span>
+              <span className="text-[11px] font-sans font-medium text-neutral-500">{countAllReplies(thread.replies)} Replies</span>
             </div>
             <div className="flex items-center gap-1.5 text-[#4D4747]">
               <Eye className="w-4 h-4 text-[#4D4747]" strokeWidth={2} />
-              <span className="text-[11px] font-sans font-medium text-neutral-500">{thread.views || 691} Views</span>
+              <span className="text-[11px] font-sans font-medium text-neutral-500">{thread.views || 0} Views</span>
             </div>
           </div>
         </div>

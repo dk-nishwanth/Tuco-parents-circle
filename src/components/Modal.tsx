@@ -1,7 +1,7 @@
 import React, { useState, FormEvent, useRef, useEffect } from 'react';
 import { CATEGORIES } from '../data/categories';
 import { Conversation, User as UserType, Notification, Reply } from '../types';
-import { getAvatarColor, getInitials, searchThreadsWithRanking, formatTimeAgo } from '../utils/helpers';
+import { getAvatarColor, getInitials, searchThreadsWithRanking, formatTimeAgo, countAllReplies } from '../utils/helpers';
 import { Heart, MessageSquare, X, Eye, Bookmark, ChevronDown, Search, Bell, ArrowLeft, Menu, User, LogOut, Users, Share2 } from 'lucide-react';
 import { track } from '../utils/analytics';
 import tucoLogo from '../assets/tuco-logo.webp';
@@ -111,7 +111,11 @@ const ReplyComponent = ({
     }
   };
 
-  const isOwnReply = currentUser && currentUser.username === reply.author;
+  // Match ownership by stable authorId (usernames aren't unique and can be
+  // changed). Fall back to author name only for legacy replies with no id.
+  const isOwnReply = !!currentUser && (
+    reply.authorId ? reply.authorId === currentUser.id : currentUser.username === reply.author
+  );
   const isMod = currentUser && (currentUser.role === 'moderator' || currentUser.role === 'tuco_team');
 
   return (
@@ -528,7 +532,7 @@ export function Modal({
                         </p>
                         <div className="flex items-center gap-2">
                           <span className="text-[10px] text-neutral-400 font-medium">
-                            {thread.replies.length} replies
+                            {countAllReplies(thread.replies)} replies
                           </span>
                           <span className="text-[10px] text-neutral-300">•</span>
                           <span className="text-[10px] text-neutral-400 font-medium">
@@ -843,7 +847,7 @@ export function Modal({
         {/* Replies Header */}
         <div className="flex items-center gap-2.5 mb-5 px-1">
           <MessageSquare className="w-5 h-5 text-[#4D4747]" strokeWidth={2} />
-          <span className="font-bold text-[16px] text-[#4D4747]">{thread.replies.length} Replies</span>
+          <span className="font-bold text-[16px] text-[#4D4747]">{countAllReplies(thread.replies)} Replies</span>
         </div>
 
         {/* Replies Controls */}

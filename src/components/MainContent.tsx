@@ -3,7 +3,7 @@ import { Conversation, User } from '../types';
 import { CATEGORIES } from '../data/categories';
 import { ThreadCard } from './ThreadCard';
 import { RightSidebar } from './RightSidebar';
-import { filterThreads, sortThreads, getAvatarColor } from '../utils/helpers';
+import { filterThreads, sortThreads, getAvatarColor, countAllReplies } from '../utils/helpers';
 import { Award, Flame, Pin, Tv, ChevronDown, Globe, Package, Star, Users } from 'lucide-react';
 
 interface MainContentProps {
@@ -346,7 +346,7 @@ export function MainContent({
                       {thread.title}
                     </h4>
                     <p className="text-[11px] text-neutral-400 font-medium mb-4">
-                      {thread.votes} Votes • {thread.replies.length} Comments
+                      {thread.votes} Votes • {countAllReplies(thread.replies)} Comments
                     </p>
                     <div className="flex items-center gap-2">
                       <div 

@@ -659,21 +659,17 @@ function AppContent() {
     // Update local state first, then try API (optimistic UI)
     const previousState = votedThreads[threadId] || null;
     let voteDiff = 0;
-    let upvoteDiff = 0;
-    
+
     if (previousState === type) {
       voteDiff = type === 'up' ? -1 : 1;
-      upvoteDiff = type === 'up' ? -1 : 0;
       const nextVotes = { ...votedThreads };
       delete nextVotes[threadId];
       saveVotes(nextVotes);
     } else {
       if (previousState === null) {
         voteDiff = type === 'up' ? 1 : -1;
-        upvoteDiff = type === 'up' ? 1 : 0;
       } else {
         voteDiff = type === 'up' ? 2 : -2;
-        upvoteDiff = type === 'up' ? 1 : -1;
       }
       saveVotes({ ...votedThreads, [threadId]: type });
     }
@@ -686,11 +682,11 @@ function AppContent() {
       return updated;
     });
 
-    if (upvoteDiff !== 0 && currentUser) {
-      const updatedUser = { ...currentUser, totalUpvotes: currentUser.totalUpvotes + upvoteDiff };
-      saveUser(updatedUser);
-      checkAndAwardBadges(updatedUser);
-    }
+    // NOTE: do NOT bump the current user's totalUpvotes here. totalUpvotes means
+    // "upvotes received on MY content" — the person casting a vote is not
+    // receiving one. The old code inflated the voter's own score (and let them
+    // self-award badges) every time they upvoted anyone. The author's received
+    // upvotes and trust score are recomputed server-side.
 
     // Try API, then refresh data
     try {
@@ -831,8 +827,12 @@ function AppContent() {
       const newReply: Reply = {
         id: createdReply.id || Date.now() + Math.random(),
         author: name,
+        authorId: currentUser.id, // so edit/delete controls match by id, not username
         city,
         time: 'Just now',
+        // Stamp createdAt so the optimistic reply renders "Just now" instead of
+        // the "1 day ago" fallback formatTimeAgo() returns for a missing date.
+        createdAt: createdReply.createdAt || new Date().toISOString(),
         text: analysis.civilityReminder ? `${text}\n\n---\n💛 ${analysis.civilityReminder}` : text,
         image,
         likes: 0,
@@ -859,19 +859,10 @@ function AppContent() {
           );
         }
 
-        // Add notification for the thread author
-        if (thread && thread.authorId && thread.authorId !== currentUser.id) {
-          const newNotif: Notification = {
-            id: Date.now() + Math.random(),
-            type: 'reply',
-            title: parentId ? 'New reply to your comment' : 'New reply to your thread',
-            description: `${currentUser.username} replied ${parentId ? 'to your comment' : `to "${thread.title}"`}`,
-            time: 'Just now',
-            read: false,
-            threadId: thread.id,
-          };
-          saveNotifications([newNotif, ...notifications]);
-        }
+        // NOTE: the notification for the thread/parent author is created by the
+        // SERVER (POST /replies). We must NOT add it here — `notifications` is
+        // the *replier's* own list, so doing so gave the person who replied a
+        // bogus "new reply to your thread" alert about their own reply.
 
         return updated;
       });
@@ -1433,9 +1424,12 @@ function AppContent() {
           setIsMobileLeftSidebarOpen(!isMobileLeftSidebarOpen);
         }}
         notifications={notifications}
-        onMarkAsRead={(id) => {
+        onMarkAsRead={async id => {
           const updated = notifications.map(n => (n.id === id ? { ...n, read: true } : n));
           setNotifications(updated);
+          // Persist, otherwise the 30s poll re-fetches and the notification
+          // pops back as unread (the other two bells already persist).
+          try { await api.markNotificationRead(id); } catch {}
         }}
         onSuggestionSelect={(id) => {
           setSearchTerm('');
@@ -1594,7 +1588,14 @@ function AdminRoute() {
     const token = tokenStore.get();
     if (!token) { navigate('/'); return; }
     api.getMe()
-      .then(u => { setUser(u); setLoading(false); })
+      .then(u => {
+        // Defense-in-depth: only TUCO_TEAM may see the admin panel. The server
+        // already enforces this on every admin endpoint, but don't render the
+        // panel shell to a regular logged-in user who navigates to /admin.
+        if (u.role !== 'tuco_team') { navigate('/'); return; }
+        setUser(u);
+        setLoading(false);
+      })
       .catch(() => { navigate('/'); });
   }, [navigate]);
 
