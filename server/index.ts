@@ -38,6 +38,14 @@ const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, `$
 // STARTUP SEED
 // ------------------------------
 import { INITIAL_CONVERSATIONS } from '../src/data/conversations.js';
+// Reuse the exact same content-moderation logic the client uses, so the server
+// is the real gate. Previously moderation ran only in the browser and a direct
+// API call could post anything. moderation.ts imports only types, so it's safe
+// to run under Node/tsx.
+import { analyzeContent } from '../src/utils/moderation.js';
+// Shared badge thresholds — award badges server-side from real data so they
+// persist and can't be gamed by the client.
+import { BADGE_CRITERIA } from '../src/utils/badgeSystem.js';
 
 async function seedOnStartup() {
   console.log('Checking database for seed data...');
@@ -538,8 +546,11 @@ app.get('/api/health', (req, res) => {
 // ------------------------------
 
 // In-memory store for password reset tokens (token -> { userId, expiry })
-const passwordResetTokens = new Map<string, { userId: string; expiry: number }>();
-const oauthCodes = new Map<string, { token: string; expiresAt: number; isNew: boolean }>();
+// Password-reset tokens and one-time OAuth codes are persisted in the DB
+// (PasswordResetToken / OAuthCode tables) rather than in-memory Maps, so they
+// survive server restarts (which happen on every deploy) and work if the app is
+// ever run on more than one instance. In-memory storage silently invalidated
+// pending reset links and in-flight OAuth logins across a restart.
 
 const signupSchema = z.object({
   email: z.string().email(),
@@ -566,6 +577,15 @@ app.post('/api/auth/signup', authLimiter, async (req: AuthRequest, res, next) =>
     if (existing) {
       console.log('❌ User already exists');
       return res.status(409).json({ error: 'Email already registered' });
+    }
+
+    // Enforce a unique pen-name (case-insensitive) so mentions and profiles are
+    // unambiguous. Return a friendly error instead of letting the DB constraint throw.
+    const nameTaken = await prisma.user.findFirst({
+      where: { username: { equals: username.trim(), mode: 'insensitive' } },
+    });
+    if (nameTaken) {
+      return res.status(409).json({ error: 'That pen-name is taken — please choose another.' });
     }
 
     console.log('🔐 Hashing password...');
@@ -681,7 +701,9 @@ app.post('/api/auth/forgot-password', authLimiter, async (req, res, next) => {
     if (!user) return res.status(200).json({ message: 'If that email exists, a reset link has been sent.' });
 
     const token = crypto.randomBytes(32).toString('hex');
-    passwordResetTokens.set(token, { userId: user.id, expiry: Date.now() + 60 * 60 * 1000 }); // 1 hour
+    await prisma.passwordResetToken.create({
+      data: { token, userId: user.id, expiresAt: new Date(Date.now() + 60 * 60 * 1000) }, // 1 hour
+    });
 
     const resetUrl = `${FRONTEND_URL}?reset_token=${token}`;
     await sendEmail(
@@ -706,15 +728,15 @@ app.post('/api/auth/reset-password', authLimiter, async (req, res, next) => {
     if (!token || !password) return res.status(400).json({ error: 'Token and password are required' });
     if (password.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
 
-    const record = passwordResetTokens.get(token);
-    if (!record || Date.now() > record.expiry) {
-      passwordResetTokens.delete(token);
+    const record = await prisma.passwordResetToken.findUnique({ where: { token } });
+    if (!record || Date.now() > record.expiresAt.getTime()) {
+      if (record) await prisma.passwordResetToken.delete({ where: { token } }).catch(() => {});
       return res.status(400).json({ error: 'Reset link is invalid or has expired' });
     }
 
     const passwordHash = await bcrypt.hash(password, 12);
     await prisma.user.update({ where: { id: record.userId }, data: { passwordHash } });
-    passwordResetTokens.delete(token);
+    await prisma.passwordResetToken.delete({ where: { token } }).catch(() => {});
 
     res.status(200).json({ message: 'Password reset successfully. You can now log in.' });
   } catch (error) {
@@ -723,15 +745,19 @@ app.post('/api/auth/reset-password', authLimiter, async (req, res, next) => {
 });
 
 // Exchange one-time OAuth code for JWT
-app.post('/api/auth/oauth-token', authLimiter, (req, res) => {
-  const { code } = req.body;
-  if (!code || typeof code !== 'string') return res.status(400).json({ error: 'Missing code' });
-  const record = oauthCodes.get(code);
-  oauthCodes.delete(code);
-  if (!record || Date.now() > record.expiresAt) {
-    return res.status(400).json({ error: 'Invalid or expired code' });
+app.post('/api/auth/oauth-token', authLimiter, async (req, res, next) => {
+  try {
+    const { code } = req.body;
+    if (!code || typeof code !== 'string') return res.status(400).json({ error: 'Missing code' });
+    const record = await prisma.oAuthCode.findUnique({ where: { code } });
+    if (record) await prisma.oAuthCode.delete({ where: { code } }).catch(() => {}); // single-use
+    if (!record || Date.now() > record.expiresAt.getTime()) {
+      return res.status(400).json({ error: 'Invalid or expired code' });
+    }
+    res.status(200).json({ token: record.token, isNew: record.isNew });
+  } catch (error) {
+    next(error);
   }
-  res.status(200).json({ token: record.token, isNew: record.isNew });
 });
 
 // Google OAuth
@@ -766,7 +792,14 @@ app.get('/api/auth/google/callback', async (req, res, next) => {
     if (!user) {
       isNew = true;
       const baseUsername = (name || email.split('@')[0]).replace(/[^a-zA-Z0-9_\-. ]/g, '').slice(0, 28) || 'Parent';
-      const username = `${baseUsername}${Math.floor(Math.random() * 900 + 100)}`;
+      // Find a unique pen-name (usernames are unique). Retry with a fresh suffix
+      // on the rare collision.
+      let username = `${baseUsername}${Math.floor(Math.random() * 900 + 100)}`;
+      for (let attempt = 0; attempt < 10; attempt++) {
+        const clash = await prisma.user.findFirst({ where: { username: { equals: username, mode: 'insensitive' } } });
+        if (!clash) break;
+        username = `${baseUsername}${Math.floor(Math.random() * 9000 + 1000)}`;
+      }
       user = await prisma.user.create({
         data: {
           email,
@@ -784,7 +817,9 @@ app.get('/api/auth/google/callback', async (req, res, next) => {
     const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET as string, { expiresIn: '30d' });
     // Exchange code pattern: store token server-side, redirect with a one-time code
     const oauthCode = crypto.randomBytes(16).toString('hex');
-    oauthCodes.set(oauthCode, { token, expiresAt: Date.now() + 5 * 60 * 1000, isNew });
+    await prisma.oAuthCode.create({
+      data: { code: oauthCode, token, isNew, expiresAt: new Date(Date.now() + 5 * 60 * 1000) },
+    });
     res.redirect(`${FRONTEND_URL}?oauth_code=${oauthCode}`);
   } catch (error) {
     next(error);
@@ -871,10 +906,15 @@ app.post('/api/conversations', authenticate, async (req: AuthRequest, res, next)
 
     const { title, category, city, text, image, greyAreaFlags, reviewPriority } = parsed.data;
     const requestedStatus = parsed.data.moderationStatus?.toUpperCase();
-    // Allow frontend to mark as REJECTED for clear violations; mods can set any status
+    // Server-side moderation backstop: don't trust the client's verdict. Run the
+    // same analysis here so a direct API call can't bypass it.
+    const serverAnalysis = analyzeContent(`${title}\n${text}`, category);
+    const serverRejected = serverAnalysis.outcome === 'CLEAR_VIOLATION';
+    // Mods can set any status. Otherwise: reject clear violations (client- or
+    // server-detected), else queue as PENDING for review.
     const status = isMod
       ? (requestedStatus as any) || 'PENDING'
-      : requestedStatus === 'REJECTED'
+      : serverRejected || requestedStatus === 'REJECTED'
         ? 'REJECTED'
         : 'PENDING';
 
@@ -900,12 +940,15 @@ app.post('/api/conversations', authenticate, async (req: AuthRequest, res, next)
     });
     console.log('✅ Conversation created with ID:', conversation.id);
 
-    // Update user post count
-    console.log('📊 Updating user post count...');
-    await prisma.user.update({
-      where: { id: req.userId },
-      data: { postCount: { increment: 1 } },
-    });
+    // Update user post count — but not for rejected posts, so badge/stat math
+    // reflects real approved contributions.
+    if (status !== 'REJECTED') {
+      console.log('📊 Updating user post count...');
+      await prisma.user.update({
+        where: { id: req.userId },
+        data: { postCount: { increment: 1 } },
+      });
+    }
 
     // If in cooling period, log to moderation log
     if (isInCoolingPeriod) {
@@ -1084,6 +1127,14 @@ app.post('/api/conversations/:id/replies', authenticate, async (req: AuthRequest
 
     const { text, city, image, parentId } = parsed.data;
 
+    // Server-side moderation backstop: block clear violations even on a direct
+    // API call (the browser check can be bypassed). Clean replies are approved
+    // immediately so they show; there is no separate reply-review queue.
+    const isMod = req.userRole === 'MODERATOR' || req.userRole === 'TUCO_TEAM';
+    if (!isMod && analyzeContent(text, 'general').outcome === 'CLEAR_VIOLATION') {
+      return res.status(400).json({ error: 'Your reply was rejected due to community guidelines. Please revise it.' });
+    }
+
     console.log('💾 Creating reply in database...');
     const reply = await prisma.reply.create({
       data: {
@@ -1095,6 +1146,7 @@ app.post('/api/conversations/:id/replies', authenticate, async (req: AuthRequest
         text,
         image,
         parentId,
+        moderationStatus: 'APPROVED',
         authorRole: user.role,
         authorBadges: (user.badges as any[] || []).map((b: any) => b.type),
       },
@@ -1392,15 +1444,25 @@ app.post('/api/votes', authenticate, async (req: AuthRequest, res, next) => {
       }
     }
 
-    // New vote
-    await prisma.vote.create({
-      data: {
-        userId: req.userId!,
-        conversationId: conversationId || null,
-        replyId: replyId || null,
-        type,
-      },
-    });
+    // New vote. The unique constraint on (userId, conversationId)/(userId, replyId)
+    // stops a rapid double-click or two tabs from creating duplicate rows and
+    // permanently inflating the count. If the race is lost, the vote already
+    // exists — treat it as a no-op success instead of erroring.
+    try {
+      await prisma.vote.create({
+        data: {
+          userId: req.userId!,
+          conversationId: conversationId || null,
+          replyId: replyId || null,
+          type,
+        },
+      });
+    } catch (e: any) {
+      if (e?.code === 'P2002') {
+        return res.status(200).json({ action: 'set', type, deduped: true });
+      }
+      throw e;
+    }
 
     if (conversationId) {
       await prisma.conversation.update({
@@ -1545,15 +1607,27 @@ app.patch('/api/users/me', authenticate, async (req: AuthRequest, res, next) => 
     const { username, city, childAge, emailNotifications, savedPosts, role } = req.body;
 
     const updateData: any = {};
-    if (username) updateData.username = username;
+    if (username) {
+      const trimmed = String(username).trim();
+      // Keep pen-names unique (case-insensitive), ignoring the user's own row.
+      const taken = await prisma.user.findFirst({
+        where: { username: { equals: trimmed, mode: 'insensitive' }, id: { not: req.userId } },
+      });
+      if (taken) {
+        return res.status(409).json({ error: 'That pen-name is taken — please choose another.' });
+      }
+      updateData.username = trimmed;
+    }
     if (city) updateData.city = city;
     if (childAge !== undefined) updateData.childAge = childAge;
     if (emailNotifications !== undefined) updateData.emailNotifications = emailNotifications;
     if (savedPosts !== undefined) updateData.savedPosts = savedPosts;
     // trustScore, badges, postCount, replyCount, totalUpvotes are server-managed only
 
-    // Only mods can change roles
-    if (role && (req.userRole === 'MODERATOR' || req.userRole === 'TUCO_TEAM')) {
+    // Only TUCO_TEAM may change roles, and only via the admin endpoint for OTHER
+    // users. A moderator must not be able to self-escalate through their own
+    // profile update, so role changes here are restricted to TUCO_TEAM.
+    if (role && req.userRole === 'TUCO_TEAM') {
       updateData.role = mapRoleToDb(role);
     }
 
@@ -2052,9 +2126,26 @@ async function recalculateTrustScore(userId: string): Promise<void> {
 
     const newScore = Math.min(Math.round(score), 100);
 
+    // Persist total upvotes RECEIVED (thread upvotes + reply likes). This column
+    // was never written before, so every profile showed 0 and upvote-gated
+    // badges could never be earned.
+    const totalUpvotes = postUpvotes + totalReplyLikes;
+
+    // Award any newly-earned badges from real server data (postCount is the
+    // approved-post count kept in sync elsewhere). Existing badges are kept.
+    const currentBadges = Array.isArray(user.badges) ? (user.badges as any[]) : [];
+    const earnedTypes = new Set(currentBadges.map(b => b?.type).filter(Boolean));
+    const badges = [...currentBadges];
+    for (const [type, c] of Object.entries(BADGE_CRITERIA)) {
+      if (earnedTypes.has(type)) continue;
+      if ((user.postCount || 0) >= c.threads && totalUpvotes >= c.upvotes && ageDays >= c.days) {
+        badges.push({ type, earnedAt: new Date().toISOString() });
+      }
+    }
+
     await prisma.user.update({
       where: { id: userId },
-      data: { trustScore: newScore },
+      data: { trustScore: newScore, totalUpvotes, badges },
     });
   } catch {
     // non-critical — do not surface to caller

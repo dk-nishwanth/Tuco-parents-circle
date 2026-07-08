@@ -9,7 +9,7 @@ datasource db {
 
 model User {
   id                 String         @id @default(uuid())
-  username           String
+  username           String         @unique
   email              String         @unique
   passwordHash       String
   city               String
@@ -96,6 +96,12 @@ model Vote {
   conversation   Conversation? @relation("VoteToConversation", fields: [conversationId], references: [id], onDelete: Cascade)
   reply          Reply?        @relation("VoteToReply", fields: [replyId], references: [id], onDelete: Cascade)
   user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // One vote per user per target. Postgres treats NULLs as distinct, so the
+  // conversation constraint only binds conversation-votes and the reply
+  // constraint only binds reply-votes — exactly what we want.
+  @@unique([userId, conversationId])
+  @@unique([userId, replyId])
 }
 
 model Notification {
@@ -215,4 +221,22 @@ enum EmailType {
   APPROVAL
   WEEKLY_ENGAGEMENT
   LAUNCH
+}
+
+// Password-reset tokens, persisted so they survive server restarts and work
+// across instances (previously an in-memory Map, lost on every deploy).
+model PasswordResetToken {
+  token     String   @id
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+// One-time OAuth exchange codes, persisted for the same reason.
+model OAuthCode {
+  code      String   @id
+  token     String
+  isNew     Boolean  @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 }
