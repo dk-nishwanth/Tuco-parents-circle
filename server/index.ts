@@ -46,6 +46,9 @@ import { analyzeContent } from '../src/utils/moderation.js';
 // Shared badge thresholds — award badges server-side from real data so they
 // persist and can't be gamed by the client.
 import { BADGE_CRITERIA } from '../src/utils/badgeSystem.js';
+// Canonicalize the child-age field server-side so the column stays uniform no
+// matter what the client sends.
+import { normalizeChildAge } from '../src/data/childAgeOptions.js';
 
 async function seedOnStartup() {
   console.log('Checking database for seed data...');
@@ -596,9 +599,10 @@ app.post('/api/auth/signup', authLimiter, async (req: AuthRequest, res, next) =>
       data: {
         email: normalEmail,
         passwordHash,
-        username,
-        city: city || 'India',
-        childAge,
+        // Trim/canonicalize server-side so no messy data enters regardless of client.
+        username: username.trim(),
+        city: (city || '').trim() || 'India',
+        childAge: normalizeChildAge(childAge),
         role: 'MEMBER',
         isVerified: false,
         trustScore: 50, // 0.5 in frontend scale
@@ -1618,8 +1622,8 @@ app.patch('/api/users/me', authenticate, async (req: AuthRequest, res, next) => 
       }
       updateData.username = trimmed;
     }
-    if (city) updateData.city = city;
-    if (childAge !== undefined) updateData.childAge = childAge;
+    if (city) updateData.city = String(city).trim() || 'India';
+    if (childAge !== undefined) updateData.childAge = normalizeChildAge(childAge);
     if (emailNotifications !== undefined) updateData.emailNotifications = emailNotifications;
     if (savedPosts !== undefined) updateData.savedPosts = savedPosts;
     // trustScore, badges, postCount, replyCount, totalUpvotes are server-managed only
