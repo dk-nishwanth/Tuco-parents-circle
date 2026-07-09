@@ -2,23 +2,12 @@ import { useState } from 'react';
 import { User } from '../types';
 import { api } from '../utils/api';
 import { track } from '../utils/analytics';
+import { CHILD_AGE_OPTIONS } from '../data/childAgeOptions';
 
 interface Props {
   user: User;
   onComplete: (updatedUser: User) => void;
 }
-
-const CHILD_AGE_OPTIONS = [
-  'Pregnant / Expecting',
-  '0–6 months',
-  '6–12 months',
-  '1–2 years',
-  '2–3 years',
-  '3–5 years',
-  '5–8 years',
-  '8–12 years',
-  '12+ years',
-];
 
 export function CompleteProfileModal({ user, onComplete }: Props) {
   const [username, setUsername] = useState(user.username || '');

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { X, Mail, Lock, MapPin, User, AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react';
 import { track } from '../utils/analytics';
+import { CHILD_AGE_OPTIONS } from '../data/childAgeOptions';
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -467,19 +468,9 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin, initialMode, ini
                   className="w-full px-4 py-2.5 border border-neutral-200 rounded-lg outline-none text-sm focus:border-tuco-cyan focus:ring-2 focus:ring-tuco-cyan/10"
                 >
                   <option value="">Select age...</option>
-                  <option value="3">3 years</option>
-                  <option value="4">4 years</option>
-                  <option value="5">5 years</option>
-                  <option value="6">6 years</option>
-                  <option value="7">7 years</option>
-                  <option value="8">8 years</option>
-                  <option value="9">9 years</option>
-                  <option value="10">10 years</option>
-                  <option value="11">11 years</option>
-                  <option value="12">12 years</option>
-                  <option value="13">13 years</option>
-                  <option value="14">14 years</option>
-                  <option value="15">15 years</option>
+                  {CHILD_AGE_OPTIONS.map(o => (
+                    <option key={o} value={o}>{o}</option>
+                  ))}
                 </select>
               </div>
               <button
