@@ -350,6 +350,29 @@ const MISINFORMATION_PATTERNS = [
   /avoid\s+vaccines/gi,
 ];
 
+// Content targeting or advocating harm against children. Strong-signal only —
+// we deliberately do NOT catch help-seeking discussion ("my child was
+// bullied", "I lost my temper"), only advocacy/solicitation. Any hit here is
+// a CLEAR_VIOLATION and auto-rejected before it ever reaches the queue.
+const CHILD_HARM_PATTERNS = [
+  // Sexualization of minors — any of these near a child noun.
+  /\b(sexy|hot|attractive|erotic|nude|naked)\b[^.]{0,40}\b(child|kid|kids|toddler|baby|infant|minor|boy|girl|son|daughter|teen|teenager|underage)\b/gi,
+  /\b(child|kid|kids|toddler|baby|infant|minor|boy|girl|son|daughter|teen|teenager|underage)\b[^.]{0,40}\b(sexy|hot|attractive|erotic|nude|naked)\b/gi,
+  /\bchild\s*porn|\bcsam\b|\bunderage\s+(sex|porn|nude)\b|\bloli(con|ta)?\b/gi,
+  // Solicitation / grooming language
+  /\b(meet|dm|message|whatsapp)\s+(me\s+)?(your\s+)?(child|kid|daughter|son|minor|teen)\b/gi,
+  /\bpay\s+(you|for)\s+(your\s+)?(child|kid|daughter|son|photos?|pics?)\b/gi,
+  // Direct advocacy of physical violence against children
+  /\b(beat|hit|smack|thrash|slap|whip|kick|punch)\s+(the\s+|your\s+|my\s+)?(child|kid|kids|toddler|baby|infant|son|daughter)\s+(hard|harder|senseless|until|till|so)\b/gi,
+  /\b(child|kids?|toddler|baby)\s+(need|deserve|should\s+get)\s+(a\s+)?(good\s+)?(beating|thrashing|whipping)\b/gi,
+  /\bstarve\s+(the\s+|your\s+|my\s+)?(child|kid|kids|baby|toddler)\b/gi,
+  /\block\s+(the\s+|your\s+|my\s+)?(child|kid|kids|baby|toddler)\s+(in|up|away|out)\b/gi,
+  // Encouragement of neglect / abandonment as a strategy
+  /\b(leave|abandon|dump)\s+(the\s+|your\s+|my\s+)?(child|kid|kids|baby|toddler|infant)\s+(alone|outside|on\s+the\s+street)\b/gi,
+  // Explicit self-harm advocacy involving children ("teach kids to cut")
+  /\bteach\s+(kids?|children|child)\s+to\s+(cut|starve|smoke|drink|self.harm)\b/gi,
+];
+
 const RELIGIOUS_CULTURAL_PATTERNS = [
   /namaz|puja|fasting|ramadan|ekadashi|jain\s+food|halal|kosher|caste|gotra|mundan|thread\s+ceremony|mundan|havan/gi,
   /religious|cultural\s+practice|tradition\s+in\s+our\s+family|in-laws\s+insist/gi,
@@ -460,6 +483,9 @@ export function analyzeContent(postContent: string, category: string): Moderatio
     return { outcome: 'CLEAR_VIOLATION', greyAreaFlags };
   }
   if (MISINFORMATION_PATTERNS.some(p => { p.lastIndex = 0; return p.test(postContent); })) {
+    return { outcome: 'CLEAR_VIOLATION', greyAreaFlags };
+  }
+  if (CHILD_HARM_PATTERNS.some(p => { p.lastIndex = 0; return p.test(postContent); })) {
     return { outcome: 'CLEAR_VIOLATION', greyAreaFlags };
   }
 

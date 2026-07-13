@@ -468,9 +468,30 @@ const formatConversation = (c: any) => {
   };
 };
 
-async function sendEmail(to: string, subject: string, html: string): Promise<boolean> {
+// Every email — real or simulated — is recorded in the EmailLog table so the
+// admin panel and audits have a full trail. Previously the table stayed empty
+// because the send path never wrote to it.
+type EmailLogType = 'APPROVAL' | 'WEEKLY_ENGAGEMENT' | 'LAUNCH' | 'WELCOME' | 'REPLY_NOTIFICATION' | 'MODERATION' | 'TRANSACTIONAL';
+
+async function logEmail(type: EmailLogType, to: string, subject: string, html: string): Promise<void> {
+  try {
+    // Strip tags and clip so the DB never stores a huge blob.
+    const preview = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 500);
+    await prisma.emailLog.create({ data: { type: type as any, to, subject, preview } });
+  } catch (err) {
+    console.error('EmailLog write failed:', err);
+  }
+}
+
+async function sendEmail(
+  to: string,
+  subject: string,
+  html: string,
+  type: EmailLogType = 'TRANSACTIONAL',
+): Promise<boolean> {
   if (!resend) {
     console.log(`[EMAIL SIMULATED] To: ${to} | Subject: ${subject}`);
+    await logEmail(type, to, subject, html);
     return true;
   }
   try {
@@ -480,6 +501,7 @@ async function sendEmail(to: string, subject: string, html: string): Promise<boo
       subject,
       html,
     });
+    await logEmail(type, to, subject, html);
     return true;
   } catch (err) {
     console.error('Email send failed:', err);
@@ -630,7 +652,8 @@ app.post('/api/auth/signup', authLimiter, async (req: AuthRequest, res, next) =>
       await sendEmail(
         user.email,
         'Welcome to tuco Parents Circle!',
-        `<h2>Welcome, ${user.username}!</h2><p>You've joined the tuco Parents Circle community. Start sharing your parenting experiences today!</p><p><a href="${process.env.FRONTEND_URL || 'https://community.tucokids.com'}">Visit the community</a></p>`
+        `<h2>Welcome, ${user.username}!</h2><p>You've joined the tuco Parents Circle community. Start sharing your parenting experiences today!</p><p><a href="${process.env.FRONTEND_URL || 'https://community.tucokids.com'}">Visit the community</a></p>`,
+        'WELCOME'
       );
     } catch (emailErr) {
       console.warn('⚠️ Welcome email failed, but signup successful:', emailErr);
@@ -920,13 +943,31 @@ app.post('/api/conversations', authenticate, async (req: AuthRequest, res, next)
     // same analysis here so a direct API call can't bypass it.
     const serverAnalysis = analyzeContent(`${title}\n${text}`, category);
     const serverRejected = serverAnalysis.outcome === 'CLEAR_VIOLATION';
-    // Mods can set any status. Otherwise: reject clear violations (client- or
-    // server-detected), else queue as PENDING for review.
-    const status = isMod
-      ? (requestedStatus as any) || 'PENDING'
-      : serverRejected || requestedStatus === 'REJECTED'
-        ? 'REJECTED'
-        : 'PENDING';
+    // Auto-moderation decision tree (mods bypass):
+    //   CLEAR_VIOLATION (any signal — profanity, child-harm patterns, spam,
+    //     personal info, brand promo, medical prescription, misinformation,
+    //     personal attack, etc.) → REJECTED, never published.
+    //   New account (<24h) → PENDING regardless — cooling period guards
+    //     against drive-by content until the account has a track record.
+    //   UNCERTAIN (spam-like, too short) → PENDING for human review.
+    //   CLEAN → APPROVED and published live. This is the change that lets
+    //     the queue drain automatically instead of piling up.
+    let autoStatus: 'APPROVED' | 'REJECTED' | 'PENDING';
+    let autoReason: string | null = null;
+    if (serverRejected || requestedStatus === 'REJECTED') {
+      autoStatus = 'REJECTED';
+      autoReason = 'Auto-rejected: content matched community-guideline violation patterns.';
+    } else if (isInCoolingPeriod) {
+      autoStatus = 'PENDING';
+      autoReason = 'New account cooling period — waiting for moderator review.';
+    } else if (serverAnalysis.outcome === 'CLEAN') {
+      autoStatus = 'APPROVED';
+      autoReason = 'Auto-approved: passed all content checks.';
+    } else {
+      autoStatus = 'PENDING';
+      autoReason = 'Auto-flagged as uncertain — waiting for moderator review.';
+    }
+    const status = isMod ? ((requestedStatus as any) || 'PENDING') : autoStatus;
 
     console.log('💾 Creating conversation in database...');
     const conversation = await prisma.conversation.create({
@@ -963,15 +1004,36 @@ app.post('/api/conversations', authenticate, async (req: AuthRequest, res, next)
       });
     }
 
-    // If in cooling period, log to moderation log
-    if (isInCoolingPeriod) {
+    // Log the auto-decision. Every new thread now leaves an audit trail
+    // showing whether the SYSTEM approved/rejected/flagged it and why —
+    // even the ones that used to pile up silently as PENDING.
+    if (!isMod) {
+      const logAction = autoStatus === 'APPROVED' ? 'APPROVED'
+        : autoStatus === 'REJECTED' ? 'REJECTED'
+        : 'FLAGGED';
       await prisma.moderationLog.create({
         data: {
           moderatorId: 'SYSTEM',
           targetType: 'CONVERSATION',
           targetId: conversation.id,
-          action: 'FLAGGED',
-          reason: 'New member cooling period - requires moderator review',
+          action: logAction as any,
+          reason: autoReason,
+        },
+      });
+    }
+
+    // On auto-reject, tell the author immediately so they know their post
+    // didn't go live. (Auto-approved threads don't need a notification —
+    // the post appearing on the feed is the confirmation.)
+    if (autoStatus === 'REJECTED' && !isMod) {
+      await prisma.notification.create({
+        data: {
+          userId: user.id,
+          type: 'SYSTEM',
+          title: 'Your post was rejected',
+          description: `"${title.slice(0, 60)}${title.length > 60 ? '…' : ''}" was auto-rejected for violating community guidelines. Please review and try again.`,
+          time: 'Just now',
+          threadId: conversation.id,
         },
       });
     }
@@ -1081,7 +1143,8 @@ app.patch('/api/conversations/:id', optionalAuth, async (req: AuthRequest, res, 
             : `❌ Your post was rejected: ${conversation.title.slice(0, 40)}`,
           moderationStatus?.toLowerCase() === 'approved'
             ? `<h2>Great news, ${author.username}!</h2><p>Your post "<strong>${conversation.title}</strong>" has been approved and is now live on tuco Parents Circle.</p><p><a href="${process.env.FRONTEND_URL || ''}">View it in the community</a></p>`
-            : `<h2>Hi ${author.username},</h2><p>Your post "<strong>${conversation.title}</strong>" has been rejected.</p><p><strong>Reason:</strong> ${moderationReason || 'Not specified'}</p><p>If you have questions, please contact our moderation team.</p>`
+            : `<h2>Hi ${author.username},</h2><p>Your post "<strong>${conversation.title}</strong>" has been rejected.</p><p><strong>Reason:</strong> ${moderationReason || 'Not specified'}</p><p>If you have questions, please contact our moderation team.</p>`,
+          'MODERATION'
         );
       }
     }
@@ -1202,7 +1265,8 @@ app.post('/api/conversations/:id/replies', authenticate, async (req: AuthRequest
             'Read the reply',
             threadUrl,
             `<blockquote style="border-left: 3px solid #35B5EC; padding: 8px 14px; margin: 16px 0; color: #555; background: #f7fbfd;">${escapeHtml(preview)}</blockquote>`
-          )
+          ),
+          'REPLY_NOTIFICATION'
         ).catch(err => console.error('Reply email failed:', err));
       }
     }
@@ -1234,7 +1298,8 @@ app.post('/api/conversations/:id/replies', authenticate, async (req: AuthRequest
               'Read the reply',
               threadUrl,
               `<blockquote style="border-left: 3px solid #35B5EC; padding: 8px 14px; margin: 16px 0; color: #555; background: #f7fbfd;">${escapeHtml(preview)}</blockquote>`
-            )
+            ),
+            'REPLY_NOTIFICATION'
           ).catch(err => console.error('Nested reply email failed:', err));
         }
       }
@@ -1290,7 +1355,8 @@ app.post('/api/conversations/:id/replies', authenticate, async (req: AuthRequest
             'View the mention',
             threadUrl,
             `<blockquote style="border-left: 3px solid #35B5EC; padding: 8px 14px; margin: 16px 0; color: #555; background: #f7fbfd;">${escapeHtml(preview)}</blockquote>`
-          )
+          ),
+          'REPLY_NOTIFICATION'
         ).catch(err => console.error('Mention email failed:', err));
       }
     }
@@ -1806,6 +1872,33 @@ app.post('/api/chat', optionalAuth, async (req: AuthRequest, res, next) => {
     const { messages } = req.body;
     const client = getAnthropicClient();
 
+    // Persistence layer: every chat turn is written to ChatMessage so the
+    // admin panel and audits can see what users are asking. Guests get no
+    // session (they don't have a user id), so their turns are still handled
+    // but not persisted. Previously ChatMessage sat empty even for members.
+    let sessionId: string | null = null;
+    if (req.userId) {
+      const existing = await prisma.chatSession.findFirst({
+        where: { userId: req.userId },
+        orderBy: { lastActive: 'desc' },
+      });
+      const stale = existing && (Date.now() - existing.lastActive.getTime()) > 60 * 60 * 1000;
+      if (existing && !stale) {
+        sessionId = existing.id;
+        await prisma.chatSession.update({ where: { id: existing.id }, data: { lastActive: new Date() } });
+      } else {
+        const created = await prisma.chatSession.create({ data: { userId: req.userId } });
+        sessionId = created.id;
+      }
+      const lastUserMsg = messages[messages.length - 1];
+      if (sessionId && lastUserMsg?.role === 'user' && typeof lastUserMsg?.content === 'string') {
+        await prisma.chatMessage.create({
+          data: { sessionId, role: 'USER', content: lastUserMsg.content.slice(0, 4000) },
+        }).catch(err => console.error('ChatMessage user write failed:', err));
+      }
+    }
+
+    let content: string;
     if (!client) {
       const userMessage = (messages[messages.length - 1]?.content || '').toLowerCase();
       let mockReply = "I'm currently in testing mode. How can I help you today?";
@@ -1814,17 +1907,23 @@ app.post('/api/chat', optionalAuth, async (req: AuthRequest, res, next) => {
       else if (userMessage.match(/eat|food|tiffin|nutrition/)) mockReply = "Nutrition is key! Try involving kids in cooking. Check Parenting Hacks for tiffin ideas.";
       else if (userMessage.match(/sleep|bedtime|tantrum/)) mockReply = "A consistent bedtime routine helps. You'll find great tips in Kids & Growth.";
       else if (userMessage.match(/school|homework|exam/)) mockReply = "Check our School & Learning category for parent-shared experiences.";
-      return res.status(200).json({ content: mockReply });
+      content = mockReply;
+    } else {
+      const response = await client.messages.create({
+        model: 'claude-3-haiku-20240307',
+        max_tokens: 1024,
+        messages,
+        system: `You are the tuco Parenting Assistant for the "tuco Parents Circle" community — a supportive forum for Indian parents to share advice on skincare, nutrition, activities, and general parenting. Be warm, concise, and helpful.`,
+      });
+      content = response.content[0].type === 'text' ? response.content[0].text : 'Sorry, I could not process that.';
     }
 
-    const response = await client.messages.create({
-      model: 'claude-3-haiku-20240307',
-      max_tokens: 1024,
-      messages,
-      system: `You are the tuco Parenting Assistant for the "tuco Parents Circle" community — a supportive forum for Indian parents to share advice on skincare, nutrition, activities, and general parenting. Be warm, concise, and helpful.`,
-    });
+    if (sessionId) {
+      await prisma.chatMessage.create({
+        data: { sessionId, role: 'ASSISTANT', content: content.slice(0, 4000) },
+      }).catch(err => console.error('ChatMessage assistant write failed:', err));
+    }
 
-    const content = response.content[0].type === 'text' ? response.content[0].text : 'Sorry, I could not process that.';
     res.status(200).json({ content });
   } catch (error) {
     next(error);

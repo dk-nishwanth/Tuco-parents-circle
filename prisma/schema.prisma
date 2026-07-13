@@ -225,6 +225,10 @@ enum EmailType {
   APPROVAL
   WEEKLY_ENGAGEMENT
   LAUNCH
+  WELCOME
+  REPLY_NOTIFICATION
+  MODERATION
+  TRANSACTIONAL
 }
 
 // Password-reset tokens, persisted so they survive server restarts and work
