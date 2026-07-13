@@ -139,18 +139,18 @@ export function sortThreads(
     case 'unanswered':
       return pinFirst(sorted.sort((a, b) => (a.replies?.length || 0) - (b.replies?.length || 0)));
     case 'for-you': {
-      // Only include threads whose OP author is within 1 bucket of the viewer.
+      // Only include threads whose age bucket is within 1 of the viewer's.
       // Sort exact-match first, then adjacent, then by newness inside each tier.
       // If viewer has no childAge yet, fall back to plain "new".
       if (!viewerChildAge) return sortThreads(threads, 'new');
       const filtered = sorted.filter(c => {
-        const d = ageBucketDistance(c.op?.authorChildAge, viewerChildAge);
+        const d = ageBucketDistance(c.childAge, viewerChildAge);
         return d <= 1;
       });
       return pinFirst(
         filtered.sort((a, b) => {
-          const da = ageBucketDistance(a.op?.authorChildAge, viewerChildAge);
-          const db = ageBucketDistance(b.op?.authorChildAge, viewerChildAge);
+          const da = ageBucketDistance(a.childAge, viewerChildAge);
+          const db = ageBucketDistance(b.childAge, viewerChildAge);
           if (da !== db) return da - db;
           const aTime = a.createdAt ? new Date(a.createdAt).getTime() : a.id;
           const bTime = b.createdAt ? new Date(b.createdAt).getTime() : b.id;

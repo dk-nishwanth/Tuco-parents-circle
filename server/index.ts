@@ -451,11 +451,12 @@ const formatConversation = (c: any) => {
       image: c.opImage,
       authorRole: mapRole(c.opAuthorRole),
       authorBadges: c.opAuthorBadges || [],
-      // Age-of-child bucket of the parent who posted this thread. Powers the
-      // "For Your Age" feed — clients match threads to viewers with the
-      // same/adjacent child-age bucket.
-      authorChildAge: c.author?.childAge || null,
     },
+    // Age-of-child bucket this thread is about. Set on create from the
+    // author's User.childAge; the "For Your Age" feed matches viewers with
+    // the same/adjacent bucket. Falls back to the current author.childAge
+    // for rows written before this column existed.
+    childAge: c.childAge || c.author?.childAge || null,
     replies: rootReplies.map((r: any) => formatReply(r, allReplies)),
     moderationStatus: (c.moderationStatus || 'PENDING').toLowerCase(),
     moderatedBy: c.moderatedBy,
@@ -940,6 +941,9 @@ app.post('/api/conversations', authenticate, async (req: AuthRequest, res, next)
         opAuthorRole: user.role,
         opAuthorBadges: (user.badges as any[] || []).map((b: any) => b.type),
         authorId: user.id,
+        // Snapshot the author's current child-age so this thread stays tagged
+        // to the age it's actually about even when the parent's kid grows.
+        childAge: user.childAge || null,
         moderationStatus: status,
         greyAreaFlags: greyAreaFlags || [],
         reviewPriority: isInCoolingPeriod ? 100 : reviewPriority, // Higher priority for cooling period posts

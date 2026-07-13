@@ -48,6 +48,10 @@ model Conversation {
   opImage          String?
   opAuthorRole     UserRole         @default(MEMBER)
   opAuthorBadges   String[]
+  // Age-of-child bucket this thread is about. Set on create from the author's
+  // current User.childAge (so a thread stays tagged even if the parent's kid
+  // ages later). Nullable to keep old rows valid until backfill runs.
+  childAge         String?
   moderationStatus ModerationStatus @default(PENDING)
   moderatedBy      String?
   moderationReason String?
