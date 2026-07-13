@@ -451,6 +451,10 @@ const formatConversation = (c: any) => {
       image: c.opImage,
       authorRole: mapRole(c.opAuthorRole),
       authorBadges: c.opAuthorBadges || [],
+      // Age-of-child bucket of the parent who posted this thread. Powers the
+      // "For Your Age" feed — clients match threads to viewers with the
+      // same/adjacent child-age bucket.
+      authorChildAge: c.author?.childAge || null,
     },
     replies: rootReplies.map((r: any) => formatReply(r, allReplies)),
     moderationStatus: (c.moderationStatus || 'PENDING').toLowerCase(),
@@ -844,6 +848,7 @@ app.get('/api/conversations', optionalAuth, async (req: AuthRequest, res, next) 
       where: isMod ? undefined : { moderationStatus: 'APPROVED' },
       include: {
         replies: { orderBy: { id: 'asc' } },
+        author: { select: { childAge: true } },
       },
       orderBy: [{ isPinned: 'desc' }, { createdAt: 'desc' }],
     });
@@ -940,7 +945,7 @@ app.post('/api/conversations', authenticate, async (req: AuthRequest, res, next)
         reviewPriority: isInCoolingPeriod ? 100 : reviewPriority, // Higher priority for cooling period posts
         votes: 1,
       },
-      include: { replies: true },
+      include: { replies: true, author: { select: { childAge: true } } },
     });
     console.log('✅ Conversation created with ID:', conversation.id);
 
@@ -1002,7 +1007,7 @@ app.patch('/api/conversations/:id', optionalAuth, async (req: AuthRequest, res, 
       });
       const conversation = await prisma.conversation.findUnique({
         where: { id },
-        include: { replies: true },
+        include: { replies: true, author: { select: { childAge: true } } },
       });
       if (!conversation) {
         return res.status(404).json({ error: 'Conversation not found' });
@@ -1027,7 +1032,7 @@ app.patch('/api/conversations/:id', optionalAuth, async (req: AuthRequest, res, 
     const conversation = await prisma.conversation.update({
       where: { id },
       data: updateData,
-      include: { replies: true },
+      include: { replies: true, author: { select: { childAge: true } } },
     });
 
     // Log moderation action to ModerationLog table

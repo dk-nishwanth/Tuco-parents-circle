@@ -1,4 +1,20 @@
 import { Conversation, DateFilter, User, BadgeType, UserRole, Reply } from '../types';
+import { CHILD_AGE_OPTIONS, normalizeChildAge } from '../data/childAgeOptions';
+
+// Ordered ladder of the canonical child-age buckets. Distance between two
+// buckets on this ladder is used by the "For Your Age" feed to include
+// adjacent groups (e.g. a 2–3-year parent also sees 1–2 and 3–5 threads).
+const AGE_ORDER: readonly string[] = CHILD_AGE_OPTIONS;
+
+export function ageBucketDistance(a: string | null | undefined, b: string | null | undefined): number {
+  const na = normalizeChildAge(a);
+  const nb = normalizeChildAge(b);
+  if (!na || !nb) return Infinity;
+  const ia = AGE_ORDER.indexOf(na);
+  const ib = AGE_ORDER.indexOf(nb);
+  if (ia < 0 || ib < 0) return Infinity;
+  return Math.abs(ia - ib);
+}
 
 // Count every reply in a thread, including nested ones. The server nests child
 // replies under their parent, so `thread.replies.length` only counts root-level
@@ -89,7 +105,11 @@ export function getAuthorMeta(
   }
   return { badges: [] };
 }
-export function sortThreads(threads: Conversation[], sortType: string): Conversation[] {
+export function sortThreads(
+  threads: Conversation[],
+  sortType: string,
+  viewerChildAge?: string | null,
+): Conversation[] {
   const sorted = [...threads];
   const pinFirst = (list: Conversation[]) =>
     list.sort((a, b) => {
@@ -118,6 +138,26 @@ export function sortThreads(threads: Conversation[], sortType: string): Conversa
       );
     case 'unanswered':
       return pinFirst(sorted.sort((a, b) => (a.replies?.length || 0) - (b.replies?.length || 0)));
+    case 'for-you': {
+      // Only include threads whose OP author is within 1 bucket of the viewer.
+      // Sort exact-match first, then adjacent, then by newness inside each tier.
+      // If viewer has no childAge yet, fall back to plain "new".
+      if (!viewerChildAge) return sortThreads(threads, 'new');
+      const filtered = sorted.filter(c => {
+        const d = ageBucketDistance(c.op?.authorChildAge, viewerChildAge);
+        return d <= 1;
+      });
+      return pinFirst(
+        filtered.sort((a, b) => {
+          const da = ageBucketDistance(a.op?.authorChildAge, viewerChildAge);
+          const db = ageBucketDistance(b.op?.authorChildAge, viewerChildAge);
+          if (da !== db) return da - db;
+          const aTime = a.createdAt ? new Date(a.createdAt).getTime() : a.id;
+          const bTime = b.createdAt ? new Date(b.createdAt).getTime() : b.id;
+          return bTime - aTime;
+        })
+      );
+    }
     default:
       return pinFirst(sorted.sort((a, b) => {
         const aTime = a.createdAt ? new Date(a.createdAt).getTime() : a.id;

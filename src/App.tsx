@@ -306,17 +306,52 @@ function AppContent() {
     return () => clearInterval(interval);
   }, [currentUser]);
 
-  // Handle initial hash
+  // Handle initial hash. Two deep-link formats:
+  //   #thread-<id>  → open that thread modal
+  //   #reply-<id>   → find the reply's parent thread, open it, then scroll
+  //                   the reply into view once the modal renders.
   useEffect(() => {
-    if (conversations.length > 0) {
-      const hashMatch = window.location.hash.match(/^#thread-(\d+)$/);
-      if (hashMatch) {
-        const threadId = parseInt(hashMatch[1], 10);
-        const threadExists = conversations.some(c => c.id === threadId);
-        if (threadExists) {
-          setSelectedThreadId(threadId);
-          setIsModalOpen(true);
+    if (conversations.length === 0) return;
+    const threadMatch = window.location.hash.match(/^#thread-(\d+)$/);
+    if (threadMatch) {
+      const threadId = parseInt(threadMatch[1], 10);
+      if (conversations.some(c => c.id === threadId)) {
+        setSelectedThreadId(threadId);
+        setIsModalOpen(true);
+      }
+      return;
+    }
+    const replyMatch = window.location.hash.match(/^#reply-(\d+)$/);
+    if (replyMatch) {
+      const replyId = parseInt(replyMatch[1], 10);
+      // Recursively search through nested replies for the matching id.
+      const findParentThreadId = (): number | null => {
+        const walk = (list: any[]): boolean =>
+          list.some(r => r.id === replyId || (r.replies && walk(r.replies)));
+        for (const c of conversations) {
+          if (walk(c.replies || [])) return c.id;
         }
+        return null;
+      };
+      const parentThreadId = findParentThreadId();
+      if (parentThreadId != null) {
+        setSelectedThreadId(parentThreadId);
+        setIsModalOpen(true);
+        // Scroll after modal mounts. Retry a few times because deeply-nested
+        // replies render after the parent tree, so the element may not exist
+        // on the first tick.
+        let attempts = 0;
+        const tryScroll = () => {
+          const el = document.getElementById(`reply-${replyId}`);
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            el.classList.add('ring-2', 'ring-tuco-cyan', 'ring-offset-2');
+            setTimeout(() => el.classList.remove('ring-2', 'ring-tuco-cyan', 'ring-offset-2'), 2500);
+          } else if (attempts++ < 20) {
+            setTimeout(tryScroll, 150);
+          }
+        };
+        setTimeout(tryScroll, 250);
       }
     }
   }, [conversations]);
@@ -1289,7 +1324,14 @@ function AppContent() {
           <div className="fixed left-0 top-0 bottom-0 w-[280px] bg-white z-50 md:hidden overflow-y-auto border-r border-neutral-200 shadow-xl animate-in slide-in-from-left-2 duration-200">
             <div className="p-4">
               <div className="flex items-center justify-between mb-4">
-                <img src={tucoLogo} alt="tuco" className="h-8 w-auto" />
+                <a
+                  href="https://tucokids.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Go to tucokids.com"
+                >
+                  <img src={tucoLogo} alt="tuco Kids" className="h-8 w-auto" />
+                </a>
                 <button
                   onClick={() => setIsMobileLeftSidebarOpen(false)}
                   className="p-1 hover:bg-neutral-100 rounded-full"
@@ -1352,6 +1394,7 @@ function AppContent() {
                 onOpenRightSidebar={() => setIsRightSidebarOpen(true)}
                 isLoggedIn={!!currentUser}
                 onJoinClick={() => openAuth('signup')}
+                currentUser={currentUser}
               />
             )}
           </div>
@@ -1369,12 +1412,18 @@ function AppContent() {
       </div>
       <footer className="bg-white border-t border-neutral-200/90 py-10 px-4 mt-12 text-center text-xs text-neutral-400 font-bold font-sans">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-3">
+          <a
+            href="https://tucokids.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+            aria-label="Go to tucokids.com"
+          >
             <img src={tucoLogo} alt="tuco Kids Logo" className="h-8 w-auto" />
             <strong className="text-neutral-700 font-display text-sm tracking-tight text-left leading-tight">
               Parents Circle
             </strong>
-          </div>
+          </a>
           <p className="text-[10px] font-medium text-neutral-400">
             © 2026 tuco Parents Circle. A safe space for Indian parents.
           </p>

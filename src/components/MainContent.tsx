@@ -23,6 +23,7 @@ interface MainContentProps {
   onOpenRightSidebar?: () => void;
   isLoggedIn?: boolean;
   onJoinClick?: () => void;
+  currentUser?: User | null;
 }
 
 export function MainContent({
@@ -42,6 +43,7 @@ export function MainContent({
   onOpenRightSidebar,
   isLoggedIn = false,
   onJoinClick,
+  currentUser,
 }: MainContentProps) {
   const [sortType, setSortType] = useState<string>('new');
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -92,8 +94,8 @@ export function MainContent({
     } else {
       filtered = filterThreads(conversations, searchTerm, activeCategory);
     }
-    return sortThreads(filtered, sortType);
-  }, [conversations, searchTerm, activeCategory, sortType, savedPosts]);
+    return sortThreads(filtered, sortType, currentUser?.childAge);
+  }, [conversations, searchTerm, activeCategory, sortType, savedPosts, currentUser?.childAge]);
 
   const totalPages = Math.ceil(processedThreads.length / THREADS_PER_PAGE);
   const startIndex = (currentPage - 1) * THREADS_PER_PAGE;
@@ -101,6 +103,14 @@ export function MainContent({
   const paginatedThreads = processedThreads.slice(startIndex, endIndex);
 
   const handleSortChange = (newSort: string) => {
+    // "For Your Age" needs a logged-in viewer with a childAge. If either is
+    // missing, don't switch — bounce the user through auth/complete-profile
+    // instead. Doubles as a soft conversion hook for guests.
+    if (newSort === 'for-you' && !isLoggedIn) {
+      onJoinClick?.();
+      setIsSortOpen(false);
+      return;
+    }
     setSortType(newSort);
     setCurrentPage(1);
     setIsSortOpen(false);
@@ -110,6 +120,7 @@ export function MainContent({
     { key: 'trending', label: 'Trending', icon: '🔥', desc: 'Highest Votes' },
     { key: 'new', label: 'New', icon: '✨', desc: 'Recent Posts' },
     { key: 'unanswered', label: 'Unanswered', icon: '❓', desc: 'Needs Support' },
+    { key: 'for-you', label: 'For Your Age', icon: '👶', desc: currentUser?.childAge ? `Parents of ${currentUser.childAge}` : 'Sign in to personalize' },
   ];
 
   const currentSort = sortOptions.find(o => o.key === sortType) || sortOptions[0];

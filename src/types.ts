@@ -6,6 +6,10 @@ export interface Op {
   image?: string;
   authorRole?: UserRole;
   authorBadges?: BadgeType[];
+  // Age-bucket of the OP author's child at time of read. Populated by the
+  // server from the User table. Used by the "For Your Age" feed to match a
+  // thread to viewers with the same/adjacent bucket.
+  authorChildAge?: string | null;
 }
 
 export interface Reply {

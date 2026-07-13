@@ -162,8 +162,6 @@ export function Header({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const clearSearch = () => onSearch('');
-
   return (
     <header className="header bg-white border-b border-neutral-100 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-3 md:px-4 py-1.5 flex items-center gap-2 md:gap-3">
@@ -175,12 +173,15 @@ export function Header({
           >
             <Menu className="w-6 h-6 text-[#4D4747]" strokeWidth={2} />
           </button>
-          <div
+          <a
+            href="https://tucokids.com/"
+            target="_blank"
+            rel="noopener noreferrer"
             className="flex items-center cursor-pointer select-none"
-            onClick={clearSearch}
+            aria-label="Go to tucokids.com"
           >
-            <img src={tucoLogo} alt="tuco" className="h-8 w-auto" />
-          </div>
+            <img src={tucoLogo} alt="tuco Kids" className="h-8 w-auto" />
+          </a>
         </div>
 
         {/* Center: Search */}

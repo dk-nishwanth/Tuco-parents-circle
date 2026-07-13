@@ -85,6 +85,7 @@ const ReplyComponent = ({
   const [editText, setEditText] = useState(reply.text);
   const [isReplying, setIsReplying] = useState(false);
   const [replyText, setReplyText] = useState('');
+  const [shareCopied, setShareCopied] = useState(false);
   const replyInputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -119,7 +120,7 @@ const ReplyComponent = ({
   const isMod = currentUser && (currentUser.role === 'moderator' || currentUser.role === 'tuco_team');
 
   return (
-    <div key={reply.id} className="bg-white border border-neutral-200 rounded-[24px] p-6 shadow-sm relative overflow-hidden">
+    <div key={reply.id} id={`reply-${reply.id}`} className="bg-white border border-neutral-200 rounded-[24px] p-6 shadow-sm relative overflow-hidden scroll-mt-24">
       <div className="flex items-start justify-between mb-5">
         <div className="flex items-center gap-3">
           <div
@@ -220,6 +221,41 @@ const ReplyComponent = ({
                 <span className="text-[13px] font-medium">Delete</span>
               </button>
             )}
+            <button
+              type="button"
+              aria-label="Share this reply"
+              title="Share reply"
+              onClick={async () => {
+                // Deep-link format mirrors thread sharing. AppContent's hash
+                // handler recognizes #reply-<id>, opens the parent thread, and
+                // scrolls the reply into view.
+                const url = `${window.location.origin}/#reply-${reply.id}`;
+                const shareData = {
+                  title: `Reply by ${reply.author} — tuco Parents Circle`,
+                  text: reply.text.length > 140 ? reply.text.slice(0, 137) + '…' : reply.text,
+                  url,
+                };
+                try {
+                  if (navigator.share && navigator.canShare?.(shareData)) {
+                    await navigator.share(shareData);
+                    track('share_reply', { reply_id: reply.id, thread_id: threadId, method: 'native' });
+                  } else {
+                    await navigator.clipboard.writeText(url);
+                    track('share_reply', { reply_id: reply.id, thread_id: threadId, method: 'clipboard' });
+                    setShareCopied(true);
+                    setTimeout(() => setShareCopied(false), 2000);
+                  }
+                } catch {
+                  // user cancelled — no-op
+                }
+              }}
+              className="flex items-center gap-2 hover:scale-110 transition-transform text-[#4D4747]"
+            >
+              <Share2 className="w-4 h-4" strokeWidth={1.5} />
+              <span className="text-[13px] font-medium">
+                {shareCopied ? 'Copied!' : 'Share'}
+              </span>
+            </button>
           </>
         )}
       </div>
@@ -437,9 +473,15 @@ export function Modal({
             >
               <ArrowLeft className="w-5 h-5 text-[#4D4747]" strokeWidth={2} />
             </button>
-            <button onClick={onClose} className="hover:opacity-80 transition-opacity">
-              <img src={tucoLogo} alt="tuco" className="h-6 w-auto" />
-            </button>
+            <a
+              href="https://tucokids.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:opacity-80 transition-opacity"
+              aria-label="Go to tucokids.com"
+            >
+              <img src={tucoLogo} alt="tuco Kids" className="h-6 w-auto" />
+            </a>
 
             {/* Category Dropdown (Desktop only) */}
             <div className="hidden md:block relative" ref={categoryRef}>
@@ -770,7 +812,10 @@ export function Modal({
               aria-label="Share this thread"
               title="Share"
               onClick={async () => {
-                const url = `${window.location.origin}/thread/${thread.id}`;
+                // Deep-link scheme is a URL hash (#thread-<id>) that AppContent
+                // reads on load; the previous /thread/<id> path had no matching
+                // route and silently 404'd on the recipient's device.
+                const url = `${window.location.origin}/#thread-${thread.id}`;
                 const shareData = {
                   title: thread.title,
                   text: `${thread.title} — tuco Parents Circle`,
