@@ -5,6 +5,7 @@ import { getAvatarColor, getInitials, searchThreadsWithRanking, formatTimeAgo, c
 import { Heart, MessageSquare, X, Eye, Bookmark, ChevronDown, Search, Bell, ArrowLeft, Menu, User, LogOut, Users, Share2 } from 'lucide-react';
 import { track } from '../utils/analytics';
 import tucoLogo from '../assets/tuco-logo.webp';
+import { FollowButton } from './FollowButton';
 
 interface ModalProps {
   thread: Conversation | null;
@@ -793,9 +794,21 @@ export function Modal({
                 </p>
               </div>
             </div>
-            <span className="text-[12px] text-neutral-400 font-medium">
-              {formatTimeAgo(thread.createdAt)}
-            </span>
+            <div className="flex items-center gap-2">
+              {thread.authorId && (!currentUser || currentUser.id !== thread.authorId) && (
+                <FollowButton
+                  targetType="user"
+                  targetId={thread.authorId}
+                  isLoggedIn={!!currentUser}
+                  onRequireLogin={onLoginClick || (() => {})}
+                  labelWhenNot="Follow"
+                  labelWhenFollowing="Following"
+                />
+              )}
+              <span className="text-[12px] text-neutral-400 font-medium">
+                {formatTimeAgo(thread.createdAt)}
+              </span>
+            </div>
           </div>
 
           <h2 className="font-bold text-[21px] text-[#4D4747] leading-[1.25] mb-5 tracking-tight">
@@ -807,6 +820,14 @@ export function Modal({
           </p>
 
           <div className="flex items-center justify-end gap-5 pt-5 border-t border-neutral-100">
+            <FollowButton
+              targetType="thread"
+              targetId={thread.id}
+              isLoggedIn={!!currentUser}
+              onRequireLogin={onLoginClick || (() => {})}
+              labelWhenNot="Follow thread"
+              labelWhenFollowing="Following thread"
+            />
             <button
               type="button"
               aria-label="Share this thread"
@@ -938,27 +959,79 @@ export function Modal({
           </div>
         </div>
 
-        {/* Replies List */}
+        {/* Replies List — guests see the first 2 clearly, rest is blurred
+            behind a signup CTA. Big conversion lever: makes the value of
+            joining tangible instead of abstract. */}
         <div className="space-y-6">
           {sortedReplies.length === 0 && searchTerm.trim() && (
             <p className="text-center text-sm text-neutral-400 py-8">No replies match "{searchTerm}"</p>
           )}
-          {sortedReplies.map((reply) => (
-            <ReplyComponent
-              key={reply.id}
-              reply={reply}
-              threadId={thread.id}
-              onAddReply={onAddReply}
-              onLikeReply={onLikeReply}
-              onReportReply={onReportReply}
-              onEditReply={onEditReply}
-              onDeleteReply={onDeleteReply}
-              currentUser={currentUser}
-              likedReplies={likedReplies}
-              activeReplyTo={activeReplyTo}
-              setActiveReplyTo={setActiveReplyTo}
-            />
-          ))}
+          {(() => {
+            const GUEST_VISIBLE = 2;
+            const isGuest = !currentUser;
+            const hiddenCount = isGuest ? Math.max(0, sortedReplies.length - GUEST_VISIBLE) : 0;
+            const visibleReplies = isGuest ? sortedReplies.slice(0, GUEST_VISIBLE) : sortedReplies;
+            const blurredReplies = isGuest ? sortedReplies.slice(GUEST_VISIBLE) : [];
+            return (
+              <>
+                {visibleReplies.map((reply) => (
+                  <ReplyComponent
+                    key={reply.id}
+                    reply={reply}
+                    threadId={thread.id}
+                    onAddReply={onAddReply}
+                    onLikeReply={onLikeReply}
+                    onReportReply={onReportReply}
+                    onEditReply={onEditReply}
+                    onDeleteReply={onDeleteReply}
+                    currentUser={currentUser}
+                    likedReplies={likedReplies}
+                    activeReplyTo={activeReplyTo}
+                    setActiveReplyTo={setActiveReplyTo}
+                  />
+                ))}
+                {hiddenCount > 0 && (
+                  <div className="relative">
+                    <div className="pointer-events-none select-none blur-sm space-y-6 max-h-[520px] overflow-hidden opacity-70">
+                      {blurredReplies.slice(0, 3).map((reply) => (
+                        <ReplyComponent
+                          key={`blur-${reply.id}`}
+                          reply={reply}
+                          threadId={thread.id}
+                          onAddReply={onAddReply}
+                          onLikeReply={onLikeReply}
+                          onReportReply={onReportReply}
+                          onEditReply={onEditReply}
+                          onDeleteReply={onDeleteReply}
+                          currentUser={currentUser}
+                          likedReplies={likedReplies}
+                          activeReplyTo={activeReplyTo}
+                          setActiveReplyTo={setActiveReplyTo}
+                        />
+                      ))}
+                    </div>
+                    <div className="absolute inset-0 flex items-end justify-center pointer-events-none">
+                      <div className="pointer-events-auto bg-white/95 backdrop-blur-sm border border-neutral-200 rounded-3xl px-6 py-6 mx-4 mb-4 shadow-xl max-w-md text-center">
+                        <h3 className="font-display font-bold text-lg text-[#4D4747] mb-1">
+                          {hiddenCount} more {hiddenCount === 1 ? 'reply' : 'replies'} from real parents
+                        </h3>
+                        <p className="text-sm text-neutral-500 mb-4">
+                          Sign up free to see every answer, reply yourself, and get notified when this thread gets new replies.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={onLoginClick}
+                          className="bg-[#FED018] hover:bg-[#fccb0a] text-neutral-800 px-6 py-2.5 rounded-full font-bold text-sm transition-colors"
+                        >
+                          Sign up free — takes 10 seconds
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
+            );
+          })()}
         </div>
       </div>
     </div>

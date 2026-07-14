@@ -29,6 +29,8 @@ model User {
   notifications      Notification[]
   replies            Reply[]
   votes              Vote[]
+  follows            Follow[]       @relation("Follower")
+  followers          Follow[]       @relation("FollowedUser")
 }
 
 model Conversation {
@@ -65,6 +67,7 @@ model Conversation {
   author           User             @relation(fields: [authorId], references: [id], onDelete: Restrict)
   replies          Reply[]
   votesRelation    Vote[]           @relation("VoteToConversation")
+  followers        Follow[]         @relation("FollowedConversation")
 }
 
 model Reply {
@@ -229,6 +232,28 @@ enum EmailType {
   REPLY_NOTIFICATION
   MODERATION
   TRANSACTIONAL
+}
+
+// User→user and user→thread follow relationships. One row per follow, with
+// exactly one of targetUserId / targetConversationId set. Cascading delete so
+// removing a user or thread automatically cleans up its follows.
+model Follow {
+  id                   String        @id @default(uuid())
+  followerId           String
+  targetUserId         String?
+  targetConversationId Int?
+  createdAt            DateTime      @default(now())
+
+  follower             User          @relation("Follower",       fields: [followerId],           references: [id], onDelete: Cascade)
+  targetUser           User?         @relation("FollowedUser",   fields: [targetUserId],         references: [id], onDelete: Cascade)
+  targetConversation   Conversation? @relation("FollowedConversation", fields: [targetConversationId], references: [id], onDelete: Cascade)
+
+  // Postgres treats NULLs as distinct — so a (follower, user) pair binds only
+  // user-follows and (follower, conversation) binds only thread-follows.
+  @@unique([followerId, targetUserId])
+  @@unique([followerId, targetConversationId])
+  @@index([targetUserId])
+  @@index([targetConversationId])
 }
 
 // Password-reset tokens, persisted so they survive server restarts and work

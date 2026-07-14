@@ -1038,12 +1038,123 @@ app.post('/api/conversations', authenticate, async (req: AuthRequest, res, next)
       });
     }
 
+    // Fan-out: notify everyone who follows this author when their post is
+    // live. Skip on REJECTED/PENDING so followers don't get pinged about
+    // content that never surfaces. Notifications are batched but bounded to
+    // 500 fan-outs per post to keep this cheap on hot accounts.
+    if (autoStatus === 'APPROVED' && !isMod) {
+      try {
+        const followers = await prisma.follow.findMany({
+          where: { targetUserId: user.id },
+          select: { followerId: true },
+          take: 500,
+        });
+        if (followers.length > 0) {
+          await prisma.notification.createMany({
+            data: followers.map(f => ({
+              userId: f.followerId,
+              type: 'SYSTEM' as any,
+              title: `${user.username} posted a new thread`,
+              description: conversation.title.slice(0, 100),
+              time: 'Just now',
+              threadId: conversation.id,
+            })),
+            skipDuplicates: true,
+          });
+        }
+      } catch (fanErr) {
+        console.error('Follower fan-out failed:', fanErr);
+      }
+    }
+
     console.log('✅ Conversation created successfully!');
     res.status(201).json(formatConversation(conversation));
   } catch (error) {
     console.error('❌ Error creating conversation:', error);
     next(error);
   }
+});
+
+// ------------------------------
+// FOLLOW (user ↔ user, user → thread)
+// ------------------------------
+
+const followSchema = z.object({
+  targetType: z.enum(['user', 'thread']),
+  targetId: z.union([z.string(), z.number()]),
+});
+
+app.post('/api/follow', authenticate, async (req: AuthRequest, res, next) => {
+  try {
+    const parsed = followSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ error: 'Invalid follow payload' });
+    const { targetType, targetId } = parsed.data;
+    if (targetType === 'user') {
+      if (String(targetId) === req.userId) return res.status(400).json({ error: 'Cannot follow yourself' });
+      const target = await prisma.user.findUnique({ where: { id: String(targetId) }, select: { id: true } });
+      if (!target) return res.status(404).json({ error: 'User not found' });
+      await prisma.follow.upsert({
+        where: { followerId_targetUserId: { followerId: req.userId!, targetUserId: String(targetId) } },
+        update: {},
+        create: { followerId: req.userId!, targetUserId: String(targetId) },
+      });
+    } else {
+      const convId = typeof targetId === 'number' ? targetId : parseInt(String(targetId));
+      if (Number.isNaN(convId)) return res.status(400).json({ error: 'Invalid thread id' });
+      const target = await prisma.conversation.findUnique({ where: { id: convId }, select: { id: true } });
+      if (!target) return res.status(404).json({ error: 'Thread not found' });
+      await prisma.follow.upsert({
+        where: { followerId_targetConversationId: { followerId: req.userId!, targetConversationId: convId } },
+        update: {},
+        create: { followerId: req.userId!, targetConversationId: convId },
+      });
+    }
+    res.status(200).json({ success: true, following: true });
+  } catch (error) { next(error); }
+});
+
+app.delete('/api/follow', authenticate, async (req: AuthRequest, res, next) => {
+  try {
+    const parsed = followSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ error: 'Invalid follow payload' });
+    const { targetType, targetId } = parsed.data;
+    if (targetType === 'user') {
+      await prisma.follow.deleteMany({
+        where: { followerId: req.userId!, targetUserId: String(targetId) },
+      });
+    } else {
+      const convId = typeof targetId === 'number' ? targetId : parseInt(String(targetId));
+      if (Number.isNaN(convId)) return res.status(400).json({ error: 'Invalid thread id' });
+      await prisma.follow.deleteMany({
+        where: { followerId: req.userId!, targetConversationId: convId },
+      });
+    }
+    res.status(200).json({ success: true, following: false });
+  } catch (error) { next(error); }
+});
+
+// What the caller follows — used by the client to show filled follow buttons
+// on threads/profiles they already follow.
+app.get('/api/follows/me', authenticate, async (req: AuthRequest, res, next) => {
+  try {
+    const follows = await prisma.follow.findMany({
+      where: { followerId: req.userId! },
+      select: { targetUserId: true, targetConversationId: true },
+    });
+    res.status(200).json({
+      users: follows.map(f => f.targetUserId).filter(Boolean),
+      threads: follows.map(f => f.targetConversationId).filter(x => x != null),
+    });
+  } catch (error) { next(error); }
+});
+
+app.get('/api/follows/thread/:id/count', async (req, res, next) => {
+  try {
+    const id = parseInt(req.params.id);
+    if (Number.isNaN(id)) return res.status(400).json({ error: 'Invalid thread id' });
+    const count = await prisma.follow.count({ where: { targetConversationId: id } });
+    res.status(200).json({ count });
+  } catch (error) { next(error); }
 });
 
 app.patch('/api/conversations/:id', optionalAuth, async (req: AuthRequest, res, next) => {
@@ -1358,6 +1469,43 @@ app.post('/api/conversations/:id/replies', authenticate, async (req: AuthRequest
           ),
           'REPLY_NOTIFICATION'
         ).catch(err => console.error('Mention email failed:', err));
+      }
+    }
+
+    // Fan-out to thread followers: notify everyone who chose to follow this
+    // thread (except the replier themselves, and skipping the OP + parent
+    // reply authors who already got their own dedicated notifications above
+    // so they aren't double-pinged).
+    if (conversation) {
+      try {
+        const threadFollowers = await prisma.follow.findMany({
+          where: {
+            targetConversationId: conversationId,
+            NOT: { followerId: req.userId! },
+          },
+          select: { followerId: true },
+          take: 500,
+        });
+        // notifiedIds was built above to hold OP + parent-reply author + self
+        // for the mention loop; reuse it to avoid double-notifying.
+        const toNotify = threadFollowers
+          .map(f => f.followerId)
+          .filter(fid => !notifiedIds.has(fid));
+        if (toNotify.length > 0) {
+          await prisma.notification.createMany({
+            data: toNotify.map(uid => ({
+              userId: uid,
+              type: 'REPLY' as any,
+              title: 'New reply in a thread you follow',
+              description: `${user.username}: ${text.slice(0, 100)}`,
+              time: 'Just now',
+              threadId: conversationId,
+            })),
+            skipDuplicates: true,
+          });
+        }
+      } catch (fanErr) {
+        console.error('Thread-follower fan-out failed:', fanErr);
       }
     }
 
@@ -2274,10 +2422,90 @@ function isBot(ua: string): boolean {
   return /googlebot|bingbot|slurp|duckduckbot|baiduspider|yandexbot|sogou|exabot|facebot|ia_archiver|linkedinbot|twitterbot|whatsapp|telegrambot|discordbot|rogerbot|semrushbot|ahrefsbot|mj12bot|dotbot/i.test(ua);
 }
 
+// ── SEO: sitemap for search crawlers ────────────────────────────────────────
+app.get('/sitemap.xml', async (req, res, next) => {
+  try {
+    const threads = await prisma.conversation.findMany({
+      where: { moderationStatus: 'APPROVED' },
+      orderBy: { createdAt: 'desc' },
+      select: { id: true, createdAt: true, category: true },
+    });
+    const urls = [
+      { loc: `${FRONTEND_URL}/`, priority: '1.0', changefreq: 'daily' },
+      { loc: `${FRONTEND_URL}/community`, priority: '0.9', changefreq: 'daily' },
+      ...['skincare', 'school', 'kids_growth', 'active_kids', 'parenting_hacks']
+        .map(c => ({ loc: `${FRONTEND_URL}/${c}`, priority: '0.7', changefreq: 'weekly' })),
+      ...threads.map(t => ({
+        loc: `${FRONTEND_URL}/thread/${t.id}`,
+        priority: '0.6',
+        changefreq: 'weekly',
+        lastmod: t.createdAt.toISOString(),
+      })),
+    ];
+    const body = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls.map(u => `  <url>
+    <loc>${esc(u.loc)}</loc>
+    ${'lastmod' in u ? `<lastmod>${u.lastmod}</lastmod>` : ''}
+    <changefreq>${u.changefreq}</changefreq>
+    <priority>${u.priority}</priority>
+  </url>`).join('\n')}
+</urlset>`;
+    res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    res.send(body);
+  } catch { next(); }
+});
+
+// ── SEO: RSS feed for distribution ──────────────────────────────────────────
+app.get('/rss.xml', async (req, res, next) => {
+  try {
+    const threads = await prisma.conversation.findMany({
+      where: { moderationStatus: 'APPROVED' },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+      select: { id: true, title: true, opText: true, opAuthor: true, createdAt: true, category: true },
+    });
+    const items = threads.map(t => `    <item>
+      <title>${esc(t.title || 'Discussion')}</title>
+      <link>${FRONTEND_URL}/thread/${t.id}</link>
+      <guid isPermaLink="true">${FRONTEND_URL}/thread/${t.id}</guid>
+      <pubDate>${t.createdAt.toUTCString()}</pubDate>
+      <author>${esc(t.opAuthor || 'tuco Parent')}</author>
+      <category>${esc(t.category || 'general')}</category>
+      <description>${esc((t.opText || '').replace(/<[^>]+>/g, '').slice(0, 300))}</description>
+    </item>`).join('\n');
+    const body = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>tuco Parents Circle</title>
+    <link>${FRONTEND_URL}/</link>
+    <description>Latest parenting discussions from the tuco Parents Circle community.</description>
+    <language>en-in</language>
+    <atom:link href="${FRONTEND_URL}/rss.xml" rel="self" type="application/rss+xml"/>
+${items}
+  </channel>
+</rss>`;
+    res.setHeader('Content-Type', 'application/rss+xml; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=1800');
+    res.send(body);
+  } catch { next(); }
+});
+
 // ── SEO: SSR-lite for crawlers on thread pages ──────────────────────────────
 app.get('/thread/:id', async (req, res, next) => {
   const ua = req.headers['user-agent'] || '';
-  if (!isBot(ua)) return next();
+  // Real users clicking a shared or Google-indexed /thread/<id> URL used to
+  // fall through to the SPA catch-all that redirects to /community — losing
+  // the thread id and dropping them on the homepage. Preserve the id by
+  // routing to the SPA's own hash-based deep-link handler.
+  if (!isBot(ua)) {
+    const idParam = req.params.id;
+    if (/^\d+$/.test(idParam)) {
+      return res.redirect(`/community#thread-${idParam}`);
+    }
+    return next();
+  }
 
   try {
     const id = parseInt(req.params.id);

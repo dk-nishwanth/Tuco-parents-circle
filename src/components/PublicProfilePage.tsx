@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, MessageSquare, ThumbsUp, Calendar, MapPin } from 'lucide-react';
-import { api } from '../utils/api';
+import { api, tokenStore } from '../utils/api';
 import { LoadingScreen } from './LoadingScreen';
+import { FollowButton } from './FollowButton';
 
 type ProfileData = Awaited<ReturnType<typeof api.getPublicProfile>>;
 
@@ -23,6 +24,12 @@ export function PublicProfilePage() {
   const [data, setData] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [me, setMe] = useState<{ id: string } | null>(null);
+
+  useEffect(() => {
+    if (!tokenStore.get()) { setMe(null); return; }
+    api.getMe().then(u => setMe({ id: u.id })).catch(() => setMe(null));
+  }, []);
 
   useEffect(() => {
     if (!username) return;
@@ -80,7 +87,27 @@ export function PublicProfilePage() {
               {getInitials(user.username)}
             </div>
             <div className="flex-1">
-              <h2 className="font-display font-black text-2xl text-[#4D4747]">{user.username}</h2>
+              <div className="flex flex-wrap items-center gap-3">
+                <h2 className="font-display font-black text-2xl text-[#4D4747]">{user.username}</h2>
+                {me && me.id !== user.id && (
+                  <FollowButton
+                    targetType="user"
+                    targetId={user.id}
+                    isLoggedIn={true}
+                    onRequireLogin={() => {}}
+                    size="md"
+                  />
+                )}
+                {!me && (
+                  <FollowButton
+                    targetType="user"
+                    targetId={user.id}
+                    isLoggedIn={false}
+                    onRequireLogin={() => navigate('/')}
+                    size="md"
+                  />
+                )}
+              </div>
               <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-neutral-500">
                 {user.city && user.city !== 'India' && (
                   <span className="flex items-center gap-1.5">

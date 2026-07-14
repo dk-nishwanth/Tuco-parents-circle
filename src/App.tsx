@@ -644,9 +644,30 @@ function AppContent() {
       ),
     [conversations]
   );
+  // Guest read limit: after this many distinct thread opens as a guest,
+  // clicking on another thread pops the signup modal instead of the thread.
+  // Counting distinct thread ids (not raw opens) so a guest can revisit the
+  // same thread without eating into their quota. Reset on login.
+  const GUEST_READ_LIMIT = 3;
+
   const handleThreadOpen = async (threadId: number) => {
     const updatedThread = conversations.find(c => c.id === threadId);
     const newViews = (updatedThread?.views || 0) + 1;
+
+    if (!currentUser) {
+      const seenRaw = localStorage.getItem('tuco_guest_read_ids') || '[]';
+      let seen: number[] = [];
+      try { seen = JSON.parse(seenRaw); } catch { seen = []; }
+      if (!seen.includes(threadId) && seen.length >= GUEST_READ_LIMIT) {
+        track('guest_read_limit_hit', { thread_id: threadId, limit: GUEST_READ_LIMIT });
+        openAuth('signup');
+        return;
+      }
+      if (!seen.includes(threadId)) {
+        seen = [...seen, threadId].slice(-GUEST_READ_LIMIT * 2);
+        try { localStorage.setItem('tuco_guest_read_ids', JSON.stringify(seen)); } catch { /* ignore quota */ }
+      }
+    }
 
     setConversations(prev => {
       return prev.map(c => (c.id === threadId ? { ...c, views: newViews } : c));
@@ -658,14 +679,14 @@ function AppContent() {
       thread_id: threadId,
       category: updatedThread?.category,
     });
-    
+
     // Save to backend
     try {
       await api.updateConversation(threadId, { views: newViews });
     } catch (error) {
       console.error('Failed to update view count:', error);
     }
-    
+
     // Push to browser history so back button closes modal
     window.history.pushState({ threadId }, '', `#thread-${threadId}`);
   };

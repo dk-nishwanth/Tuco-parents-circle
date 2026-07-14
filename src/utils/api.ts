@@ -237,6 +237,37 @@ export const api = {
     await handleResponse<any>(res);
   },
 
+  // ── Follow (user + thread) ─────────────────────────────────────────────────
+
+  async follow(targetType: 'user' | 'thread', targetId: string | number): Promise<void> {
+    const res = await fetch(`${API_BASE_URL}/follow`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ targetType, targetId }),
+    });
+    await handleResponse<any>(res);
+  },
+
+  async unfollow(targetType: 'user' | 'thread', targetId: string | number): Promise<void> {
+    const res = await fetch(`${API_BASE_URL}/follow`, {
+      method: 'DELETE',
+      headers: authHeaders(),
+      body: JSON.stringify({ targetType, targetId }),
+    });
+    await handleResponse<any>(res);
+  },
+
+  async getMyFollows(): Promise<{ users: string[]; threads: number[] }> {
+    const res = await fetch(`${API_BASE_URL}/follows/me`, { headers: authHeaders() });
+    return handleResponse<{ users: string[]; threads: number[] }>(res);
+  },
+
+  async getThreadFollowerCount(threadId: number): Promise<number> {
+    const res = await fetch(`${API_BASE_URL}/follows/thread/${threadId}/count`);
+    const j = await handleResponse<{ count: number }>(res);
+    return j.count;
+  },
+
   // ── User profile ────────────────────────────────────────────────────────────
 
   async updateMe(data: Partial<User>): Promise<User> {
