@@ -2417,6 +2417,44 @@ function esc(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
+// ── SEO: shared head fragment used by every bot-facing HTML response ────────
+// Google reads the schema.org Organization "logo" field to decide which
+// favicon to show next to the domain in search results. Without it Google
+// falls back to a generic globe (which is what the site showed before).
+// Also includes proper favicon links + og/twitter image so shares render
+// with the logo instead of a blank preview.
+function seoHead(opts: { title: string; description: string; canonical: string; ogImage?: string }): string {
+  const img = opts.ogImage || `${FRONTEND_URL}/favicon-512.png`;
+  return `  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" href="${FRONTEND_URL}/favicon.ico" sizes="any"/>
+  <link rel="icon" type="image/png" sizes="32x32" href="${FRONTEND_URL}/favicon-32.png"/>
+  <link rel="icon" type="image/png" sizes="192x192" href="${FRONTEND_URL}/favicon-192.png"/>
+  <link rel="icon" type="image/png" sizes="512x512" href="${FRONTEND_URL}/favicon-512.png"/>
+  <link rel="apple-touch-icon" sizes="180x180" href="${FRONTEND_URL}/apple-touch-icon.png"/>
+  <title>${opts.title}</title>
+  <meta name="description" content="${opts.description}"/>
+  <link rel="canonical" href="${opts.canonical}"/>
+  <meta property="og:type" content="website"/>
+  <meta property="og:site_name" content="tuco Parents Circle"/>
+  <meta property="og:title" content="${opts.title}"/>
+  <meta property="og:description" content="${opts.description}"/>
+  <meta property="og:url" content="${opts.canonical}"/>
+  <meta property="og:image" content="${img}"/>
+  <meta name="twitter:card" content="summary"/>
+  <meta name="twitter:image" content="${img}"/>
+  <meta name="twitter:title" content="${opts.title}"/>
+  <meta name="twitter:description" content="${opts.description}"/>
+  <script type="application/ld+json">${JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "tuco Parents Circle",
+    "alternateName": "tuco Kids",
+    "url": FRONTEND_URL,
+    "logo": `${FRONTEND_URL}/favicon-512.png`,
+    "sameAs": ["https://tucokids.com"],
+  })}</script>`;
+}
+
 // ── SEO: bot-detection helper ───────────────────────────────────────────────
 function isBot(ua: string): boolean {
   return /googlebot|bingbot|slurp|duckduckbot|baiduspider|yandexbot|sogou|exabot|facebot|ia_archiver|linkedinbot|twitterbot|whatsapp|telegrambot|discordbot|rogerbot|semrushbot|ahrefsbot|mj12bot|dotbot/i.test(ua);
@@ -2530,14 +2568,11 @@ app.get('/thread/:id', async (req, res, next) => {
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>${title} — tuco Parents Circle</title>
-  <meta name="description" content="${desc}"/>
-  <meta property="og:title" content="${title} — tuco Parents Circle"/>
-  <meta property="og:description" content="${desc}"/>
-  <meta property="og:url" content="${FRONTEND_URL}/thread/${id}"/>
-  <meta property="og:site_name" content="tuco Parents Circle"/>
-  <link rel="canonical" href="${FRONTEND_URL}/thread/${id}"/>
+${seoHead({
+  title: `${title} — tuco Parents Circle`,
+  description: desc,
+  canonical: `${FRONTEND_URL}/thread/${id}`,
+})}
 </head>
 <body>
   <header><a href="${FRONTEND_URL}">tuco Parents Circle</a></header>
@@ -2579,9 +2614,11 @@ app.get('/', async (req, res, next) => {
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <title>tuco Parents Circle — Parenting Community for Indian Parents</title>
-  <meta name="description" content="A safe, anonymous community for Indian parents to discuss skincare, school, kids health, parenting hacks and more."/>
-  <link rel="canonical" href="${FRONTEND_URL}/"/>
+${seoHead({
+  title: 'tuco Parents Circle — Parenting Community for Indian Parents',
+  description: 'A safe, anonymous community for Indian parents to discuss skincare, school, kids health, parenting hacks and more.',
+  canonical: `${FRONTEND_URL}/`,
+})}
 </head>
 <body>
   <h1>tuco Parents Circle</h1>

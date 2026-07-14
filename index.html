@@ -3,9 +3,43 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/webp" href="/tuco-logo.webp" />
-    <link rel="apple-touch-icon" href="/tuco-logo.webp" />
-    <title>Tuco Parents Circle</title>
+    <!-- Favicons: keep the classic /favicon.ico that Google's crawler probes
+         first, plus PNG variants for browsers/devices. Order matters — smaller
+         rel="icon" before apple-touch-icon so device pickers grab the right one. -->
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/favicon-512.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="canonical" href="https://community.tucokids.com/" />
+    <title>tuco Parents Circle — Parenting Community for Indian Parents</title>
+    <meta name="description" content="A safe, anonymous community for Indian parents to discuss skincare, school, kids health, parenting hacks and more." />
+    <!-- OG + Twitter cards. Include the logo as the fallback share image so
+         WhatsApp / Twitter / LinkedIn previews aren't blank. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="tuco Parents Circle" />
+    <meta property="og:title" content="tuco Parents Circle — Parenting Community for Indian Parents" />
+    <meta property="og:description" content="A safe, anonymous community for Indian parents to discuss skincare, school, kids health, parenting hacks and more." />
+    <meta property="og:url" content="https://community.tucokids.com/" />
+    <meta property="og:image" content="https://community.tucokids.com/favicon-512.png" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:image" content="https://community.tucokids.com/favicon-512.png" />
+    <meta name="twitter:title" content="tuco Parents Circle" />
+    <meta name="twitter:description" content="A safe, anonymous community for Indian parents." />
+    <!-- Organization schema — Google reads the logo field to decide which
+         favicon to show next to your site in search results. Without this it
+         falls back to a generic globe. -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "tuco Parents Circle",
+      "alternateName": "tuco Kids",
+      "url": "https://community.tucokids.com",
+      "logo": "https://community.tucokids.com/favicon-512.png",
+      "sameAs": ["https://tucokids.com"]
+    }
+    </script>
     <!-- Google Analytics 4 -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-X9P5L4CF0R"></script>
     <script>
