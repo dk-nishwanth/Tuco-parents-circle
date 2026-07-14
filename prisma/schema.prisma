@@ -68,6 +68,12 @@ model Conversation {
   replies          Reply[]
   votesRelation    Vote[]           @relation("VoteToConversation")
   followers        Follow[]         @relation("FollowedConversation")
+
+  // Hot-path indexes: moderation queue filters by status, "my posts"
+  // filters by author, and the age filter groups by childAge.
+  @@index([authorId])
+  @@index([moderationStatus])
+  @@index([childAge])
 }
 
 model Reply {
@@ -91,6 +97,12 @@ model Reply {
   parent           Reply?           @relation("ReplyToReply", fields: [parentId], references: [id], onDelete: Cascade)
   replies          Reply[]          @relation("ReplyToReply")
   votesRelation    Vote[]           @relation("VoteToReply")
+
+  // Hot-paths: every thread render fetches replies by conversationId,
+  // "my replies" filters by authorId, mod queue filters by status.
+  @@index([conversationId])
+  @@index([authorId])
+  @@index([moderationStatus])
 }
 
 model Vote {
@@ -109,6 +121,9 @@ model Vote {
   // constraint only binds reply-votes — exactly what we want.
   @@unique([userId, conversationId])
   @@unique([userId, replyId])
+  // Hot-path: aggregating vote counts by target for feed rendering.
+  @@index([conversationId])
+  @@index([replyId])
 }
 
 model Notification {
@@ -121,6 +136,12 @@ model Notification {
   read        Boolean          @default(false)
   threadId    Int?
   user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Hot-path index: every logged-in user hits /api/notifications on load,
+  // filtered by userId. Also indexed on threadId so post-rejection cleanup
+  // can wipe notifications for a specific thread cheaply.
+  @@index([userId])
+  @@index([threadId])
 }
 
 model ChatSession {

@@ -297,8 +297,33 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-app.use(express.json({ limit: '10mb' }));
+// Catch malformed URL escapes (bot path-traversal scans like /..%c0%af...)
+// before Express's own decoder throws them into the 500 error handler and
+// stack-traces the whole thing. Return a clean 400 with no noise so the
+// error log only holds real bugs.
+app.use((req, res, next) => {
+  try {
+    decodeURIComponent(req.path);
+    next();
+  } catch {
+    res.status(400).json({ error: 'Malformed URL' });
+  }
+});
+
+app.use(express.json({
+  limit: '10mb',
+  // Same story for JSON body parsing — bots and stray clients POST junk that
+  // isn't valid JSON. Handle inside a middleware wrap so the SyntaxError from
+  // express.json() becomes a clean 400, not a stack trace.
+  verify: () => { /* no-op, present to let Express run its default parser */ },
+}));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
+app.use((err: any, _req: express.Request, res: express.Response, next: express.NextFunction) => {
+  if (err && err.type === 'entity.parse.failed') {
+    return res.status(400).json({ error: 'Invalid JSON body' });
+  }
+  next(err);
+});
 
 // ------------------------------
 // AUTH MIDDLEWARE
@@ -1222,6 +1247,19 @@ app.patch('/api/conversations/:id', optionalAuth, async (req: AuthRequest, res, 
           targetId: id,
           action,
           reason: moderationReason || null,
+        },
+      });
+    }
+
+    // If a thread gets rejected, purge any follower-fanout notifications
+    // that were already generated for it. Otherwise followers keep seeing
+    // "so-and-so posted" cards that link to a thread the server hides.
+    if (moderationStatus?.toLowerCase() === 'rejected') {
+      await prisma.notification.deleteMany({
+        where: {
+          threadId: id,
+          type: 'SYSTEM',
+          NOT: { userId: conversation.authorId }, // keep the author's own moderation notif
         },
       });
     }
