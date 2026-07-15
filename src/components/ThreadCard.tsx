@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { CATEGORIES, CATEGORY_COLORS } from '../data/categories';
 import { Conversation, User } from '../types';
-import { getAvatarColor, getInitials, getAuthorMeta, countAllReplies, formatTimeAgo } from '../utils/helpers';
+import { getAvatarColor, getInitials, getAuthorMeta, countAllReplies } from '../utils/helpers';
 import { AuthorBadges } from './AuthorBadges';
 import { TucoVideoCard, findTucoVideoReply, parseYouTubeId } from './TucoVideo';
 import {
@@ -111,7 +111,7 @@ export function ThreadCard({
                 <span className="text-neutral-500 text-[12px]">{thread.op.city}</span>
                 <AuthorBadges badges={opBadges} role={opRole} />
               </div>
-              <div className="text-[11px] text-neutral-400">{formatTimeAgo(thread.op.time)}</div>
+              <div className="text-[11px] text-neutral-400">{thread.op.time}</div>
             </div>
             <button
               type="button"
