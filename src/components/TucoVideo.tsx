@@ -53,7 +53,9 @@ interface TucoVideoCardProps {
 
 export function TucoVideoCard({ videoId, caption, variant = 'feed' }: TucoVideoCardProps) {
   const [playing, setPlaying] = useState(false);
-  const poster = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+  // oar2.jpg / oardefault.jpg are YouTube Shorts' native portrait posters
+  // (1080x1920 / 720x1280). Fall back to hqdefault.jpg for regular videos.
+  const poster = `https://i.ytimg.com/vi/${videoId}/oar2.jpg`;
   const embed = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&playsinline=1`;
   const aspect = variant === 'feed' ? 'aspect-[9/16]' : 'aspect-video';
 
@@ -83,7 +85,8 @@ export function TucoVideoCard({ videoId, caption, variant = 'feed' }: TucoVideoC
             className="absolute inset-0 w-full h-full object-cover opacity-90"
             onError={(e) => {
               const img = e.currentTarget;
-              img.src = `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`;
+              if (img.src.endsWith('/oar2.jpg')) img.src = `https://i.ytimg.com/vi/${videoId}/oardefault.jpg`;
+              else if (img.src.endsWith('/oardefault.jpg')) img.src = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
             }}
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/0 to-black/60" />
