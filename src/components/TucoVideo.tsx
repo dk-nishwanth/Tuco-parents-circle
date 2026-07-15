@@ -58,9 +58,13 @@ export function TucoVideoCard({ videoId, caption, variant = 'feed' }: TucoVideoC
   const poster = `https://i.ytimg.com/vi/${videoId}/oar2.jpg`;
   const embed = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&playsinline=1`;
   const aspect = variant === 'thread' ? 'aspect-video' : 'aspect-[9/16]';
+  // feed-fullbleed: on mobile keep the near-full-width look but with a small
+  // side gutter (proportionally reduces the 9:16 height); on desktop cap the
+  // video around Instagram-Shorts sizing (~360px) so the card doesn't stretch
+  // into a 1200px-tall block.
   const wrap =
     variant === 'feed-fullbleed'
-      ? 'w-full rounded-none'
+      ? 'w-[calc(100%-1rem)] max-w-[92vw] mx-auto rounded-2xl md:max-w-[360px]'
       : 'w-full max-w-[420px] mx-auto rounded-2xl mt-3 mb-2';
 
   return (
