@@ -66,8 +66,9 @@ export function ThreadCard({
   if (tucoVideoId) {
     return (
       <article
+        id={`post-${thread.id}`}
         onClick={handleCardClick}
-        className="tc tc-video w-full bg-white border border-neutral-200 rounded-[2rem] hover:shadow-md transition-all cursor-pointer text-left relative overflow-hidden group"
+        className="tc tc-video w-full bg-white border border-neutral-200 rounded-[2rem] hover:shadow-md transition-all cursor-pointer text-left relative overflow-hidden group scroll-mt-24"
       >
         {/* Header: badges + author + more */}
         <div className="px-5 md:px-6 pt-5 pb-3">
@@ -165,7 +166,10 @@ export function ThreadCard({
             <button
               onClick={e => {
                 e.stopPropagation();
-                const url = `${window.location.origin}/${thread.category}#thread-${thread.id}`;
+                // Use #post-<id> (not #thread-<id>) so the shared link scrolls
+                // to the card in the feed instead of auto-opening the modal
+                // (App.tsx keys the modal off #thread-<id>).
+                const url = `${window.location.origin}/${thread.category}#post-${thread.id}`;
                 if (navigator.share) {
                   navigator.share({ title: thread.title, url }).catch(() => {});
                 } else {
