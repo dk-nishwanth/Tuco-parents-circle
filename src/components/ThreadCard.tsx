@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { CATEGORIES, CATEGORY_COLORS } from '../data/categories';
 import { Conversation, User } from '../types';
-import { getAvatarColor, getInitials, getAuthorMeta, countAllReplies } from '../utils/helpers';
+import { getAvatarColor, getInitials, getAuthorMeta, countAllReplies, formatTimeAgo } from '../utils/helpers';
 import { AuthorBadges } from './AuthorBadges';
 import { TucoVideoCard, findTucoVideoReply, parseYouTubeId } from './TucoVideo';
 import {
@@ -10,8 +10,11 @@ import {
   ThumbsDown,
   ThumbsUp,
   Bookmark,
-  BookmarkCheck,
-  Image as ImageIcon,
+  Heart,
+  Send,
+  Pin,
+  Play,
+  MoreHorizontal,
 } from 'lucide-react';
 import React from 'react';
 
@@ -54,11 +57,172 @@ export function ThreadCard({
 
   const handleCardClick = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
-    if (target.closest('.vote-btn') || target.closest('.save-btn')) {
+    if (target.closest('.vote-btn') || target.closest('.save-btn') || target.closest('.tuco-video-card')) {
       return;
     }
     onOpen(thread.id);
   };
+
+  if (tucoVideoId) {
+    return (
+      <article
+        onClick={handleCardClick}
+        className="tc tc-video w-full bg-white border border-neutral-200 rounded-[2rem] hover:shadow-md transition-all cursor-pointer text-left relative overflow-hidden group"
+      >
+        {/* Header: badges + author + more */}
+        <div className="px-5 md:px-6 pt-5 pb-3">
+          <div className="flex flex-wrap items-center gap-2 mb-3">
+            <div
+              className="flex items-center gap-2 px-3 py-1 rounded-full shadow-sm"
+              style={{ backgroundColor: catColor.bg, color: catColor.text, borderColor: catColor.border }}
+            >
+              <span className="text-[12px]">{category.icon}</span>
+              <span className="text-[11px] font-sans font-medium tracking-tight">{category.label}</span>
+            </div>
+            {thread.isPinned ? (
+              <span className="flex items-center gap-1 bg-[#E7F9FF] text-[#0C447C] text-[10px] font-medium px-2.5 py-1 rounded-full">
+                <Pin className="w-3 h-3" strokeWidth={2.5} />
+                Pinned
+              </span>
+            ) : null}
+            <span className="flex items-center gap-1 bg-[#FEF1CC] text-[#7A5A00] text-[10px] font-medium px-2.5 py-1 rounded-full">
+              <Play className="w-3 h-3 fill-current" strokeWidth={0} />
+              Video answer
+            </span>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div
+              className="w-9 h-9 rounded-full flex items-center justify-center font-display font-bold text-[12px] shadow-sm"
+              style={{ backgroundColor: getAvatarColor(thread.op.author), color: '#4D4747' }}
+            >
+              {getInitials(thread.op.author)}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5 text-[13px]">
+                <Link
+                  to={`/u/${encodeURIComponent(thread.op.author)}`}
+                  onClick={e => e.stopPropagation()}
+                  className="font-sans font-medium text-[#4D4747] hover:text-[#35B5EC] hover:underline"
+                >
+                  {thread.op.author}
+                </Link>
+                <span className="text-neutral-400">·</span>
+                <span className="text-neutral-500 text-[12px]">{thread.op.city}</span>
+                <AuthorBadges badges={opBadges} role={opRole} />
+              </div>
+              <div className="text-[11px] text-neutral-400">{formatTimeAgo(thread.op.time)}</div>
+            </div>
+            <button
+              type="button"
+              aria-label="More"
+              onClick={e => e.stopPropagation()}
+              className="text-neutral-400 hover:text-neutral-600 p-1"
+            >
+              <MoreHorizontal className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Title + OP snippet */}
+        <div className="px-5 md:px-6 pb-3">
+          <h3 className="ttitle font-display font-bold text-[16px] text-[#4D4747] leading-snug mb-1 group-hover:text-tuco-cyan transition-colors">
+            {thread.title}
+          </h3>
+          <p className="tpreview font-sans text-[13px] text-neutral-500 font-medium line-clamp-2 leading-relaxed">
+            {thread.op.text}
+          </p>
+        </div>
+
+        {/* Full-bleed video */}
+        <TucoVideoCard
+          videoId={tucoVideoId}
+          variant="feed-fullbleed"
+          caption="Video answer from tuco team"
+        />
+
+        {/* Instagram-style action row */}
+        <div className="px-5 md:px-6 pt-3">
+          <div className="flex items-center gap-4 mb-2">
+            <button
+              onClick={() => onVote(thread.id, 'up')}
+              aria-label="Upvote"
+              aria-pressed={votedState === 'up'}
+              className="vote-btn hover:scale-110 transition-transform"
+            >
+              <Heart
+                className={`w-6 h-6 ${votedState === 'up' ? 'text-red-500 fill-red-500' : 'text-[#4D4747]'}`}
+                strokeWidth={1.75}
+              />
+            </button>
+            <button
+              onClick={() => onOpen(thread.id)}
+              aria-label="Comments"
+              className="hover:scale-110 transition-transform"
+            >
+              <MessageSquare className="w-6 h-6 text-[#4D4747]" strokeWidth={1.75} />
+            </button>
+            <button
+              onClick={e => {
+                e.stopPropagation();
+                const url = `${window.location.origin}/${thread.category}#thread-${thread.id}`;
+                if (navigator.share) {
+                  navigator.share({ title: thread.title, url }).catch(() => {});
+                } else {
+                  navigator.clipboard?.writeText(url).catch(() => {});
+                }
+              }}
+              aria-label="Share"
+              className="hover:scale-110 transition-transform"
+            >
+              <Send className="w-6 h-6 text-[#4D4747]" strokeWidth={1.75} />
+            </button>
+            <div className="flex-1" />
+            <button
+              className="save-btn hover:scale-110 transition-transform"
+              aria-label={isSaved ? 'Remove from saved' : 'Save post'}
+              aria-pressed={isSaved}
+              onClick={e => {
+                e.stopPropagation();
+                onSavePost?.(thread.id);
+              }}
+            >
+              <Bookmark
+                className={`w-6 h-6 ${isSaved ? 'text-tuco-orange fill-tuco-orange' : 'text-[#4D4747]'}`}
+                strokeWidth={1.75}
+              />
+            </button>
+          </div>
+
+          <div className="text-[12px] font-sans text-[#4D4747] mb-2">
+            <span className="font-bold">{thread.votes} helpful</span>
+            <span className="text-neutral-400"> · </span>
+            <span className="font-bold">{countAllReplies(thread.replies)} replies</span>
+            <span className="text-neutral-400"> · </span>
+            <span className="text-neutral-500">{thread.views || 0} views</span>
+          </div>
+
+          <div className="pb-4">
+            <button
+              onClick={() => onOpen(thread.id)}
+              className="text-[12px] font-sans font-medium text-[#35B5EC] hover:underline"
+            >
+              Open thread to read all replies →
+            </button>
+            {!isLoggedIn && (
+              <button
+                type="button"
+                onClick={e => { e.stopPropagation(); onJoinClick?.(); }}
+                className="ml-3 bg-[#E7F9FF] text-[10px] text-[#4D4747] font-sans font-medium uppercase px-2.5 py-0.5 rounded-md border border-[#E7F9FF]/10 shadow-sm cursor-pointer hover:bg-[#35B5EC] hover:text-white transition-colors"
+              >
+                Join now
+              </button>
+            )}
+          </div>
+        </div>
+      </article>
+    );
+  }
 
   return (
     <article
@@ -69,7 +233,7 @@ export function ThreadCard({
       <div className="absolute left-0 top-0 bottom-0 w-[6px] bg-[#FFE259] pointer-events-none"></div>
 
       {/* Vote Box (Left) */}
-      <div 
+      <div
         onClick={(e) => e.stopPropagation()}
         className="flex flex-col items-center justify-center bg-[#F8F9FA] rounded-2xl px-2.5 py-4 h-fit min-w-[48px] border border-neutral-200"
       >
@@ -121,10 +285,6 @@ export function ThreadCard({
           <p className="tpreview font-sans text-[13px] text-neutral-500 font-medium line-clamp-2 mb-5 leading-relaxed">
             {thread.op.text}
           </p>
-
-          {tucoVideoId ? (
-            <TucoVideoCard videoId={tucoVideoId} variant="feed" />
-          ) : null}
 
           {/* User Info Row */}
           <div className="flex items-center gap-2.5 mb-5">

@@ -48,7 +48,7 @@ export function findTucoVideoReply(thread: Pick<Conversation, 'replies'>): Reply
 interface TucoVideoCardProps {
   videoId: string;
   caption?: string;
-  variant?: 'feed' | 'thread';
+  variant?: 'feed' | 'thread' | 'feed-fullbleed';
 }
 
 export function TucoVideoCard({ videoId, caption, variant = 'feed' }: TucoVideoCardProps) {
@@ -57,11 +57,15 @@ export function TucoVideoCard({ videoId, caption, variant = 'feed' }: TucoVideoC
   // (1080x1920 / 720x1280). Fall back to hqdefault.jpg for regular videos.
   const poster = `https://i.ytimg.com/vi/${videoId}/oar2.jpg`;
   const embed = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&playsinline=1`;
-  const aspect = variant === 'feed' ? 'aspect-[9/16]' : 'aspect-video';
+  const aspect = variant === 'thread' ? 'aspect-video' : 'aspect-[9/16]';
+  const wrap =
+    variant === 'feed-fullbleed'
+      ? 'w-full rounded-none'
+      : 'w-full max-w-[420px] mx-auto rounded-2xl mt-3 mb-2';
 
   return (
     <div
-      className={`tuco-video-card relative w-full ${aspect} bg-black rounded-2xl overflow-hidden mt-3 mb-2 max-w-[420px] mx-auto`}
+      className={`tuco-video-card relative ${aspect} bg-black overflow-hidden ${wrap}`}
       onClick={(e) => {
         e.stopPropagation();
         if (!playing) setPlaying(true);
