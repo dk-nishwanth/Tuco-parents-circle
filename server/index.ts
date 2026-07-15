@@ -34,6 +34,14 @@ const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '';
 const FRONTEND_URL = process.env.FRONTEND_URL || 'https://community.tucokids.com';
 const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, `${FRONTEND_URL}/api/auth/google/callback`);
 
+// Fail-loud config audit at boot so a missing secret is obvious in the deploy
+// logs instead of surfacing later as a silent, hard-to-diagnose user problem.
+if (NODE_ENV === 'production') {
+  if (!resend) console.error('🚨 CONFIG: RESEND_API_KEY missing — welcome & password-reset emails will NOT be delivered.');
+  if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) console.error('🚨 CONFIG: GOOGLE_CLIENT_ID/SECRET missing — "Continue with Google" will fail.');
+  if (!process.env.ANTHROPIC_API_KEY) console.warn('⚠️ CONFIG: ANTHROPIC_API_KEY missing — chatbot will use fallback responses.');
+}
+
 // ------------------------------
 // STARTUP SEED
 // ------------------------------
@@ -263,7 +271,12 @@ app.use(pino({
 
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  limit: NODE_ENV === 'production' ? 500 : 1000,
+  // Keyed per client IP. Indian mobile users (Jio/Airtel) sit behind carrier-grade
+  // NAT sharing ONE public IP, and each page load fires ~5 API calls plus 30s
+  // notification polling — so a low cap throttles many real users at once. Keep a
+  // high ceiling for abuse protection but well clear of normal shared-NAT traffic.
+  // (Auth routes stay tightly capped via authLimiter below.)
+  limit: NODE_ENV === 'production' ? 3000 : 5000,
   standardHeaders: true,
   legacyHeaders: false,
   validate: { xForwardedForHeader: false },
@@ -310,14 +323,12 @@ app.use((req, res, next) => {
   }
 });
 
-app.use(express.json({
-  limit: '10mb',
-  // Same story for JSON body parsing — bots and stray clients POST junk that
-  // isn't valid JSON. Handle inside a middleware wrap so the SyntaxError from
-  // express.json() becomes a clean 400, not a stack trace.
-  verify: () => { /* no-op, present to let Express run its default parser */ },
-}));
+app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
+// Bots and stray clients POST junk that isn't valid JSON. Turn the
+// SyntaxError express.json() raises (err.type === 'entity.parse.failed')
+// into a clean 400 here instead of letting it stack-trace through the
+// 500 handler.
 app.use((err: any, _req: express.Request, res: express.Response, next: express.NextFunction) => {
   if (err && err.type === 'entity.parse.failed') {
     return res.status(400).json({ error: 'Invalid JSON body' });
@@ -515,7 +526,14 @@ async function sendEmail(
   type: EmailLogType = 'TRANSACTIONAL',
 ): Promise<boolean> {
   if (!resend) {
-    console.log(`[EMAIL SIMULATED] To: ${to} | Subject: ${subject}`);
+    // In production this is a real outage: password-reset & welcome mails are
+    // silently dropped while callers still see "sent". Log loudly so it shows
+    // up in prod logs instead of hiding behind a benign-looking info line.
+    if (NODE_ENV === 'production') {
+      console.error(`🚨 EMAIL NOT SENT (RESEND_API_KEY missing) — "${subject}" to ${to}. Password reset is non-functional until this is set.`);
+    } else {
+      console.log(`[EMAIL SIMULATED] To: ${to} | Subject: ${subject}`);
+    }
     await logEmail(type, to, subject, html);
     return true;
   }
@@ -593,7 +611,20 @@ app.get('/health', (req, res) => {
 });
 
 app.get('/api/health', (req, res) => {
-  res.status(200).json({ status: 'ok', time: new Date().toISOString(), env: NODE_ENV });
+  // Surface config presence (booleans only — never the secret values) so a
+  // missing email/OAuth key is visible at a glance instead of failing silently.
+  res.status(200).json({
+    status: 'ok',
+    time: new Date().toISOString(),
+    env: NODE_ENV,
+    config: {
+      database: !!process.env.DATABASE_URL,
+      jwt: !!JWT_SECRET,
+      email: !!resend,
+      googleOAuth: !!(GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET),
+      chatbot: !!process.env.ANTHROPIC_API_KEY,
+    },
+  });
 });
 
 // ------------------------------
@@ -821,7 +852,9 @@ app.post('/api/auth/oauth-token', authLimiter, async (req, res, next) => {
 app.get('/api/auth/google', (req, res) => {
   const url = googleClient.generateAuthUrl({
     access_type: 'offline',
-    scope: ['email', 'profile'],
+    // 'openid' guarantees Google returns an id_token (which verifyIdToken needs);
+    // without it we'd occasionally get a callback with no id_token and crash.
+    scope: ['openid', 'email', 'profile'],
     prompt: 'select_account',
   });
   res.redirect(url);
@@ -869,6 +902,15 @@ app.get('/api/auth/google/callback', async (req, res, next) => {
           role: 'MEMBER' as UserRole,
         },
       });
+      // Welcome new Google sign-ups too — previously only email/password
+      // signups got this, so most members (who join via Google) got nothing.
+      // Fire-and-forget: never let a mail hiccup block the login.
+      sendEmail(
+        user.email,
+        'Welcome to tuco Parents Circle!',
+        `<h2>Welcome, ${user.username}!</h2><p>You've joined the tuco Parents Circle community. Start sharing your parenting experiences today!</p><p><a href="${FRONTEND_URL}">Visit the community</a></p>`,
+        'WELCOME'
+      ).catch(err => console.warn('⚠️ Google welcome email failed:', err));
     }
 
     const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET as string, { expiresIn: '30d' });
@@ -879,7 +921,11 @@ app.get('/api/auth/google/callback', async (req, res, next) => {
     });
     res.redirect(`${FRONTEND_URL}?oauth_code=${oauthCode}`);
   } catch (error) {
-    next(error);
+    // A failed token exchange (replayed code, network blip, missing id_token)
+    // must land the user back in the app with a message — NOT on a raw JSON 500
+    // page. The SPA reads ?auth_error and shows a friendly notice.
+    console.error('❌ Google OAuth callback failed:', error);
+    return res.redirect(`${FRONTEND_URL}?auth_error=google_failed`);
   }
 });
 
@@ -1251,15 +1297,22 @@ app.patch('/api/conversations/:id', optionalAuth, async (req: AuthRequest, res, 
       });
     }
 
-    // If a thread gets rejected, purge any follower-fanout notifications
-    // that were already generated for it. Otherwise followers keep seeing
-    // "so-and-so posted" cards that link to a thread the server hides.
+    // If a thread gets rejected, purge the follower-fanout "posted a new
+    // thread" notifications generated for it. Otherwise followers keep seeing
+    // cards that link to a thread the server now hides.
+    //
+    // Scope precisely: match the fanout by its title suffix rather than every
+    // SYSTEM notification for this thread. The broad filter also matched
+    // "<user> mentioned you" notifications (same type + threadId), which are
+    // legitimate and must survive a rejection. The author's own moderation
+    // notification is likewise untouched (its title is "Your post was …").
     if (moderationStatus?.toLowerCase() === 'rejected') {
       await prisma.notification.deleteMany({
         where: {
           threadId: id,
           type: 'SYSTEM',
-          NOT: { userId: conversation.authorId }, // keep the author's own moderation notif
+          title: { endsWith: 'posted a new thread' },
+          NOT: { userId: conversation.authorId }, // extra guard: never touch the author's notifs
         },
       });
     }

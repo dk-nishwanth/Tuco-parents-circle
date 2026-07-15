@@ -74,6 +74,14 @@ export function MainContent({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Reset to the first page whenever the visible set changes (switching
+  // category, running a search, or changing sort). Without this, being on
+  // page 3 and opening a category with fewer pages leaves paginatedThreads
+  // empty and wrongly shows the "No discussions found" empty state.
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeCategory, searchTerm, sortType]);
+
   // Reset activeTab to 'feed' on desktop view
   useEffect(() => {
     function handleResize() {
@@ -96,6 +104,23 @@ export function MainContent({
     }
     return sortThreads(filtered, sortType, currentUser?.childAge);
   }, [conversations, searchTerm, activeCategory, sortType, savedPosts, currentUser?.childAge]);
+
+  // Real "trending" ordering for the carousel (previously just the first 5
+  // threads unsorted). Mirrors the score used in RightSidebar so both agree:
+  // votes + replies + views with a 7-day recency boost. Falls back to all
+  // conversations if none are marked approved, so the carousel never vanishes.
+  const trendingThreads = useMemo(() => {
+    const score = (c: Conversation) => {
+      const ageHours = c.createdAt
+        ? (Date.now() - new Date(c.createdAt).getTime()) / (1000 * 60 * 60)
+        : 999;
+      const recencyBoost = Math.max(0, 1 - ageHours / 168);
+      return (c.votes || 0) * 2 + (c.replies?.length || 0) * 3 + (c.views || 0) * 0.1 + recencyBoost * 20;
+    };
+    const approved = conversations.filter(c => c.moderationStatus === 'approved');
+    const pool = approved.length > 0 ? approved : conversations;
+    return [...pool].sort((a, b) => score(b) - score(a)).slice(0, 5);
+  }, [conversations]);
 
   const totalPages = Math.ceil(processedThreads.length / THREADS_PER_PAGE);
   const startIndex = (currentPage - 1) * THREADS_PER_PAGE;
@@ -347,7 +372,7 @@ export function MainContent({
             </div>
             <div className="overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide">
               <div className="flex gap-4 min-w-max">
-                {conversations.slice(0, 5).map(thread => (
+                {trendingThreads.map(thread => (
                   <div 
                     key={thread.id}
                     onClick={() => onThreadOpen(thread.id)}
@@ -419,6 +444,7 @@ export function MainContent({
           <button
             onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
             disabled={currentPage === 1}
+            aria-label="Previous page"
             className="pagination-btn px-2 md:px-3 py-1.5 md:py-2 rounded-lg border border-neutral-200 hover:border-tuco-cyan hover:bg-tuco-cyan/5 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-xs md:text-sm font-medium text-neutral-600"
           >
             ←
@@ -427,6 +453,8 @@ export function MainContent({
             <button
               key={page}
               onClick={() => setCurrentPage(page)}
+              aria-label={`Page ${page}`}
+              aria-current={currentPage === page ? 'page' : undefined}
               className={`pagination-btn w-8 md:w-10 h-8 md:h-10 rounded-lg border transition-all text-xs md:text-sm font-medium ${
                 currentPage === page
                   ? 'bg-tuco-cyan border-tuco-cyan text-white shadow-sm'
@@ -439,6 +467,7 @@ export function MainContent({
           <button
             onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
             disabled={currentPage === totalPages}
+            aria-label="Next page"
             className="pagination-btn px-2 md:px-3 py-1.5 md:py-2 rounded-lg border border-neutral-200 hover:border-tuco-cyan hover:bg-tuco-cyan/5 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-xs md:text-sm font-medium text-neutral-600"
           >
             →

@@ -70,7 +70,7 @@ export function PublicProfilePage() {
     <div className="min-h-screen bg-[#FAFAFA]">
       <header className="bg-white border-b border-neutral-200 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center gap-3">
-          <button onClick={() => navigate(-1)} className="p-2 hover:bg-neutral-100 rounded-lg">
+          <button onClick={() => navigate(-1)} aria-label="Go back" className="p-2 hover:bg-neutral-100 rounded-lg">
             <ArrowLeft className="w-5 h-5 text-[#4D4747]" />
           </button>
           <h1 className="font-display font-black text-base text-[#4D4747]">{user.username}'s profile</h1>

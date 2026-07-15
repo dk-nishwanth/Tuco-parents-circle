@@ -6,6 +6,7 @@ import { Heart, MessageSquare, X, Eye, Bookmark, ChevronDown, Search, Bell, Arro
 import { track } from '../utils/analytics';
 import tucoLogo from '../assets/tuco-logo.webp';
 import { FollowButton } from './FollowButton';
+import { TucoVideoCard, parseYouTubeId, stripYouTubeUrl } from './TucoVideo';
 
 interface ModalProps {
   thread: Conversation | null;
@@ -172,11 +173,20 @@ const ReplyComponent = ({
             </button>
           </div>
         </form>
-      ) : (
-        <p className="text-[14.5px] text-[#4D4747] leading-relaxed font-normal mb-6">
-          {reply.text}
-        </p>
-      )}
+      ) : (() => {
+        const videoId = reply.authorRole === 'tuco_team' ? parseYouTubeId(reply.text) : null;
+        const bodyText = videoId ? stripYouTubeUrl(reply.text) : reply.text;
+        return (
+          <div className="mb-6">
+            {bodyText ? (
+              <p className="text-[14.5px] text-[#4D4747] leading-relaxed font-normal">
+                {bodyText}
+              </p>
+            ) : null}
+            {videoId ? <TucoVideoCard videoId={videoId} variant="thread" /> : null}
+          </div>
+        );
+      })()}
 
       <div className="flex items-center justify-end gap-4 mb-4">
         {!isEditing && (
@@ -216,7 +226,11 @@ const ReplyComponent = ({
             )}
             {(isOwnReply || isMod) && onDeleteReply && (
               <button
-                onClick={() => onDeleteReply(threadId, reply.id)}
+                onClick={() => {
+                  if (window.confirm('Delete this reply? This cannot be undone.')) {
+                    onDeleteReply(threadId, reply.id);
+                  }
+                }}
                 className="flex items-center gap-2 hover:scale-110 transition-transform text-red-500"
               >
                 <span className="text-[13px] font-medium">Delete</span>
@@ -431,6 +445,14 @@ export function Modal({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Close the thread view on Escape, matching the X button / back gesture.
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [isOpen, onClose]);
+
   if (!isOpen || !thread) return null;
   
   const category = CATEGORIES[thread.category] || { icon: '💬', label: 'General' };
@@ -460,6 +482,9 @@ export function Modal({
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={thread.title}
       className="fixed inset-0 bg-[#F9FAFB] z-[60] overflow-y-auto flex flex-col font-sans"
     >
       {/* App Header */}
@@ -597,6 +622,7 @@ export function Modal({
             <div className="relative" ref={notificationsRef}>
               <button
                 onClick={() => setShowNotificationsDropdown(!showNotificationsDropdown)}
+                aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : 'Notifications'}
                 className="p-1 relative hover:bg-neutral-50 rounded-full transition-colors"
               >
                 <Bell className="w-5 h-5 text-[#4D4747]" strokeWidth={2} />
@@ -752,9 +778,10 @@ export function Modal({
             ) : (
               <button
                 onClick={onLoginClick}
-                className="w-8 h-8 md:w-9 md:h-9 bg-white border border-[#35B5EC] rounded-lg flex items-center justify-center text-xs md:text-[13px] font-display font-bold text-[#35B5EC] shadow-sm hover:bg-[#35B5EC]/5 transition-colors"
+                aria-label="Sign in"
+                className="w-8 h-8 md:w-9 md:h-9 bg-white border border-[#35B5EC] rounded-lg flex items-center justify-center text-[#35B5EC] shadow-sm hover:bg-[#35B5EC]/5 transition-colors"
               >
-                LA
+                <User className="w-4 h-4 md:w-[18px] md:h-[18px]" strokeWidth={2.25} />
               </button>
             )}
           </div>
@@ -863,9 +890,11 @@ export function Modal({
             {shareCopied && (
               <span className="text-xs text-[#35B5EC] font-medium">Link copied!</span>
             )}
-            <Bookmark
-              className={`w-5 h-5 cursor-pointer transition-colors ${savedPosts.includes(thread.id) ? 'text-[#EB3200] fill-current' : 'text-[#4D4747] hover:text-neutral-500'}`}
-              strokeWidth={1.5}
+            <button
+              type="button"
+              aria-label={savedPosts.includes(thread.id) ? 'Remove from saved' : 'Save post'}
+              aria-pressed={savedPosts.includes(thread.id)}
+              className="text-[#4D4747] hover:text-neutral-500 transition-colors"
               onClick={() => {
                 if (!currentUser) {
                   onLoginClick?.();
@@ -873,7 +902,12 @@ export function Modal({
                   onSavePostClick?.(thread.id);
                 }
               }}
-            />
+            >
+              <Bookmark
+                className={`w-5 h-5 transition-colors ${savedPosts.includes(thread.id) ? 'text-[#EB3200] fill-current' : ''}`}
+                strokeWidth={1.5}
+              />
+            </button>
             <div className="flex items-center gap-1.5 text-[#4D4747]">
               <Eye className="w-5 h-5 text-[#4D4747]" strokeWidth={1.5} />
               <span className="text-[13px] font-medium">{thread.views || 0} Views</span>
@@ -893,10 +927,13 @@ export function Modal({
             <div className="flex-1 relative">
               <textarea
                 value={replyText}
-                onChange={(e) => { setReplyText(e.target.value); e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px'; }}
+                onChange={(e) => { setReplyText(e.target.value); if (errorMessage) setErrorMessage(''); e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px'; }}
                 placeholder="Join the conversation..."
                 className="w-full text-[16px] text-neutral-600 placeholder-neutral-300 outline-none resize-none overflow-hidden min-h-[45px] font-normal pt-1.5"
               />
+              {errorMessage && (
+                <p className="text-[13px] text-red-500 font-medium mt-1" role="alert">{errorMessage}</p>
+              )}
               <div className="flex justify-end mt-4">
                 <button
                   type="submit"

@@ -1,4 +1,4 @@
-import React, { useState, ChangeEvent, FormEvent } from 'react';
+import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react';
 import { CATEGORIES } from '../data/categories';
 import { Send, X, Image as ImageIcon } from 'lucide-react';
 
@@ -20,6 +20,14 @@ export function NewPostModal({ isOpen, onClose, onSubmit, istucoTeam }: NewPostM
   const [text, setText] = useState('');
   const [image, setImage] = useState<string | undefined>(undefined);
   const [errorMsg, setErrorMsg] = useState('');
+
+  // Close on Escape, matching the X button and backdrop click.
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -66,7 +74,7 @@ export function NewPostModal({ isOpen, onClose, onSubmit, istucoTeam }: NewPostM
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       {}
-      <div className="bg-white border border-neutral-200 rounded-3xl w-full max-w-xl overflow-hidden shadow-xl animate-in fade-in-50 zoom-in-95 duration-200 text-left my-auto flex flex-col">
+      <div role="dialog" aria-modal="true" aria-label="Ask a question" className="bg-white border border-neutral-200 rounded-3xl w-full max-w-xl overflow-hidden shadow-xl animate-in fade-in-50 zoom-in-95 duration-200 text-left my-auto flex flex-col">
         {}
         <div className="bg-neutral-50 px-5 py-4 border-b border-neutral-150 flex items-center justify-between">
           <h3 className="font-display font-bold text-lg text-neutral-800 flex items-center gap-2">

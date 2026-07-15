@@ -193,12 +193,15 @@ export function formatTimeAgo(dateString: string | undefined): string {
   const now = new Date();
   const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
   
+  // Pluralize so we never render "1 days ago" / "1 hours ago".
+  const plural = (n: number, unit: string) => `${n} ${unit}${n === 1 ? '' : 's'} ago`;
+
   if (seconds < 60) return 'Just now';
-  if (seconds < 3600) return `${Math.floor(seconds / 60)} min ago`;
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
-  if (seconds < 2592000) return `${Math.floor(seconds / 86400)} days ago`;
-  if (seconds < 31536000) return `${Math.floor(seconds / 2592000)} months ago`;
-  return `${Math.floor(seconds / 31536000)} years ago`;
+  if (seconds < 3600) return plural(Math.floor(seconds / 60), 'min');
+  if (seconds < 86400) return plural(Math.floor(seconds / 3600), 'hour');
+  if (seconds < 2592000) return plural(Math.floor(seconds / 86400), 'day');
+  if (seconds < 31536000) return plural(Math.floor(seconds / 2592000), 'month');
+  return plural(Math.floor(seconds / 31536000), 'year');
 }
 
 // Common English words we shouldn't score. Kept small on purpose — anything

@@ -23,3 +23,9 @@ services:
         sync: false
       - key: FRONTEND_URL
         sync: false
+      # Google OAuth — set manually in the Render dashboard. Declared here so the
+      # service can't be recreated without them (which would break Google login).
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false

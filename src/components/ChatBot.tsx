@@ -169,7 +169,7 @@ export function ChatBot() {
                           />
                         ))}
                       </div>
-                      <span className="text-[10px] font-black text-neutral-400 uppercase tracking-widest">Claude is thinking</span>
+                      <span className="text-[10px] font-black text-neutral-400 uppercase tracking-widest">tuco Assistant is typing</span>
                     </div>
                   </div>
                 </motion.div>
@@ -211,6 +211,8 @@ export function ChatBot() {
         whileHover={{ scale: 1.1, y: -2 }}
         whileTap={{ scale: 0.9 }}
         onClick={() => setIsOpen(!isOpen)}
+        aria-label={isOpen ? 'Close chat' : 'Open chat with tuco Assistant'}
+        aria-expanded={isOpen}
         className={`w-16 h-16 rounded-full flex items-center justify-center shadow-[0_10px_30px_rgba(0,0,0,0.1)] transition-colors duration-500 group relative ${
           isOpen ? 'bg-neutral-900' : 'bg-tuco-cyan'
         }`}

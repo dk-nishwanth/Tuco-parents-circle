@@ -120,6 +120,14 @@ function AppContent() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [savedPosts, setSavedPosts] = useState<number[]>([]);
   const [isAppReady, setIsAppReady] = useState(false);
+  // True when we fell back to bundled seed content because the API was
+  // unreachable/slow. Surfaces a dismissible banner so users know actions
+  // (voting, replying, posting) won't stick until the server is back.
+  const [isShowingCachedContent, setIsShowingCachedContent] = useState(false);
+  const [cachedBannerDismissed, setCachedBannerDismissed] = useState(false);
+  // Friendly notice shown when a sign-in attempt fails (e.g. a Google OAuth
+  // round-trip errors out), so the user isn't dumped on the homepage silently.
+  const [authNotice, setAuthNotice] = useState<string | null>(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [sessionCredentials, setSessionCredentials] = useState<{
     email: string;
@@ -173,6 +181,17 @@ function AppContent() {
     const params = new URLSearchParams(window.location.search);
     const oauthCode = params.get('oauth_code');
     const resetToken = params.get('reset_token');
+    const authError = params.get('auth_error');
+    if (authError) {
+      // The Google callback redirects here with ?auth_error=... on failure.
+      const messages: Record<string, string> = {
+        google_failed: 'Google sign-in could not be completed. Please try again.',
+        no_code: 'Google sign-in was cancelled or timed out. Please try again.',
+        invalid_token: 'We could not verify your Google account. Please try again.',
+      };
+      setAuthNotice(messages[authError] || 'Sign-in failed. Please try again.');
+      window.history.replaceState({}, '', window.location.pathname);
+    }
     if (oauthCode) {
       window.history.replaceState({}, '', window.location.pathname);
       fetch('/api/auth/oauth-token', {
@@ -204,9 +223,13 @@ function AppContent() {
             // be posted (clicking Comment just re-opens the login).
             window.history.replaceState({}, '', returnTo);
             window.location.reload();
+          } else {
+            // Exchange returned no token (expired/replayed one-time code) — tell
+            // the user instead of silently leaving them logged out.
+            setAuthNotice('Google sign-in could not be completed. Please try again.');
           }
         })
-        .catch(() => {});
+        .catch(() => setAuthNotice('Google sign-in could not be completed. Please try again.'));
     }
     if (resetToken) {
       setAuthResetToken(resetToken);
@@ -265,8 +288,17 @@ function AppContent() {
         }
 
         // Fetch conversations from API
-        const apiConversations = await api.getConversations();
-        const apiUsers = await api.getUsers();
+        // Guard the initial load with a timeout. Without this, a hung (but not
+        // erroring) API leaves the LoadingScreen up forever; racing against a
+        // timeout lets us fall through to the cached-content path instead.
+        const withTimeout = <T,>(p: Promise<T>, ms = 12000): Promise<T> =>
+          Promise.race([
+            p,
+            new Promise<T>((_, reject) => setTimeout(() => reject(new Error('Request timed out')), ms)),
+          ]);
+
+        const apiConversations = await withTimeout(api.getConversations());
+        const apiUsers = await withTimeout(api.getUsers());
 
         // Just use existing conversations instead of trying to seed new ones (which requires auth)
         setConversations(apiConversations);
@@ -283,6 +315,7 @@ function AppContent() {
         // Fallback to local seed if API fails
         setConversations(enrichConversations(INITIAL_CONVERSATIONS));
         setUsers({ [DEMO_MODERATOR.id]: DEMO_MODERATOR });
+        setIsShowingCachedContent(true);
       }
 
       const minDisplayMs = 1200;
@@ -355,6 +388,28 @@ function AppContent() {
       }
     }
   }, [conversations]);
+
+  // Open a thread when arriving via /?thread=<id>. A member's profile page
+  // (/u/:username) is a separate route that can only navigate by URL, so its
+  // post links land here. We reuse the canonical modal-open path and then
+  // normalize the URL to the #thread-<id> hash everything else uses, so the
+  // back button, sharing, and close-handler all behave identically.
+  useEffect(() => {
+    if (conversations.length === 0) return;
+    const threadParam = new URLSearchParams(location.search).get('thread');
+    if (!threadParam) return;
+    const threadId = parseInt(threadParam, 10);
+    if (!Number.isNaN(threadId) && conversations.some(c => c.id === threadId)) {
+      setSelectedThreadId(threadId);
+      setIsModalOpen(true);
+      // Normalize to the canonical /#thread-<id> URL, dropping the ?thread=
+      // query so closing the modal lands on a clean path.
+      window.history.replaceState({ threadId }, '', `${window.location.pathname}#thread-${threadId}`);
+    } else {
+      // Unknown/invalid id — just drop the query so we don't loop or 404.
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, [location.search, conversations]);
 
   const saveConversations = async (updated: Conversation[]) => {
     // Ensure no duplicate IDs in the threads and their replies
@@ -1299,6 +1354,42 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] flex flex-col font-sans text-neutral-800">
+      {isShowingCachedContent && !cachedBannerDismissed && (
+        <div
+          role="status"
+          className="bg-amber-50 border-b border-amber-200 text-amber-800 text-[13px] font-medium px-4 py-2 flex items-center justify-center gap-3 text-center"
+        >
+          <span>We couldn't reach the server, so you're seeing cached discussions. Voting, replying and posting won't save until the connection is back.</span>
+          <button
+            onClick={() => setCachedBannerDismissed(true)}
+            aria-label="Dismiss offline notice"
+            className="shrink-0 w-6 h-6 rounded-full hover:bg-amber-100 flex items-center justify-center text-amber-700"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+      {authNotice && (
+        <div
+          role="alert"
+          className="bg-red-50 border-b border-red-200 text-red-700 text-[13px] font-medium px-4 py-2 flex items-center justify-center gap-3 text-center"
+        >
+          <span>{authNotice}</span>
+          <button
+            onClick={() => { setAuthNotice(null); setIsAuthOpen(true); }}
+            className="shrink-0 underline font-semibold hover:text-red-800"
+          >
+            Try again
+          </button>
+          <button
+            onClick={() => setAuthNotice(null)}
+            aria-label="Dismiss sign-in error"
+            className="shrink-0 w-6 h-6 rounded-full hover:bg-red-100 flex items-center justify-center text-red-600"
+          >
+            ✕
+          </button>
+        </div>
+      )}
       <Header
         searchTerm={searchTerm}
         onSearch={setSearchTerm}

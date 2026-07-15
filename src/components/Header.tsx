@@ -167,8 +167,9 @@ export function Header({
       <div className="max-w-7xl mx-auto px-3 md:px-4 py-1.5 flex items-center gap-2 md:gap-3">
         {/* Left: Logo (Desktop) / Menu + Logo (Mobile) */}
         <div className="flex items-center gap-2 shrink-0 w-32 md:w-auto justify-start">
-          <button 
+          <button
             onClick={onOpenCategories}
+            aria-label="Open categories menu"
             className="p-1 md:hidden"
           >
             <Menu className="w-6 h-6 text-[#4D4747]" strokeWidth={2} />
@@ -202,6 +203,7 @@ export function Header({
           <div className="relative" ref={notificationsRef}>
             <button
               onClick={() => setShowNotificationsDropdown(!showNotificationsDropdown)}
+              aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : 'Notifications'}
               className="p-1 relative hover:bg-neutral-50 rounded-full transition-colors"
             >
               <Bell className="w-5 h-5 text-[#4D4747]" strokeWidth={2} />

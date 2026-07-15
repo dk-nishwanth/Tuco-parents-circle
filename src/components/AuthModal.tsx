@@ -63,6 +63,14 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin, initialMode, ini
     }
   };
 
+  // Close on Escape, matching the X button and backdrop click.
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const handleForgotSubmit = async (e: React.FormEvent) => {
@@ -166,7 +174,7 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin, initialMode, ini
       className="fixed inset-0 bg-neutral-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-[70] overflow-y-auto"
       onClick={e => e.target === e.currentTarget && onClose()}
     >
-      <div className="bg-white border border-neutral-200 rounded-3xl w-full max-w-md overflow-hidden shadow-xl animate-in fade-in-50 zoom-in-95 duration-200">
+      <div role="dialog" aria-modal="true" aria-label="Sign in or sign up" className="bg-white border border-neutral-200 rounded-3xl w-full max-w-md overflow-hidden shadow-xl animate-in fade-in-50 zoom-in-95 duration-200">
         {}
         <div className="bg-gradient-to-r from-tuco-cyan/10 to-orange-50 px-6 py-5 border-b border-neutral-200 flex items-center justify-between">
           <h2 className="font-display font-black text-lg text-neutral-800">
@@ -275,7 +283,9 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin, initialMode, ini
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 w-4 h-4 text-neutral-400" strokeWidth={1.5} />
                   <input
-                    type="text"
+                    type="email"
+                    autoComplete="email"
+                    inputMode="email"
                     placeholder="any@email.com"
                     value={email}
                     onChange={e => setEmail(e.target.value)}

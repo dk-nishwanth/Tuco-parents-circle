@@ -3,6 +3,7 @@ import { CATEGORIES, CATEGORY_COLORS } from '../data/categories';
 import { Conversation, User } from '../types';
 import { getAvatarColor, getInitials, getAuthorMeta, countAllReplies } from '../utils/helpers';
 import { AuthorBadges } from './AuthorBadges';
+import { TucoVideoCard, findTucoVideoReply, parseYouTubeId } from './TucoVideo';
 import {
   Eye,
   MessageSquare,
@@ -48,6 +49,9 @@ export function ThreadCard({
   const opRole = thread.op.authorRole ?? authorMeta.role;
   const opBadges = thread.op.authorBadges ?? authorMeta.badges;
 
+  const tucoVideoReply = findTucoVideoReply(thread);
+  const tucoVideoId = tucoVideoReply ? parseYouTubeId(tucoVideoReply.text) : null;
+
   const handleCardClick = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
     if (target.closest('.vote-btn') || target.closest('.save-btn')) {
@@ -71,6 +75,8 @@ export function ThreadCard({
       >
         <button
           onClick={() => onVote(thread.id, 'up')}
+          aria-label="Upvote"
+          aria-pressed={votedState === 'up'}
           className={`vote-btn p-1.5 rounded-xl transition-all ${
             votedState === 'up' ? 'text-tuco-orange' : 'text-[#4D4747] hover:text-tuco-orange'
           }`}
@@ -84,6 +90,8 @@ export function ThreadCard({
         </span>
         <button
           onClick={() => onVote(thread.id, 'down')}
+          aria-label="Downvote"
+          aria-pressed={votedState === 'down'}
           className={`p-1 rounded-full transition-colors ${
             votedState === 'down' ? 'text-blue-500' : 'text-[#4D4747] hover:text-blue-500'
           }`}
@@ -114,6 +122,10 @@ export function ThreadCard({
             {thread.op.text}
           </p>
 
+          {tucoVideoId ? (
+            <TucoVideoCard videoId={tucoVideoId} variant="feed" />
+          ) : null}
+
           {/* User Info Row */}
           <div className="flex items-center gap-2.5 mb-5">
             <div
@@ -135,12 +147,13 @@ export function ThreadCard({
               </span>
               <AuthorBadges badges={opBadges} role={opRole} />
               {!isLoggedIn && (
-                <span
+                <button
+                  type="button"
                   onClick={e => { e.stopPropagation(); onJoinClick?.(); }}
                   className="bg-[#E7F9FF] text-[10px] text-[#4D4747] font-sans font-medium uppercase px-2.5 py-0.5 rounded-md border border-[#E7F9FF]/10 shadow-sm cursor-pointer hover:bg-[#35B5EC] hover:text-white transition-colors"
                 >
                   Join now
-                </span>
+                </button>
               )}
             </div>
           </div>
@@ -149,6 +162,8 @@ export function ThreadCard({
           <div className="pt-4 border-t border-neutral-100 flex items-center justify-end gap-4">
             <button
               className="save-btn flex items-center gap-1 transition-colors p-1"
+              aria-label={isSaved ? 'Remove from saved' : 'Save post'}
+              aria-pressed={isSaved}
               onClick={e => {
                 e.stopPropagation();
                 onSavePost?.(thread.id);
