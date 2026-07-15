@@ -262,7 +262,15 @@ startup();
 app.set('trust proxy', 1); // trust nginx reverse proxy for correct client IPs in rate limiting
 
 app.use(helmet({
-  contentSecurityPolicy: NODE_ENV === 'production' ? undefined : false,
+  contentSecurityPolicy: NODE_ENV === 'production' ? {
+    // Extend helmet's strict defaults so tuco team YouTube video replies can render:
+    // the poster comes from i.ytimg.com and the player embeds youtube-nocookie.com.
+    directives: {
+      ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+      'img-src': ["'self'", 'data:', 'https://i.ytimg.com'],
+      'frame-src': ["'self'", 'https://www.youtube-nocookie.com', 'https://www.youtube.com'],
+    },
+  } : false,
 }));
 
 app.use(pino({
