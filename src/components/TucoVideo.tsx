@@ -89,7 +89,7 @@ export function TucoVideoCard({ videoId, caption, variant = 'feed' }: TucoVideoC
           <img
             src={poster}
             alt=""
-            loading="lazy"
+            loading="eager"
             className="absolute inset-0 w-full h-full object-cover opacity-90"
             onError={(e) => {
               const img = e.currentTarget;
