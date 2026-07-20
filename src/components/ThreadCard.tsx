@@ -88,10 +88,10 @@ export function ThreadCard({
         isHighlighted ? 'border-0 shadow-sm' : 'border border-neutral-200'
       }`}
     >
-      {/* Category-coloured left edge — hidden in highlighted variant so the yellow wrapper reads as the accent */}
-      {!isHighlighted && (
-        <div className="absolute left-0 top-0 bottom-0 w-[6px] pointer-events-none" style={{ backgroundColor: catColor.bg }}></div>
-      )}
+      {/* Category-coloured left edge — kept even in the highlighted variant
+          so the inner white card still carries the thin category-colour strip
+          visible in the design mockup. */}
+      <div className="absolute left-0 top-0 bottom-0 w-[6px] pointer-events-none" style={{ backgroundColor: catColor.bg }}></div>
 
       {/* Vote Box (Left) */}
       <div
