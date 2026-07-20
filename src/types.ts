@@ -4,6 +4,9 @@ export interface Op {
   time: string;
   text: string;
   image?: string;
+  // Optional array of images for carousel. When present, image is the first
+  // entry (kept for backwards compatibility with older code paths).
+  images?: string[];
   authorRole?: UserRole;
   authorBadges?: BadgeType[];
 }
@@ -16,6 +19,7 @@ export interface Reply {
   time: string;
   text: string;
   image?: string;
+  images?: string[];
   likes: number;
   authorRole?: UserRole;
   authorBadges?: BadgeType[];

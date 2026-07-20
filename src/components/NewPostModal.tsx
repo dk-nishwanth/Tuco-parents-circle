@@ -1,6 +1,7 @@
 import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react';
 import { CATEGORIES } from '../data/categories';
-import { Send, X, Image as ImageIcon } from 'lucide-react';
+import { uploadImage } from '../utils/api';
+import { Send, X, Image as ImageIcon, Loader2 } from 'lucide-react';
 
 interface NewPostModalProps {
   isOpen: boolean;
@@ -9,16 +10,21 @@ interface NewPostModalProps {
     title: string,
     category: string,
     text: string,
-    image?: string
+    images: string[]
   ) => void;
   istucoTeam?: boolean;
 }
+
+const MAX_IMAGES = 4;
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+
 export function NewPostModal({ isOpen, onClose, onSubmit, istucoTeam }: NewPostModalProps) {
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('skincare');
   const [customCategory, setCustomCategory] = useState('');
   const [text, setText] = useState('');
-  const [image, setImage] = useState<string | undefined>(undefined);
+  const [images, setImages] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
   // Close on Escape, matching the X button and backdrop click.
@@ -31,22 +37,41 @@ export function NewPostModal({ isOpen, onClose, onSubmit, istucoTeam }: NewPostM
 
   if (!isOpen) return null;
 
-  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        setErrorMsg('Image size should be less than 5MB');
-        setImage(undefined);
-        e.target.value = '';
-        return;
-      }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImage(reader.result as string);
-        e.target.value = '';
-      };
-      reader.readAsDataURL(file);
+  const handleImageChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    e.target.value = '';
+    if (files.length === 0) return;
+
+    const remaining = MAX_IMAGES - images.length;
+    if (remaining <= 0) {
+      setErrorMsg(`You can attach at most ${MAX_IMAGES} images.`);
+      return;
     }
+    const picked = files.slice(0, remaining);
+    const oversize = picked.filter(f => f.size > MAX_IMAGE_BYTES);
+    const okFiles = picked.filter(f => f.size <= MAX_IMAGE_BYTES);
+    setUploading(true);
+    try {
+      // uploadImage tries S3 first (when server-configured), falls back to
+      // base64 so posting always works even without S3 credentials.
+      const uploaded = await Promise.all(okFiles.map(f => uploadImage(f, 'post')));
+      setImages(prev => [...prev, ...uploaded].slice(0, MAX_IMAGES));
+      if (oversize.length > 0) {
+        setErrorMsg(`Skipped ${oversize.length} image(s) larger than 5MB.`);
+      } else if (files.length > remaining) {
+        setErrorMsg(`Only the first ${remaining} image(s) were added (max ${MAX_IMAGES}).`);
+      } else {
+        setErrorMsg('');
+      }
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : 'Failed to upload image.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const removeImage = (idx: number) => {
+    setImages(prev => prev.filter((_, i) => i !== idx));
   };
 
   const handleSubmit = (e: FormEvent) => {
@@ -55,17 +80,17 @@ export function NewPostModal({ isOpen, onClose, onSubmit, istucoTeam }: NewPostM
       setErrorMsg('Please specify a title or question.');
       return;
     }
-    if (!text.trim() && !image) {
+    if (!text.trim() && images.length === 0) {
       setErrorMsg('Please write an explanation or upload an image.');
       return;
     }
     const finalCategory = category === 'other' ? (customCategory.trim().toLowerCase().replace(/\s+/g, '-') || 'other') : category;
-    onSubmit(title.trim(), finalCategory, text.trim(), image);
+    onSubmit(title.trim(), finalCategory, text.trim(), images);
     setTitle('');
     setCategory('skincare');
     setCustomCategory('');
     setText('');
-    setImage(undefined);
+    setImages([]);
     setErrorMsg('');
   };
   return (
@@ -149,7 +174,7 @@ export function NewPostModal({ isOpen, onClose, onSubmit, istucoTeam }: NewPostM
             </label>
             <div className="relative">
               <textarea
-                required={!image}
+                required={images.length === 0}
                 rows={4}
                 placeholder="Provide context. What has been your child's age, symptom, or situation? Let's help out..."
                 className="w-full bg-white border border-neutral-200 rounded-xl py-2 px-3 pr-10 text-xs sm:text-sm text-neutral-700 outline-none font-sans font-medium focus:border-tuco-cyan"
@@ -162,32 +187,50 @@ export function NewPostModal({ isOpen, onClose, onSubmit, istucoTeam }: NewPostM
                   id="post-image-upload"
                   className="hidden"
                   accept="image/*"
+                  multiple
                   onChange={handleImageChange}
+                  disabled={images.length >= MAX_IMAGES}
                 />
                 <label
                   htmlFor="post-image-upload"
-                  className="p-2 rounded-lg hover:bg-neutral-100 text-neutral-400 hover:text-tuco-cyan cursor-pointer transition-colors"
-                  title="Upload image"
+                  className={`p-2 rounded-lg text-neutral-400 transition-colors ${
+                    images.length >= MAX_IMAGES || uploading
+                      ? 'opacity-40 cursor-not-allowed'
+                      : 'hover:bg-neutral-100 hover:text-tuco-cyan cursor-pointer'
+                  }`}
+                  title={images.length >= MAX_IMAGES ? `Max ${MAX_IMAGES} images` : `Upload images (${images.length}/${MAX_IMAGES})`}
                 >
-                  <ImageIcon className="w-5 h-5" strokeWidth={1.5} />
+                  {uploading
+                    ? <Loader2 className="w-5 h-5 animate-spin" strokeWidth={1.5} />
+                    : <ImageIcon className="w-5 h-5" strokeWidth={1.5} />}
                 </label>
               </div>
             </div>
           </div>
-          {image && (
-            <div className="relative inline-block mt-2">
-              <img
-                src={image}
-                alt="Preview"
-                className="max-h-40 rounded-xl border border-neutral-200"
-              />
-              <button
-                type="button"
-                onClick={() => setImage(undefined)}
-                className="absolute -top-2 -right-2 w-6 h-6 bg-white border border-neutral-200 rounded-full flex items-center justify-center text-neutral-500 hover:text-rose-500 shadow-md transition-colors"
-              >
-                <X className="w-4 h-4" strokeWidth={1.5} />
-              </button>
+          {images.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {images.map((src, idx) => (
+                <div key={idx} className="relative">
+                  <img
+                    src={src}
+                    alt={`Preview ${idx + 1}`}
+                    className="h-24 w-24 object-cover rounded-xl border border-neutral-200"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeImage(idx)}
+                    className="absolute -top-2 -right-2 w-6 h-6 bg-white border border-neutral-200 rounded-full flex items-center justify-center text-neutral-500 hover:text-rose-500 shadow-md transition-colors"
+                    aria-label={`Remove image ${idx + 1}`}
+                  >
+                    <X className="w-4 h-4" strokeWidth={1.5} />
+                  </button>
+                </div>
+              ))}
+              {images.length < MAX_IMAGES && (
+                <span className="text-[10px] text-neutral-400 self-end mb-1">
+                  {MAX_IMAGES - images.length} more allowed
+                </span>
+              )}
             </div>
           )}
           {errorMsg && (
@@ -205,10 +248,13 @@ export function NewPostModal({ isOpen, onClose, onSubmit, istucoTeam }: NewPostM
             </button>
             <button
                 type="submit"
-                className="flex-1 py-2 bg-tuco-cyan hover:bg-tuco-cyan-hover text-white text-xs sm:text-sm font-display font-bold rounded-xl flex items-center justify-center gap-1.5 cursor-pointer shadow-sm active:scale-98 transition-all"
+                disabled={uploading}
+                className="flex-1 py-2 bg-tuco-cyan hover:bg-tuco-cyan-hover disabled:bg-tuco-cyan/60 disabled:cursor-not-allowed text-white text-xs sm:text-sm font-display font-bold rounded-xl flex items-center justify-center gap-1.5 cursor-pointer shadow-sm active:scale-98 transition-all"
               >
-              <Send className="w-3.5 h-3.5" strokeWidth={1.5} />
-              <span>Launch Thread</span>
+              {uploading
+                ? <Loader2 className="w-3.5 h-3.5 animate-spin" strokeWidth={1.5} />
+                : <Send className="w-3.5 h-3.5" strokeWidth={1.5} />}
+              <span>{uploading ? 'Uploading…' : 'Launch Thread'}</span>
             </button>
           </div>
         </form>

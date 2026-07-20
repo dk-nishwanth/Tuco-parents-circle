@@ -34,6 +34,53 @@ async function handleResponse<T>(res: Response): Promise<T> {
   return res.json();
 }
 
+// Upload a File to S3 via a signed PUT the server hands us. If the server
+// hasn't been given S3 credentials (503), we fall back to reading the file as
+// a base64 data URL — the API still stores that string in `opImage`, so the
+// caller doesn't need to know which path was taken.
+async function fileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.onerror = () => reject(new Error('Failed to read file'));
+    reader.readAsDataURL(file);
+  });
+}
+
+export async function uploadImage(file: File, kind: 'post' | 'reply' = 'post'): Promise<string> {
+  // Ask the server for a signed PUT URL. Server may reply 503 when S3 isn't
+  // configured — that's a signal to fall back, not an error to surface.
+  try {
+    const presignRes = await fetch(`${API_BASE_URL}/uploads/presign`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ contentType: file.type, size: file.size, kind }),
+    });
+    if (presignRes.status === 503) {
+      return fileToDataUrl(file);
+    }
+    if (!presignRes.ok) {
+      const body = await presignRes.json().catch(() => ({ error: 'Presign failed' }));
+      throw new Error(body.error || `Presign HTTP ${presignRes.status}`);
+    }
+    const { uploadUrl, publicUrl } = (await presignRes.json()) as {
+      uploadUrl: string;
+      publicUrl: string;
+    };
+    const putRes = await fetch(uploadUrl, {
+      method: 'PUT',
+      headers: { 'Content-Type': file.type },
+      body: file,
+    });
+    if (!putRes.ok) throw new Error(`S3 upload failed (${putRes.status})`);
+    return publicUrl;
+  } catch (err) {
+    // Network error / CORS / bucket missing — fall back so posting still works.
+    console.warn('Image upload via S3 failed, falling back to inline base64:', err);
+    return fileToDataUrl(file);
+  }
+}
+
 // ── Auth ──────────────────────────────────────────────────────────────────────
 
 export const api = {
@@ -113,6 +160,7 @@ export const api = {
     city: string;
     text: string;
     image?: string;
+    images?: string[];
     moderationStatus?: string;
     greyAreaFlags?: string[];
     reviewPriority?: number;
@@ -158,7 +206,7 @@ export const api = {
 
   async addReply(
     conversationId: number,
-    data: { text: string; city: string; image?: string; parentId?: number }
+    data: { text: string; city: string; image?: string; images?: string[]; parentId?: number }
   ) {
     const res = await fetch(`${API_BASE_URL}/conversations/${conversationId}/replies`, {
       method: 'POST',

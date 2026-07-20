@@ -48,6 +48,9 @@ model Conversation {
   opTime           String
   opText           String
   opImage          String?
+  // Multi-image support. opImage stays for backwards compat and is always
+  // the first entry in opImages when present. New posts write both.
+  opImages         String[]         @default([])
   opAuthorRole     UserRole         @default(MEMBER)
   opAuthorBadges   String[]
   // Age-of-child bucket this thread is about. Set on create from the author's
@@ -85,6 +88,7 @@ model Reply {
   time             String
   text             String
   image            String?
+  images           String[]         @default([])
   likes            Int              @default(0)
   authorRole       UserRole         @default(MEMBER)
   authorBadges     String[]

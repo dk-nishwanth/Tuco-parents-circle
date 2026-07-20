@@ -439,6 +439,7 @@ function AppContent() {
             city: conv.op.city,
             text: conv.op.text,
             image: conv.op.image,
+            images: conv.op.images,
             moderationStatus: conv.moderationStatus,
             greyAreaFlags: conv.greyAreaFlags,
             reviewPriority: conv.reviewPriority,
@@ -1103,8 +1104,12 @@ function AppContent() {
     title: string,
     category: string,
     text: string,
-    image?: string
+    images: string[] = []
   ) => {
+    // Keep the legacy single-image field populated with the first image so
+    // any consumer (SEO tags, RSS, older code paths) that only reads `image`
+    // still shows a preview.
+    const image = images[0];
     if (!currentUser) {
       openAuth('signup');
       return;
@@ -1145,6 +1150,7 @@ function AppContent() {
         city: currentUser.city,
         text: analysis.civilityReminder ? `${text}\n\n---\n💛 ${analysis.civilityReminder}` : text,
         image,
+        images,
         moderationStatus,
         greyAreaFlags: analysis.greyAreaFlags,
         reviewPriority: finalReviewPriority,
@@ -1174,6 +1180,7 @@ function AppContent() {
           time: 'Just now',
           text: analysis.civilityReminder ? `${text}\n\n---\n💛 ${analysis.civilityReminder}` : text,
           image,
+          images,
           authorRole: currentUser.role,
           authorBadges: currentUser.badges.map(b => b.type),
         },

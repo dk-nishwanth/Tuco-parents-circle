@@ -14,6 +14,8 @@ import { PrismaClient, UserRole } from '@prisma/client';
 import Anthropic from '@anthropic-ai/sdk';
 import { Resend } from 'resend';
 import { OAuth2Client } from 'google-auth-library';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 dotenv.config();
 
@@ -267,7 +269,16 @@ app.use(helmet({
     // the poster comes from i.ytimg.com and the player embeds youtube-nocookie.com.
     directives: {
       ...helmet.contentSecurityPolicy.getDefaultDirectives(),
-      'img-src': ["'self'", 'data:', 'https://i.ytimg.com'],
+      // 'data:' keeps legacy inline images working; the S3 hosts serve user-uploaded
+      // post images (bucket direct + optional CloudFront in S3_PUBLIC_HOST).
+      'img-src': [
+        "'self'",
+        'data:',
+        'https://i.ytimg.com',
+        'https://*.s3.amazonaws.com',
+        'https://*.s3.ap-south-1.amazonaws.com',
+        'https://*.cloudfront.net',
+      ],
       'frame-src': ["'self'", 'https://www.youtube-nocookie.com', 'https://www.youtube.com'],
     },
   } : false,
@@ -331,8 +342,11 @@ app.use((req, res, next) => {
   }
 });
 
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ limit: '10mb', extended: true }));
+// 25mb accommodates a multi-image post (up to 4 images × ~3mb base64).
+// If the app moves to S3-hosted uploads (client uploads direct, only URLs are
+// posted here), this can drop back to 1–2mb.
+app.use(express.json({ limit: '25mb' }));
+app.use(express.urlencoded({ limit: '25mb', extended: true }));
 // Bots and stray clients POST junk that isn't valid JSON. Turn the
 // SyntaxError express.json() raises (err.type === 'entity.parse.failed')
 // into a clean 400 here instead of letting it stack-trace through the
@@ -455,6 +469,7 @@ const formatReply = (r: any, allReplies: any[]): any => ({
   time: r.createdAt ? formatRelativeTime(r.createdAt) : (r.time || 'just now'),
   text: r.text,
   image: r.image,
+  images: (r.images && r.images.length > 0) ? r.images : (r.image ? [r.image] : []),
   likes: r.likes || 0,
   authorRole: mapRole(r.authorRole),
   authorBadges: r.authorBadges || [],
@@ -493,6 +508,7 @@ const formatConversation = (c: any) => {
       time: c.createdAt ? formatRelativeTime(c.createdAt) : (c.opTime || 'just now'),
       text: c.opText,
       image: c.opImage,
+      images: (c.opImages && c.opImages.length > 0) ? c.opImages : (c.opImage ? [c.opImage] : []),
       authorRole: mapRole(c.opAuthorRole),
       authorBadges: c.opAuthorBadges || [],
     },
@@ -1040,12 +1056,101 @@ app.get('/api/conversations', optionalAuth, async (req: AuthRequest, res, next) 
   }
 });
 
+// ------------------------------
+// S3 UPLOAD (presigned PUT)
+// ------------------------------
+// Users PUT the image straight to S3 using a short-lived signed URL, then
+// post the returned public URL as part of the thread/reply payload. This keeps
+// image bytes out of Postgres and out of the API request body entirely.
+//
+// Requires env: S3_BUCKET, S3_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY.
+// When any are missing the endpoint returns 503 and the frontend transparently
+// falls back to inline base64 storage (which still works for small images).
+const S3_BUCKET = process.env.S3_BUCKET;
+const S3_REGION = process.env.S3_REGION || 'ap-south-1';
+const S3_PUBLIC_HOST = process.env.S3_PUBLIC_HOST; // optional CDN/CloudFront host
+
+const s3Client = (S3_BUCKET && process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY)
+  ? new S3Client({
+      region: S3_REGION,
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+      },
+    })
+  : null;
+
+// Allow-list of image mimetypes we sign for. Blocks direct upload of SVGs
+// (script vector) and non-images even if the client asks.
+const ALLOWED_UPLOAD_MIME = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+]);
+const EXT_FOR_MIME: Record<string, string> = {
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+  'image/gif': 'gif',
+};
+const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
+
+const presignSchema = z.object({
+  contentType: z.string(),
+  size: z.number().int().positive().max(MAX_UPLOAD_BYTES),
+  kind: z.enum(['post', 'reply']).optional(),
+});
+
+app.post('/api/uploads/presign', authenticate, async (req: AuthRequest, res, next) => {
+  try {
+    if (!s3Client || !S3_BUCKET) {
+      return res.status(503).json({ error: 'Uploads not configured on server' });
+    }
+    const parsed = presignSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: parsed.error.issues[0]?.message || 'Invalid payload' });
+    }
+    const { contentType, size, kind } = parsed.data;
+    if (!ALLOWED_UPLOAD_MIME.has(contentType)) {
+      return res.status(400).json({ error: 'Unsupported image type' });
+    }
+    const ext = EXT_FOR_MIME[contentType];
+    const prefix = kind === 'reply' ? 'replies' : 'posts';
+    // Random key so users can't overwrite each other's images or guess URLs.
+    const key = `${prefix}/${req.userId}/${Date.now()}-${crypto.randomBytes(8).toString('hex')}.${ext}`;
+
+    const command = new PutObjectCommand({
+      Bucket: S3_BUCKET,
+      Key: key,
+      ContentType: contentType,
+      ContentLength: size,
+      // Objects are readable by anyone with the URL — this is a public feed;
+      // the images are meant to render inline for logged-out visitors too.
+      ACL: 'public-read',
+    });
+    const uploadUrl = await getSignedUrl(s3Client, command, { expiresIn: 60 * 5 });
+
+    const publicUrl = S3_PUBLIC_HOST
+      ? `${S3_PUBLIC_HOST.replace(/\/$/, '')}/${key}`
+      : `https://${S3_BUCKET}.s3.${S3_REGION}.amazonaws.com/${key}`;
+
+    res.json({ uploadUrl, publicUrl, key });
+  } catch (error) {
+    console.error('❌ Presign failed:', error);
+    next(error);
+  }
+});
+
 const createThreadSchema = z.object({
   title: z.string().min(5).max(300),
   category: z.string(),
   city: z.string(),
   text: z.string().min(10).max(5000),
   image: z.string().optional(),
+  // Multi-image: max 4 images per post. Older clients still send `image` (single);
+  // newer clients send `images` (array). Server accepts either and normalises.
+  images: z.array(z.string()).max(4).optional(),
   moderationStatus: z.string().optional(),
   greyAreaFlags: z.array(z.string()).optional(),
   reviewPriority: z.number().optional(),
@@ -1072,7 +1177,14 @@ app.post('/api/conversations', authenticate, async (req: AuthRequest, res, next)
     const accountAgeMs = Date.now() - user.createdAt.getTime();
     const isInCoolingPeriod = !isMod && accountAgeMs < 24 * 60 * 60 * 1000;
 
-    const { title, category, city, text, image, greyAreaFlags, reviewPriority } = parsed.data;
+    const { title, category, city, text, image, images, greyAreaFlags, reviewPriority } = parsed.data;
+    // Normalise: prefer explicit images array, else wrap single image, else empty.
+    const normalizedImages = (images && images.length > 0)
+      ? images
+      : (image ? [image] : []);
+    // opImage stays as the first entry so anything still reading the legacy
+    // single-image field keeps working (og:image tags, RSS, old clients).
+    const firstImage = normalizedImages[0];
     const requestedStatus = parsed.data.moderationStatus?.toUpperCase();
     // Server-side moderation backstop: don't trust the client's verdict. Run the
     // same analysis here so a direct API call can't bypass it.
@@ -1113,7 +1225,8 @@ app.post('/api/conversations', authenticate, async (req: AuthRequest, res, next)
         opCity: city,
         opTime: 'Just now',
         opText: text,
-        opImage: image,
+        opImage: firstImage,
+        opImages: normalizedImages,
         opAuthorRole: user.role,
         opAuthorBadges: (user.badges as any[] || []).map((b: any) => b.type),
         authorId: user.id,
@@ -1445,6 +1558,7 @@ const replySchema = z.object({
   text: z.string().min(1).max(3000),
   city: z.string(),
   image: z.string().optional(),
+  images: z.array(z.string()).max(4).optional(),
   parentId: z.number().optional(),
 });
 
@@ -1467,7 +1581,9 @@ app.post('/api/conversations/:id/replies', authenticate, async (req: AuthRequest
       return res.status(404).json({ error: 'User not found' });
     }
 
-    const { text, city, image, parentId } = parsed.data;
+    const { text, city, image, images, parentId } = parsed.data;
+    const normalizedReplyImages = (images && images.length > 0) ? images : (image ? [image] : []);
+    const firstReplyImage = normalizedReplyImages[0];
 
     // Server-side moderation backstop: block clear violations even on a direct
     // API call (the browser check can be bypassed). Clean replies are approved
@@ -1486,7 +1602,8 @@ app.post('/api/conversations/:id/replies', authenticate, async (req: AuthRequest
         city,
         time: 'Just now',
         text,
-        image,
+        image: firstReplyImage,
+        images: normalizedReplyImages,
         parentId,
         moderationStatus: 'APPROVED',
         authorRole: user.role,
@@ -1677,6 +1794,7 @@ app.post('/api/conversations/:id/replies', authenticate, async (req: AuthRequest
       createdAt: reply.createdAt ? reply.createdAt.toISOString() : new Date().toISOString(),
       text: reply.text,
       image: reply.image,
+      images: (reply.images && reply.images.length > 0) ? reply.images : (reply.image ? [reply.image] : []),
       likes: reply.likes || 0,
       authorRole: mapRole(reply.authorRole),
       authorBadges: reply.authorBadges || [],

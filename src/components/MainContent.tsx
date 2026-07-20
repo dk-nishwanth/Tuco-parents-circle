@@ -96,8 +96,8 @@ export function MainContent({
     <main className="main min-w-0 flex flex-col gap-4 md:gap-6">
       {/* Highlights of the week — single auto-picked top thread */}
       {showHighlight && threadOfWeek && currentPage === 1 && (
-        <div className="rounded-[1.5rem] md:rounded-[1.75rem] bg-[#FFE259] p-2 md:p-4 shadow-sm">
-          <h2 className="font-brand font-normal text-[28px] md:text-[36px] text-[#4D4747] tracking-[-0.05em] leading-[1] text-center py-2">
+        <div className="rounded-[1.75rem] md:rounded-[2rem] bg-[#FFE259] p-3 md:p-5 shadow-sm">
+          <h2 className="font-brand font-normal text-[30px] md:text-[38px] text-[#4D4747] tracking-[-0.04em] leading-[1] text-center pt-1 pb-3 md:pt-2 md:pb-4">
             highlights of the week
           </h2>
           <ThreadCard
@@ -110,6 +110,7 @@ export function MainContent({
             users={users}
             isLoggedIn={isLoggedIn}
             onJoinClick={onJoinClick}
+            variant="highlighted"
           />
         </div>
       )}

@@ -13,8 +13,10 @@ import {
   Pin,
   Play,
   Share2,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
-import React from 'react';
+import React, { useRef, useState } from 'react';
 
 interface ThreadCardProps {
   thread: Conversation;
@@ -26,6 +28,7 @@ interface ThreadCardProps {
   users?: Record<string, User>;
   onJoinClick?: () => void;
   isLoggedIn?: boolean;
+  variant?: 'default' | 'highlighted';
 }
 
 export function ThreadCard({
@@ -36,7 +39,9 @@ export function ThreadCard({
   isSaved,
   votedState,
   users = {},
+  variant = 'default',
 }: ThreadCardProps) {
+  const isHighlighted = variant === 'highlighted';
   const category = CATEGORIES[thread.category] || { icon: '💬', label: 'General', id: 'general' };
   const catColor = CATEGORY_COLORS[thread.category] || {
     bg: '#FFF0E8',
@@ -79,15 +84,21 @@ export function ThreadCard({
     <article
       id={`post-${thread.id}`}
       onClick={handleCardClick}
-      className="tc w-full bg-white border border-neutral-200 rounded-[1.5rem] md:rounded-[2rem] p-4 md:p-6 hover:shadow-md transition-all cursor-pointer flex gap-2.5 md:gap-4 text-left relative overflow-hidden group scroll-mt-24"
+      className={`tc w-full bg-white rounded-[1.5rem] md:rounded-[2rem] p-4 md:p-6 hover:shadow-md transition-all cursor-pointer flex gap-2.5 md:gap-4 text-left relative overflow-hidden group scroll-mt-24 ${
+        isHighlighted ? 'border-0 shadow-sm' : 'border border-neutral-200'
+      }`}
     >
-      {/* Category-coloured left edge */}
-      <div className="absolute left-0 top-0 bottom-0 w-[6px] pointer-events-none" style={{ backgroundColor: catColor.bg }}></div>
+      {/* Category-coloured left edge — hidden in highlighted variant so the yellow wrapper reads as the accent */}
+      {!isHighlighted && (
+        <div className="absolute left-0 top-0 bottom-0 w-[6px] pointer-events-none" style={{ backgroundColor: catColor.bg }}></div>
+      )}
 
       {/* Vote Box (Left) */}
       <div
         onClick={(e) => e.stopPropagation()}
-        className="flex flex-col items-center gap-0.5 h-fit bg-[#F8F9FA] rounded-2xl px-1.5 py-2 border border-neutral-200/70"
+        className={`flex flex-col items-center gap-0.5 h-fit rounded-2xl px-1.5 py-2 border ${
+          isHighlighted ? 'bg-white border-neutral-200' : 'bg-[#F8F9FA] border-neutral-200/70'
+        }`}
       >
         <button
           onClick={() => onVote(thread.id, 'up')}
@@ -183,7 +194,7 @@ export function ThreadCard({
           read more
         </button>
 
-        {/* Media — tuco video answer or a single image */}
+        {/* Media — tuco video answer, an image carousel, or a single image */}
         {tucoVideoId ? (
           <div className="mb-4 w-full max-w-[300px]">
             <TucoVideoCard
@@ -192,16 +203,25 @@ export function ThreadCard({
               caption="Video answer from tuco team"
             />
           </div>
-        ) : thread.op.image ? (
-          <div className="mb-4">
-            <img
-              src={thread.op.image}
-              alt=""
-              loading="lazy"
-              className="w-full max-w-[520px] rounded-2xl object-cover max-h-[400px]"
-            />
-          </div>
-        ) : null}
+        ) : (() => {
+          const imgs = (thread.op.images && thread.op.images.length > 0)
+            ? thread.op.images
+            : (thread.op.image ? [thread.op.image] : []);
+          if (imgs.length === 0) return null;
+          if (imgs.length === 1) {
+            return (
+              <div className="mb-4">
+                <img
+                  src={imgs[0]}
+                  alt=""
+                  loading="lazy"
+                  className="w-full max-w-[520px] rounded-2xl object-cover max-h-[400px]"
+                />
+              </div>
+            );
+          }
+          return <ImageCarousel images={imgs} />;
+        })()}
 
         {/* Footer: time + share / save / replies / views */}
         <div className="pt-3 md:pt-4 border-t border-neutral-100 flex items-center justify-between gap-2">
@@ -241,5 +261,92 @@ export function ThreadCard({
         </div>
       </div>
     </article>
+  );
+}
+
+// Swipeable image carousel for posts with multiple images.
+// - Native horizontal scroll-snap on mobile (finger-swipe).
+// - Left/right chevron buttons on hover for desktop (hidden on touch).
+// - Dot indicator underneath. All clicks stopPropagation so opening a card
+//   isn't triggered by using the carousel.
+function ImageCarousel({ images }: { images: string[] }) {
+  const scrollerRef = useRef<HTMLDivElement | null>(null);
+  const [index, setIndex] = useState(0);
+
+  const scrollTo = (i: number) => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const clamped = Math.max(0, Math.min(images.length - 1, i));
+    el.scrollTo({ left: clamped * el.clientWidth, behavior: 'smooth' });
+    setIndex(clamped);
+  };
+
+  const handleScroll = () => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const i = Math.round(el.scrollLeft / el.clientWidth);
+    if (i !== index) setIndex(i);
+  };
+
+  return (
+    <div
+      className="mb-4 w-full max-w-[520px] relative group/carousel"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div
+        ref={scrollerRef}
+        onScroll={handleScroll}
+        className="flex overflow-x-auto snap-x snap-mandatory rounded-2xl scrollbar-hide"
+        style={{ scrollbarWidth: 'none' }}
+      >
+        {images.map((src, i) => (
+          <img
+            key={i}
+            src={src}
+            alt=""
+            loading="lazy"
+            className="w-full flex-shrink-0 snap-center object-cover max-h-[400px] rounded-2xl"
+          />
+        ))}
+      </div>
+
+      {/* Chevrons (desktop hover) */}
+      {index > 0 && (
+        <button
+          type="button"
+          onClick={() => scrollTo(index - 1)}
+          aria-label="Previous image"
+          className="hidden md:flex opacity-0 group-hover/carousel:opacity-100 transition-opacity absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/90 shadow-md items-center justify-center text-[#4D4747] hover:bg-white"
+        >
+          <ChevronLeft className="w-5 h-5" strokeWidth={2} />
+        </button>
+      )}
+      {index < images.length - 1 && (
+        <button
+          type="button"
+          onClick={() => scrollTo(index + 1)}
+          aria-label="Next image"
+          className="hidden md:flex opacity-0 group-hover/carousel:opacity-100 transition-opacity absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/90 shadow-md items-center justify-center text-[#4D4747] hover:bg-white"
+        >
+          <ChevronRight className="w-5 h-5" strokeWidth={2} />
+        </button>
+      )}
+
+      {/* Dots */}
+      <div className="flex items-center justify-center gap-1.5 mt-2">
+        {images.map((_, i) => (
+          <button
+            key={i}
+            type="button"
+            onClick={() => scrollTo(i)}
+            aria-label={`Go to image ${i + 1}`}
+            aria-current={i === index ? 'true' : undefined}
+            className={`h-1.5 rounded-full transition-all ${
+              i === index ? 'w-4 bg-[#4D4747]' : 'w-1.5 bg-neutral-300 hover:bg-neutral-400'
+            }`}
+          />
+        ))}
+      </div>
+    </div>
   );
 }
