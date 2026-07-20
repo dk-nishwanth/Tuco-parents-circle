@@ -310,15 +310,16 @@ function ImageCarousel({ images }: { images: string[] }) {
         ))}
       </div>
 
-      {/* Chevrons (desktop hover) */}
+      {/* Always-visible chevrons on desktop (mockup pattern). Hidden when at
+          the edge so users get a clear affordance for where they can go. */}
       {index > 0 && (
         <button
           type="button"
           onClick={() => scrollTo(index - 1)}
           aria-label="Previous image"
-          className="hidden md:flex opacity-0 group-hover/carousel:opacity-100 transition-opacity absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/90 shadow-md items-center justify-center text-[#4D4747] hover:bg-white"
+          className="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-[#4D4747] shadow-md items-center justify-center text-white hover:bg-black transition-colors"
         >
-          <ChevronLeft className="w-5 h-5" strokeWidth={2} />
+          <ChevronLeft className="w-5 h-5" strokeWidth={2.5} />
         </button>
       )}
       {index < images.length - 1 && (
@@ -326,9 +327,9 @@ function ImageCarousel({ images }: { images: string[] }) {
           type="button"
           onClick={() => scrollTo(index + 1)}
           aria-label="Next image"
-          className="hidden md:flex opacity-0 group-hover/carousel:opacity-100 transition-opacity absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/90 shadow-md items-center justify-center text-[#4D4747] hover:bg-white"
+          className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-[#4D4747] shadow-md items-center justify-center text-white hover:bg-black transition-colors"
         >
-          <ChevronRight className="w-5 h-5" strokeWidth={2} />
+          <ChevronRight className="w-5 h-5" strokeWidth={2.5} />
         </button>
       )}
 
