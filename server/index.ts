@@ -668,15 +668,23 @@ app.post('/api/auth/signup', authLimiter, async (req: AuthRequest, res, next) =>
     console.log('👤 Checking if user exists:', normalEmail);
 
     const existing = await prisma.user.findUnique({ where: { email: normalEmail } });
-    if (existing) {
+    // "Unclaimed seed" accounts are stubs seeded before launch: real emails, no
+    // owner, unloginable password (UNCLAIMED_SEED_ marker). When the real email
+    // owner shows up to sign up, treat this as a claim — update the stub in
+    // place with their password/username/city — instead of the 409 dead-end.
+    if (existing && !existing.passwordHash.startsWith('UNCLAIMED_SEED_')) {
       console.log('❌ User already exists');
       return res.status(409).json({ error: 'Email already registered' });
     }
 
     // Enforce a unique pen-name (case-insensitive) so mentions and profiles are
     // unambiguous. Return a friendly error instead of letting the DB constraint throw.
+    // (Skip the check if the collision is the seed stub we're about to overwrite.)
     const nameTaken = await prisma.user.findFirst({
-      where: { username: { equals: username.trim(), mode: 'insensitive' } },
+      where: {
+        username: { equals: username.trim(), mode: 'insensitive' },
+        ...(existing ? { NOT: { id: existing.id } } : {}),
+      },
     });
     if (nameTaken) {
       return res.status(409).json({ error: 'That pen-name is taken — please choose another.' });
@@ -684,22 +692,38 @@ app.post('/api/auth/signup', authLimiter, async (req: AuthRequest, res, next) =>
 
     console.log('🔐 Hashing password...');
     const passwordHash = await bcrypt.hash(password, 12);
-    
-    console.log('💾 Creating user in database...');
-    const user = await prisma.user.create({
-      data: {
-        email: normalEmail,
-        passwordHash,
-        // Trim/canonicalize server-side so no messy data enters regardless of client.
-        username: username.trim(),
-        city: (city || '').trim() || 'India',
-        childAge: normalizeChildAge(childAge),
-        role: 'MEMBER',
-        isVerified: false,
-        trustScore: 50, // 0.5 in frontend scale
-        savedPosts: [], // Initialize empty array
-      },
-    });
+
+    let user;
+    if (existing) {
+      console.log('🔓 Claiming unclaimed seed account:', existing.id);
+      user = await prisma.user.update({
+        where: { id: existing.id },
+        data: {
+          passwordHash,
+          username: username.trim(),
+          city: (city || '').trim() || existing.city || 'India',
+          childAge: normalizeChildAge(childAge) || existing.childAge,
+          isVerified: false,
+          emailNotifications: true,
+        },
+      });
+    } else {
+      console.log('💾 Creating user in database...');
+      user = await prisma.user.create({
+        data: {
+          email: normalEmail,
+          passwordHash,
+          // Trim/canonicalize server-side so no messy data enters regardless of client.
+          username: username.trim(),
+          city: (city || '').trim() || 'India',
+          childAge: normalizeChildAge(childAge),
+          role: 'MEMBER',
+          isVerified: false,
+          trustScore: 50, // 0.5 in frontend scale
+          savedPosts: [], // Initialize empty array
+        },
+      });
+    }
 
     console.log('✅ User created:', user.id);
 
@@ -751,6 +775,13 @@ app.post('/api/auth/login', authLimiter, async (req: AuthRequest, res, next) => 
     const user = await prisma.user.findUnique({ where: { email: normalEmail } });
     if (!user) {
       console.log('❌ User not found');
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+
+    // Unclaimed seed stubs have a non-bcrypt marker in passwordHash. bcrypt.compare
+    // would return false anyway, but skip it to avoid noisy warnings in logs.
+    if (user.passwordHash.startsWith('UNCLAIMED_SEED_')) {
+      console.log('❌ Login attempt on unclaimed seed account:', user.id);
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
@@ -887,6 +918,31 @@ app.get('/api/auth/google/callback', async (req, res, next) => {
 
     let user = await prisma.user.findUnique({ where: { email } });
     let isNew = false;
+    // Unclaimed seed stub → treat this Google sign-in as the first real claim:
+    // overwrite the derived username with the Google display name, mark verified,
+    // give it a real (unpredictable) passwordHash so future password-based flows
+    // work if they set one via reset.
+    if (user && user.passwordHash.startsWith('UNCLAIMED_SEED_')) {
+      isNew = true;
+      const baseUsername = (name || email.split('@')[0]).replace(/[^a-zA-Z0-9_\-. ]/g, '').slice(0, 28) || 'Parent';
+      let username = `${baseUsername}${Math.floor(Math.random() * 900 + 100)}`;
+      for (let attempt = 0; attempt < 10; attempt++) {
+        const clash = await prisma.user.findFirst({
+          where: { username: { equals: username, mode: 'insensitive' }, NOT: { id: user.id } },
+        });
+        if (!clash) break;
+        username = `${baseUsername}${Math.floor(Math.random() * 9000 + 1000)}`;
+      }
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          username,
+          isVerified: true,
+          emailNotifications: true,
+          passwordHash: await bcrypt.hash(googleId + JWT_SECRET, 10),
+        },
+      });
+    }
     if (!user) {
       isNew = true;
       const baseUsername = (name || email.split('@')[0]).replace(/[^a-zA-Z0-9_\-. ]/g, '').slice(0, 28) || 'Parent';
