@@ -96,8 +96,8 @@ export function MainContent({
     <main className="main min-w-0 flex flex-col gap-4 md:gap-6">
       {/* Highlights of the week — single auto-picked top thread */}
       {showHighlight && threadOfWeek && currentPage === 1 && (
-        <div className="rounded-[1.75rem] md:rounded-[2rem] bg-[#FFE259] p-3 md:p-5 shadow-sm">
-          <h2 className="font-brand font-normal text-[30px] md:text-[38px] text-[#4D4747] tracking-[-0.04em] leading-[1] text-center pt-1 pb-3 md:pt-2 md:pb-4">
+        <div className="rounded-[2rem] md:rounded-[2.25rem] bg-[#FFE259] px-4 md:px-6 pt-2 md:pt-3 pb-5 md:pb-7 shadow-sm">
+          <h2 className="font-brand font-normal text-[32px] md:text-[42px] text-[#4D4747] tracking-[-0.04em] leading-[1.05] text-center pt-2 pb-4 md:pt-3 md:pb-5">
             highlights of the week
           </h2>
           <ThreadCard
