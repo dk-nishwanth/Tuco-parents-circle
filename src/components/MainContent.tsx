@@ -97,7 +97,7 @@ export function MainContent({
       {/* Highlights of the week — single auto-picked top thread */}
       {showHighlight && threadOfWeek && currentPage === 1 && (
         <div className="rounded-[1.5rem] md:rounded-[1.75rem] bg-[#FFE259] p-2 md:p-4 shadow-sm">
-          <h2 className="font-display font-bold text-[22px] md:text-[26px] text-[#4D4747] tracking-[-0.03em] leading-tight text-center py-2">
+          <h2 className="font-brand font-normal text-[28px] md:text-[36px] text-[#4D4747] tracking-[-0.05em] leading-[1] text-center py-2">
             highlights of the week
           </h2>
           <ThreadCard

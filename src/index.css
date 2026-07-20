@@ -1,9 +1,23 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
+/* Brand display font (tuco wordmark + section headings). Drop the licensed
+   More Sugar file at public/fonts/MoreSugar-Regular.woff2 to enable it; until
+   then it falls back to Poppins. local() avoids a 404 for anyone who already
+   has the font installed (e.g. designers with the Figma font). */
+@font-face {
+  font-family: "More Sugar";
+  src: local("More Sugar"), local("MoreSugar Regular"), local("MoreSugar-Regular"),
+       url("/fonts/MoreSugar-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 @theme {
   --font-sans: "Poppins", "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Poppins", sans-serif;
+  --font-brand: "More Sugar", "Poppins", sans-serif;
   
   --color-tuco-cyan: #35B5EC;
   --color-tuco-cyan-hover: #219FD5;

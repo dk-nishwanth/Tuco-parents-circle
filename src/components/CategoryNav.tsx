@@ -34,7 +34,7 @@ export function CategoryNav({ activeCategory, onCategoryChange }: CategoryNavPro
       className="w-full border-b border-neutral-100 bg-white"
     >
       <div className="max-w-7xl mx-auto px-3 md:px-8 py-4 md:py-5">
-        <div className="flex gap-5 md:gap-10 justify-start md:justify-center overflow-x-auto scrollbar-hide">
+        <div className="flex gap-5 md:gap-10 justify-start md:justify-center overflow-x-auto md:overflow-visible scrollbar-hide py-3">
           {NAV_ITEMS.map(item => {
             const isActive = activeCategory === item.id;
             return (
@@ -43,10 +43,10 @@ export function CategoryNav({ activeCategory, onCategoryChange }: CategoryNavPro
                 onClick={() => onCategoryChange?.(item.id)}
                 aria-label={item.label}
                 aria-pressed={isActive}
-                className="group flex flex-col items-center gap-2 shrink-0 w-[72px] md:w-[88px] focus:outline-none"
+                className="group flex flex-col items-center gap-2 shrink-0 w-[72px] md:w-[104px] focus:outline-none"
               >
                 <span
-                  className={`flex items-center justify-center rounded-full w-[64px] h-[64px] md:w-[80px] md:h-[80px] transition-all duration-200 group-hover:scale-105 group-active:scale-95 ${
+                  className={`flex items-center justify-center rounded-full w-[64px] h-[64px] md:w-[92px] md:h-[92px] transition-all duration-200 group-hover:scale-105 group-active:scale-95 ${
                     isActive
                       ? 'ring-[3px] ring-[#35B5EC] ring-offset-2 ring-offset-white'
                       : 'ring-0'

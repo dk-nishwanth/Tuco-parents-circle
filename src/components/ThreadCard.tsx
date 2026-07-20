@@ -87,7 +87,7 @@ export function ThreadCard({
       {/* Vote Box (Left) */}
       <div
         onClick={(e) => e.stopPropagation()}
-        className="flex flex-col items-center gap-1 h-fit min-w-[40px] pt-1"
+        className="flex flex-col items-center gap-0.5 h-fit bg-[#F8F9FA] rounded-2xl px-1.5 py-2 border border-neutral-200/70"
       >
         <button
           onClick={() => onVote(thread.id, 'up')}
