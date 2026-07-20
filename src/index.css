@@ -1,15 +1,20 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
-/* Brand display font (tuco wordmark + section headings). Drop the licensed
-   More Sugar file at public/fonts/MoreSugar-Regular.woff2 to enable it; until
-   then it falls back to Poppins. local() avoids a 404 for anyone who already
-   has the font installed (e.g. designers with the Figma font). */
+/* Brand display font (tuco wordmark + section headings). More Sugar by Kimmy
+   Design — Regular is used for headings, Thin (mapped to weight 300) for the
+   "parenting circle" wordmark, per the Figma spec. Falls back to Poppins. */
 @font-face {
   font-family: "More Sugar";
-  src: local("More Sugar"), local("MoreSugar Regular"), local("MoreSugar-Regular"),
-       url("/fonts/MoreSugar-Regular.woff2") format("woff2");
+  src: url("/fonts/MoreSugar-Regular.ttf") format("truetype");
   font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "More Sugar";
+  src: url("/fonts/MoreSugar-Thin.ttf") format("truetype");
+  font-weight: 300;
   font-style: normal;
   font-display: swap;
 }

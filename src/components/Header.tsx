@@ -197,7 +197,7 @@ export function Header({
           aria-label="Go to tucokids.com"
         >
           <img src={tucoLogo} alt="tuco Kids" className="h-8 md:h-9 w-auto" />
-          <span className="font-brand font-normal text-[#4D4747] text-[16px] leading-[0.86] tracking-[-0.05em]">
+          <span className="font-brand font-light text-[#4D4747] text-[16px] leading-[0.86] tracking-[-0.05em]">
             parenting<br />circle
           </span>
         </a>
