@@ -99,7 +99,7 @@ export function MainContent({
         // Negative margins on mobile break out of the parent `px-3 sm:px-4`
         // gutter so the yellow bleeds to the viewport edges (as in the mockup);
         // desktop stays inside the column.
-        <div className="-mx-3 sm:-mx-4 md:mx-0 rounded-none sm:rounded-[2rem] md:rounded-[2.25rem] bg-[#FFE259] px-4 md:px-6 pt-2 md:pt-3 pb-5 md:pb-7 shadow-sm">
+        <div className="-mx-3 sm:-mx-4 md:mx-0 rounded-none sm:rounded-[2rem] md:rounded-[2.25rem] bg-[#FFE259] px-4 md:px-6 pt-2 md:pt-3 pb-5 md:pb-7 shadow-sm md:border-[3px] md:border-tuco-cyan">
           <h2 className="font-brand font-normal text-[32px] md:text-[42px] text-[#4D4747] tracking-[-0.04em] leading-[1.05] text-center pt-2 pb-4 md:pt-3 md:pb-5">
             highlights of the week
           </h2>
