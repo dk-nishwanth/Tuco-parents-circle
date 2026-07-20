@@ -4,6 +4,7 @@ import { track, setAnalyticsUser, trackPageView } from './utils/analytics';
 import { AdminPanel } from './components/AdminPanel';
 import { Header } from './components/Header';
 import { LeftSidebar } from './components/LeftSidebar';
+import { CategoryNav } from './components/CategoryNav';
 import { MainContent } from './components/MainContent';
 import { RightSidebar } from './components/RightSidebar';
 import { Modal } from './components/Modal';
@@ -1423,6 +1424,14 @@ function AppContent() {
         onClearNotifications={clearNotifications}
         onThreadOpen={handleThreadOpen}
       />
+
+      {/* Category circle nav */}
+      {!isSearchMode && (
+        <CategoryNav
+          activeCategory={activeCategory}
+          onCategoryChange={handleCategoryChange}
+        />
+      )}
 
       {/* Mobile Left Sidebar Overlay */}
       {isMobileLeftSidebarOpen && (

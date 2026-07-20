@@ -1,10 +1,7 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Conversation, User } from '../types';
-import { CATEGORIES } from '../data/categories';
 import { ThreadCard } from './ThreadCard';
-import { RightSidebar } from './RightSidebar';
-import { filterThreads, sortThreads, getAvatarColor, countAllReplies } from '../utils/helpers';
-import { Award, Flame, Pin, Tv, ChevronDown, Globe, Package, Star, Users } from 'lucide-react';
+import { filterThreads, sortThreads } from '../utils/helpers';
 
 interface MainContentProps {
   activeCategory: string;
@@ -35,81 +32,30 @@ export function MainContent({
   onSavePost,
   savedPosts = [],
   votedThreads,
-  onResetToDefault,
-  onStartDiscussion,
   users = {},
-  featuredThreads = [],
-  onCategoryChange,
-  onOpenRightSidebar,
   isLoggedIn = false,
   onJoinClick,
   currentUser,
 }: MainContentProps) {
-  const [sortType, setSortType] = useState<string>('new');
+  const [sortType] = useState<string>('new');
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [isSortOpen, setIsSortOpen] = useState(false);
-  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'feed' | 'about'>('feed');
-  
-  const mobileSortRef = useRef<HTMLDivElement>(null);
-  const desktopSortRef = useRef<HTMLDivElement>(null);
-  const categoryRef = useRef<HTMLDivElement>(null);
-  
+
   const THREADS_PER_PAGE = 10;
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      const isOutsideMobile = mobileSortRef.current && !mobileSortRef.current.contains(event.target as Node);
-      const isOutsideDesktop = desktopSortRef.current && !desktopSortRef.current.contains(event.target as Node);
-      const isOutsideCategory = categoryRef.current && !categoryRef.current.contains(event.target as Node);
-      
-      if (isOutsideMobile && isOutsideDesktop) {
-        setIsSortOpen(false);
-      }
-      if (categoryRef.current && isOutsideCategory) {
-        setIsCategoryOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
   // Reset to the first page whenever the visible set changes (switching
-  // category, running a search, or changing sort). Without this, being on
-  // page 3 and opening a category with fewer pages leaves paginatedThreads
-  // empty and wrongly shows the "No discussions found" empty state.
+  // category or running a search). Without this, being on page 3 and opening
+  // a category with fewer pages leaves paginatedThreads empty and wrongly
+  // shows the "No discussions found" empty state.
   useEffect(() => {
     setCurrentPage(1);
   }, [activeCategory, searchTerm, sortType]);
 
-  // Reset activeTab to 'feed' on desktop view
-  useEffect(() => {
-    function handleResize() {
-      if (window.innerWidth >= 768) { // md breakpoint
-        setActiveTab('feed');
-      }
-    }
-    // Initial check
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  const processedThreads = useMemo(() => {
-    let filtered: Conversation[];
-    if (activeCategory === 'saved') {
-      filtered = conversations.filter(c => savedPosts.includes(c.id));
-    } else {
-      filtered = filterThreads(conversations, searchTerm, activeCategory);
-    }
-    return sortThreads(filtered, sortType, currentUser?.childAge);
-  }, [conversations, searchTerm, activeCategory, sortType, savedPosts, currentUser?.childAge]);
-
-  // Real "trending" ordering for the carousel (previously just the first 5
-  // threads unsorted). Mirrors the score used in RightSidebar so both agree:
-  // votes + replies + views with a 7-day recency boost. Falls back to all
-  // conversations if none are marked approved, so the carousel never vanishes.
-  const trendingThreads = useMemo(() => {
+  // "Thread of the week" — the single highest-scoring thread, auto-picked.
+  // Score mirrors the old Trending carousel: votes + replies + views with a
+  // 7-day recency boost. Only surfaced on the main "all" feed (not category
+  // filters, saved, or search). Falls back to all conversations if none are
+  // approved, so the highlight never vanishes.
+  const threadOfWeek = useMemo(() => {
     const score = (c: Conversation) => {
       const ageHours = c.createdAt
         ? (Date.now() - new Date(c.createdAt).getTime()) / (1000 * 60 * 60)
@@ -119,327 +65,80 @@ export function MainContent({
     };
     const approved = conversations.filter(c => c.moderationStatus === 'approved');
     const pool = approved.length > 0 ? approved : conversations;
-    return [...pool].sort((a, b) => score(b) - score(a)).slice(0, 5);
+    if (pool.length === 0) return null;
+    return [...pool].sort((a, b) => score(b) - score(a))[0] ?? null;
   }, [conversations]);
+
+  // The highlight only shows on the default "all" feed (no search).
+  const showHighlight = activeCategory === 'all' && !searchTerm && !!threadOfWeek;
+
+  const processedThreads = useMemo(() => {
+    let filtered: Conversation[];
+    if (activeCategory === 'saved') {
+      filtered = conversations.filter(c => savedPosts.includes(c.id));
+    } else {
+      filtered = filterThreads(conversations, searchTerm, activeCategory);
+    }
+    // Avoid showing the "thread of the week" twice — pull it out of the list
+    // when it's featured at the top of the "all" feed.
+    if (showHighlight && threadOfWeek) {
+      filtered = filtered.filter(c => c.id !== threadOfWeek.id);
+    }
+    return sortThreads(filtered, sortType, currentUser?.childAge);
+  }, [conversations, searchTerm, activeCategory, sortType, savedPosts, currentUser?.childAge, showHighlight, threadOfWeek]);
 
   const totalPages = Math.ceil(processedThreads.length / THREADS_PER_PAGE);
   const startIndex = (currentPage - 1) * THREADS_PER_PAGE;
   const endIndex = startIndex + THREADS_PER_PAGE;
   const paginatedThreads = processedThreads.slice(startIndex, endIndex);
 
-  const handleSortChange = (newSort: string) => {
-    // "For Your Age" needs a logged-in viewer with a childAge. If either is
-    // missing, don't switch — bounce the user through auth/complete-profile
-    // instead. Doubles as a soft conversion hook for guests.
-    if (newSort === 'for-you' && !isLoggedIn) {
-      onJoinClick?.();
-      setIsSortOpen(false);
-      return;
-    }
-    setSortType(newSort);
-    setCurrentPage(1);
-    setIsSortOpen(false);
-  };
-
-  const sortOptions = [
-    { key: 'trending', label: 'Trending', icon: '🔥', desc: 'Highest Votes' },
-    { key: 'new', label: 'New', icon: '✨', desc: 'Recent Posts' },
-    { key: 'unanswered', label: 'Unanswered', icon: '❓', desc: 'Needs Support' },
-    { key: 'for-you', label: 'For Your Age', icon: '👶', desc: currentUser?.childAge ? `Parents of ${currentUser.childAge}` : 'Sign in to personalize' },
-  ];
-
-  const currentSort = sortOptions.find(o => o.key === sortType) || sortOptions[0];
-
-  const categoryItem = CATEGORIES[activeCategory];
-  const selectTitle =
-    activeCategory === 'saved'
-      ? 'Saved Discussions'
-      : categoryItem
-        ? categoryItem.label
-        : 'all discussions';
-  const selectIcon = activeCategory === 'saved' ? '📌' : categoryItem ? categoryItem.icon : <Users className="w-4 h-4 text-tuco-cyan" strokeWidth={1.5} />;
-
   return (
     <main className="main min-w-0 flex flex-col gap-4 md:gap-6">
-      {/* Mobile View Specific Header (Exact Design) */}
-      <div className="md:hidden flex flex-col gap-3 mb-4">
-        {/* Title and Category Row */}
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex flex-col gap-0.5 min-w-0">
-            <h2 className="font-display font-black text-[20px] text-[#4D4747] tracking-[-0.01em] leading-[1.1] whitespace-nowrap">
-              tuco parents circle
-            </h2>
-            <p className="font-sans text-[13px] text-neutral-600 font-medium">
-              {processedThreads.length} discussions found
-            </p>
-          </div>
-          
-          {/* Category Dropdown (Mobile) */}
-          <div className="relative shrink-0" ref={categoryRef}>
-            <button
-              onClick={() => setIsCategoryOpen(!isCategoryOpen)}
-              className="flex items-center gap-1 px-3 py-1.5 bg-white border border-neutral-300 rounded-full text-[14px] font-display font-bold text-[#4D4747] shadow-sm hover:bg-neutral-50 transition-colors"
-            >
-              {activeCategory === 'saved' ? (
-                <span className="text-lg">📌</span>
-              ) : categoryItem ? (
-                <span className="text-lg">{categoryItem.icon}</span>
-              ) : (
-                <span className="text-lg">🗣️</span>
-              )}
-              <span className="truncate max-w-[120px]">
-                {activeCategory === 'saved' 
-                  ? 'saved discussions' 
-                  : categoryItem 
-                    ? (categoryItem.id === 'skincare' ? 'skincare' : categoryItem.label.toLowerCase())
-                    : 'all discussions'}
-              </span>
-              <ChevronDown className={`w-3.5 h-3.5 text-neutral-600 transition-transform ${isCategoryOpen ? 'rotate-180' : ''}`} strokeWidth={2} />
-            </button>
-            
-            {isCategoryOpen && (
-              <div className="absolute right-0 mt-2 w-52 bg-white border border-neutral-200 rounded-2xl shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                <div className="py-2">
-                  <button
-                    onClick={() => {
-                      onCategoryChange?.('all');
-                      setIsCategoryOpen(false);
-                    }}
-                    className={`w-full text-left px-4 py-3 text-sm font-display font-bold flex items-center gap-3 transition-colors ${
-                      activeCategory === 'all' ? 'bg-tuco-cyan/5 text-tuco-cyan' : 'text-neutral-600 hover:bg-neutral-50'
-                    }`}
-                  >
-                    <Users className="w-5 h-5" strokeWidth={1.5} />
-                    <span>all discussions</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      onCategoryChange?.('saved');
-                      setIsCategoryOpen(false);
-                    }}
-                    className={`w-full text-left px-4 py-3 text-sm font-display font-bold flex items-center gap-3 transition-colors ${
-                      activeCategory === 'saved' ? 'bg-tuco-cyan/5 text-tuco-cyan' : 'text-neutral-600 hover:bg-neutral-50'
-                    }`}
-                  >
-                    <span className="text-lg">📌</span>
-                    <span>saved discussions</span>
-                  </button>
-                  {Object.values(CATEGORIES).map(cat => (
-                    <button
-                      key={cat.id}
-                      onClick={() => {
-                        onCategoryChange?.(cat.id);
-                        setIsCategoryOpen(false);
-                      }}
-                      className={`w-full text-left px-4 py-3 text-sm font-display font-bold flex items-center gap-3 transition-colors ${
-                        activeCategory === cat.id ? 'bg-tuco-cyan/5 text-tuco-cyan' : 'text-neutral-600 hover:bg-neutral-50'
-                      }`}
-                    >
-                      <span className="text-lg">{cat.icon}</span>
-                      <span>{cat.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Divider */}
-        <div className="w-full h-[2px] bg-neutral-200"></div>
-
-        {/* Tabs and Sort Row */}
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex gap-2">
-            <button
-              onClick={() => setActiveTab('feed')}
-              className={`px-5 py-1.5 rounded-full text-[15px] font-display font-bold transition-all ${
-                activeTab === 'feed' ? 'bg-[#FFE259] text-[#4D4747] shadow-sm' : 'bg-[#E7F9FF] text-[#4D4747] shadow-sm hover:bg-[#FFE259]'
-              }`}
-            >
-              feed
-            </button>
-            <button
-              onClick={() => setActiveTab('about')}
-              className={`px-5 py-1.5 rounded-full text-[15px] font-display font-bold transition-all ${
-                activeTab === 'about' ? 'bg-[#FFE259] text-[#4D4747] shadow-sm' : 'bg-white text-[#4D4747] shadow-sm hover:bg-[#FFE259]'
-              }`}
-            >
-              about
-            </button>
-          </div>
-
-          {/* Sort Dropdown (Mobile Tab Row) */}
-          <div className="relative shrink-0" ref={mobileSortRef}>
-            <button
-              onClick={() => setIsSortOpen(!isSortOpen)}
-              className="flex items-center gap-1 px-3 py-1.5 bg-white border border-neutral-300 rounded-full text-[14px] font-display font-bold text-[#4D4747] shadow-sm hover:bg-neutral-50 transition-colors"
-            >
-              <span className="text-lg">{currentSort.icon}</span>
-              <span>{currentSort.label.toLowerCase()}</span>
-              <ChevronDown className={`w-3.5 h-3.5 text-neutral-600 transition-transform ${isSortOpen ? 'rotate-180' : ''}`} strokeWidth={2} />
-            </button>
-
-            {isSortOpen && (
-              <div className="absolute right-0 mt-2 w-40 bg-white border border-neutral-200 rounded-2xl shadow-lg z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 origin-top-right">
-                <div className="py-1">
-                  {sortOptions.map(option => (
-                    <button
-                      key={option.key}
-                      onClick={() => handleSortChange(option.key)}
-                      className={`w-full text-left px-3 py-2 text-xs font-display font-bold flex flex-col transition-colors ${
-                        sortType === option.key ? 'bg-tuco-cyan/5 text-tuco-cyan' : 'text-neutral-600 hover:bg-neutral-50'
-                      }`}
-                    >
-                      <span className="flex items-center gap-2 lowercase">
-                        <span>{option.icon}</span>
-                        <span>{option.label}</span>
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Desktop View Header */}
-      <div className="hidden md:flex main-top flex flex-col gap-3 pb-4 mb-4 border-b border-neutral-100">
-        <div className="flex flex-row items-start justify-between gap-3">
-          <div className="flex flex-col gap-1 min-w-0">
-            <h2 className="font-display font-bold text-[20px] text-[#4D4747] tracking-[-0.05em] leading-[100%] flex items-center gap-2">
-              <span className="truncate">tuco Parents Circle</span>
-            </h2>
-            <p className="font-sans text-[11px] text-neutral-400 font-medium">
-              {processedThreads.length} Discussions found
-            </p>
-          </div>
-          
-          <div className="flex items-center gap-3">
-            <div className="relative" ref={desktopSortRef}>
-              <button
-                onClick={() => setIsSortOpen(!isSortOpen)}
-                className="flex items-center gap-2 px-4 py-2 bg-white border border-neutral-200 rounded-full text-sm font-display font-bold text-[#4D4747] hover:border-tuco-cyan hover:bg-neutral-50 transition-all shadow-xs"
-              >
-                <span>{currentSort.icon} <span className="text-neutral-400 font-medium">{currentSort.label}</span></span>
-                <ChevronDown className={`w-4 h-4 transition-transform ${isSortOpen ? 'rotate-180' : ''}`} strokeWidth={1.5} />
-              </button>
-
-              {isSortOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white border border-neutral-200 rounded-2xl shadow-lg z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 origin-top-right">
-                  <div className="py-1">
-                    {sortOptions.map(option => (
-                      <button
-                        key={option.key}
-                        onClick={() => handleSortChange(option.key)}
-                        className={`w-full text-left px-4 py-2.5 text-sm font-display font-bold flex flex-col transition-colors ${
-                          sortType === option.key ? 'bg-tuco-cyan/5 text-tuco-cyan' : 'text-neutral-600 hover:bg-neutral-50'
-                        }`}
-                      >
-                        <span className="flex items-center gap-2">
-                          <span>{option.icon}</span>
-                          <span>{option.label}</span>
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {activeTab === 'about' ? (
-        <div className="flex flex-col gap-4">
-          <RightSidebar
-            onTrendingClick={onThreadOpen}
-            featuredThreads={featuredThreads}
-            onFeaturedClick={onThreadOpen}
-            variant="sidebar"
-            conversations={conversations}
+      {/* Highlights of the week — single auto-picked top thread */}
+      {showHighlight && threadOfWeek && currentPage === 1 && (
+        <div className="rounded-[1.5rem] md:rounded-[1.75rem] bg-[#FFE259] p-2 md:p-4 shadow-sm">
+          <h2 className="font-display font-bold text-[22px] md:text-[26px] text-[#4D4747] tracking-[-0.03em] leading-tight text-center py-2">
+            highlights of the week
+          </h2>
+          <ThreadCard
+            thread={threadOfWeek}
+            onOpen={onThreadOpen}
+            onVote={onVote}
+            onSavePost={onSavePost}
+            isSaved={savedPosts.includes(threadOfWeek.id)}
+            votedState={votedThreads[threadOfWeek.id] || null}
+            users={users}
+            isLoggedIn={isLoggedIn}
+            onJoinClick={onJoinClick}
           />
         </div>
-      ) : (
-        <>
-          {/* Trending Section - Both Mobile and Desktop */}
-          <div className="flex flex-col gap-4">
-            <div className="flex items-center gap-2 px-1">
-              <Pin className="w-5 h-5 text-[#4D4747]" strokeWidth={2} />
-              <h3 className="font-display font-bold text-[20px] text-[#4D4747] tracking-[-0.05em] leading-[100%]">Trending</h3>
-              <ChevronDown className="w-5 h-5 text-[#4D4747] rotate-[-90deg]" strokeWidth={2} />
-            </div>
-            <div className="overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide">
-              <div className="flex gap-4 min-w-max">
-                {trendingThreads.map(thread => (
-                  <div 
-                    key={thread.id}
-                    onClick={() => onThreadOpen(thread.id)}
-                    className="w-[280px] bg-white border border-neutral-200 rounded-[1.5rem] p-5 shadow-sm cursor-pointer hover:border-tuco-cyan/30 transition-all"
-                  >
-                    <h4 className="font-display font-bold text-[15px] text-[#4D4747] leading-snug line-clamp-2 mb-1">
-                      {thread.title}
-                    </h4>
-                    <p className="text-[11px] text-neutral-400 font-medium mb-4">
-                      {thread.votes} Votes • {countAllReplies(thread.replies)} Comments
-                    </p>
-                    <div className="flex items-center gap-2">
-                      <div 
-                        className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shadow-sm" 
-                        style={{ backgroundColor: getAvatarColor(thread.op.author), color: '#4D4747' }}
-                      >
-                        {thread.op.author[0].toUpperCase()}
-                      </div>
-                      <span className="text-[11px] font-sans font-medium text-[#4D4747]">By {thread.op.author}</span>
-                      {!isLoggedIn && (
-                        <span
-                          onClick={e => { e.stopPropagation(); onJoinClick?.(); }}
-                          className="bg-[#E7F9FF] text-[10px] text-[#4D4747] font-sans font-medium uppercase px-2.5 py-0.5 rounded-md border border-[#E7F9FF]/10 shadow-sm cursor-pointer hover:bg-[#35B5EC] hover:text-white transition-colors"
-                        >
-                          Join now
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Feed Section */}
-          <div className="flex flex-col gap-5">
-            <div className="flex items-center gap-2 px-1">
-              <Tv className="w-5 h-5 text-[#4D4747]" strokeWidth={2} />
-              <h3 className="font-display font-bold text-[20px] text-[#4D4747] tracking-[-0.05em] leading-[100%]">Feed</h3>
-            </div>
-            <div className="thread-list flex flex-col gap-4">
-              {paginatedThreads.length > 0 ? (
-                paginatedThreads.map(thread => (
-                  <ThreadCard
-                    key={thread.id}
-                    thread={thread}
-                    onOpen={onThreadOpen}
-                    onVote={onVote}
-                    onSavePost={onSavePost}
-                    isSaved={savedPosts.includes(thread.id)}
-                    votedState={votedThreads[thread.id] || null}
-                    users={users}
-                    isLoggedIn={isLoggedIn}
-                    onJoinClick={onJoinClick}
-                  />
-                ))
-              ) : (
-                <div className="no-results bg-white border border-neutral-200 rounded-3xl p-10 text-center flex flex-col items-center justify-center">
-                  <p className="font-display font-bold text-neutral-800">No discussions found!</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </>
       )}
 
-      {totalPages > 1 && activeTab === 'feed' && paginatedThreads.length > 0 && (
+      {/* Feed */}
+      <div className="thread-list flex flex-col gap-4">
+        {paginatedThreads.length > 0 ? (
+          paginatedThreads.map(thread => (
+            <ThreadCard
+              key={thread.id}
+              thread={thread}
+              onOpen={onThreadOpen}
+              onVote={onVote}
+              onSavePost={onSavePost}
+              isSaved={savedPosts.includes(thread.id)}
+              votedState={votedThreads[thread.id] || null}
+              users={users}
+              isLoggedIn={isLoggedIn}
+              onJoinClick={onJoinClick}
+            />
+          ))
+        ) : (
+          <div className="no-results bg-white border border-neutral-200 rounded-3xl p-10 text-center flex flex-col items-center justify-center">
+            <p className="font-display font-bold text-neutral-800">No discussions found!</p>
+          </div>
+        )}
+      </div>
+
+      {totalPages > 1 && paginatedThreads.length > 0 && (
         <div className="pagination-wrapper mt-6 md:mt-8 flex items-center justify-center gap-1 md:gap-2 flex-wrap">
           <button
             onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}

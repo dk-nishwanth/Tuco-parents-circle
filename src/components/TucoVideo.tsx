@@ -48,7 +48,7 @@ export function findTucoVideoReply(thread: Pick<Conversation, 'replies'>): Reply
 interface TucoVideoCardProps {
   videoId: string;
   caption?: string;
-  variant?: 'feed' | 'thread' | 'feed-fullbleed';
+  variant?: 'feed' | 'thread' | 'feed-fullbleed' | 'feed-inline';
 }
 
 export function TucoVideoCard({ videoId, caption, variant = 'feed' }: TucoVideoCardProps) {
@@ -65,6 +65,8 @@ export function TucoVideoCard({ videoId, caption, variant = 'feed' }: TucoVideoC
   const wrap =
     variant === 'feed-fullbleed'
       ? 'w-[calc(100%-1rem)] max-w-[92vw] mx-auto rounded-2xl md:max-w-[360px]'
+      : variant === 'feed-inline'
+      ? 'w-full rounded-2xl'
       : 'w-full max-w-[420px] mx-auto rounded-2xl mt-3 mb-2';
 
   return (

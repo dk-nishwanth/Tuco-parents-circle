@@ -1,5 +1,5 @@
 import { Conversation } from '../types';
-import { Flame, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import mascot from '../assets/mascot.png';
 
 interface RightSidebarProps {
@@ -28,10 +28,6 @@ export function RightSidebar({
     const recencyBoost = Math.max(0, 1 - ageHours / 168); // decays over 7 days
     return (c.votes || 0) * 2 + (c.replies?.length || 0) * 3 + (c.views || 0) * 0.1 + recencyBoost * 20;
   };
-
-  const trendingThreads = [...approvedConvs]
-    .sort((a, b) => getTrendingScore(b) - getTrendingScore(a))
-    .slice(0, 5);
 
   const spotlightThreads = [...approvedConvs]
     .filter(c => c.isFeatured || (c.votes || 0) > 10 || (c.replies?.length || 0) > 5)
@@ -87,41 +83,6 @@ export function RightSidebar({
                   <p className="text-[11px] text-neutral-500 font-medium">
                     By {item.op.author} 🌟
                   </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Card 3: Trending Now */}
-        {trendingThreads.length > 0 && (
-          <div className={`${itemClasses} bg-[#E7F9FF] border border-neutral-200 rounded-2xl p-5 shadow-sm`}>
-            <div className="flex items-center gap-2 mb-4">
-              <Flame className="w-4 h-4 text-[#4D4747]" strokeWidth={2} />
-              <h4 className="font-display font-bold text-xs text-[#4D4747] uppercase">
-                TRENDING NOW
-              </h4>
-            </div>
-            <div className="space-y-3">
-              {trendingThreads.map((trend, idx) => (
-                <div
-                  key={trend.id}
-                  className="flex items-start gap-3 cursor-pointer hover:bg-white/60 rounded-xl p-2 -mx-2 transition-colors"
-                  onClick={() => onTrendingClick(trend.id)}
-                >
-                  <span className={`font-display font-black text-sm leading-none pt-0.5 shrink-0 ${idx === 0 ? 'text-orange-500' : idx === 1 ? 'text-neutral-500' : 'text-neutral-400'}`}>
-                    #{idx + 1}
-                  </span>
-                  <div className="flex flex-col gap-0.5 min-w-0">
-                    <p className="font-display font-bold text-[12px] text-[#4D4747] line-clamp-2 leading-snug">
-                      {trend.title}
-                    </p>
-                    <div className="flex items-center gap-2 text-[10px] text-neutral-400 font-medium">
-                      <span>▲ {trend.votes || 0}</span>
-                      <span>·</span>
-                      <span>💬 {trend.replies?.length || 0}</span>
-                    </div>
-                  </div>
                 </div>
               ))}
             </div>

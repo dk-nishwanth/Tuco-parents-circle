@@ -1,5 +1,5 @@
 import { useState, ChangeEvent, useRef, useEffect, KeyboardEvent } from 'react';
-import { MessageSquarePlus, Search, LogOut, User, X, Menu, Bell, ChevronDown, MessageSquare, Award, ThumbsUp, Trash2 } from 'lucide-react';
+import { LogOut, User, Bell, MessageSquare, Award, ThumbsUp, Trash2, Search } from 'lucide-react';
 import tucoLogo from '../assets/tuco-logo.webp';
 import { Conversation, User as UserType, Notification } from '../types';
 import { searchThreadsWithRanking } from '../utils/helpers';
@@ -58,10 +58,6 @@ function SearchInput({
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    // Enter closes the suggestions dropdown and defers to the search-results
-    // page (which is already active while searchTerm has content). We used to
-    // auto-open the top-ranked thread here, which felt like "search only ever
-    // opens one thread" — the results page shows the full ranked list instead.
     if (e.key === 'Enter') {
       e.preventDefault();
       setShowSuggestions(false);
@@ -72,18 +68,19 @@ function SearchInput({
   };
 
   return (
-    <div ref={wrapperRef} className={`relative ${compact ? 'flex-1' : 'flex-1 max-w-sm'}`}>
+    <div ref={wrapperRef} className="relative w-full">
       <div
         className={`flex items-center bg-[#F7F7F7] border border-neutral-200 rounded-lg focus-within:bg-white focus-within:border-tuco-cyan/30 transition-all ${
-          compact ? 'py-1 px-3' : 'py-2 px-3'
+          compact ? 'py-1.5 px-3' : 'py-2 px-3'
         }`}
       >
         <Search className="w-4 h-4 text-[#4D4747] mr-2 shrink-0" strokeWidth={2} />
         <input
           type="text"
           placeholder="search"
+          autoFocus
           className={`w-full border-none bg-transparent font-sans outline-none text-[#4D4747] font-medium placeholder-neutral-400 ${
-            compact ? 'text-xs' : 'text-sm'
+            compact ? 'text-sm' : 'text-sm'
           }`}
           value={searchTerm}
           onChange={handleSearch}
@@ -92,7 +89,7 @@ function SearchInput({
         />
       </div>
       {showSuggestions && suggestions.length > 0 && (
-        <div className="absolute top-full left-1/2 -translate-x-1/2 w-[90vw] md:w-full md:left-0 md:right-0 md:translate-x-0 mt-2 bg-white border border-neutral-200 rounded-2xl shadow-xl z-[60] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-neutral-200 rounded-2xl shadow-xl z-[60] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
           <div className="py-2">
             {suggestions.map(thread => (
               <button
@@ -124,6 +121,26 @@ function SearchInput({
     </div>
   );
 }
+
+// Two wavy lines (≈) matching the design's menu glyph.
+function WaveIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M3 9c1.5-2 3-2 4.5 0S10.5 11 12 9s3-2 4.5 0S19.5 11 21 9" />
+      <path d="M3 15c1.5-2 3-2 4.5 0S10.5 17 12 15s3-2 4.5 0S19.5 17 21 15" />
+    </svg>
+  );
+}
+
 export function Header({
   searchTerm,
   onSearch,
@@ -132,8 +149,6 @@ export function Header({
   currentUser,
   onLogout,
   onLoginClick,
-  onModerationClick,
-  onAdminClick,
   onProfileClick,
   onNotificationsClick,
   onSuggestionSelect,
@@ -145,9 +160,11 @@ export function Header({
 }: HeaderProps) {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotificationsDropdown, setShowNotificationsDropdown] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
   const unreadCount = notifications.filter(n => !n.read).length;
   const notificationsRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -157,63 +174,127 @@ export function Header({
       if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
         setShowUserMenu(false);
       }
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setShowSearch(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const iconBtn =
+    'p-2 relative hover:bg-neutral-100 rounded-full transition-colors text-[#4D4747]';
+
   return (
     <header className="header bg-white border-b border-neutral-100 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-3 md:px-4 py-1.5 flex items-center gap-2 md:gap-3">
-        {/* Left: Logo (Desktop) / Menu + Logo (Mobile) */}
-        <div className="flex items-center gap-2 shrink-0 w-32 md:w-auto justify-start">
-          <button
-            onClick={onOpenCategories}
-            aria-label="Open categories menu"
-            className="p-1 md:hidden"
-          >
-            <Menu className="w-6 h-6 text-[#4D4747]" strokeWidth={2} />
-          </button>
-          <a
-            href="https://tucokids.com/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center cursor-pointer select-none"
-            aria-label="Go to tucokids.com"
-          >
-            <img src={tucoLogo} alt="tuco Kids" className="h-8 w-auto" />
-          </a>
-        </div>
+      <div className="max-w-7xl mx-auto px-3 md:px-6 py-2 flex items-center gap-2 md:gap-3">
+        {/* Left: Logo + parenting circle */}
+        <a
+          href="https://tucokids.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 shrink-0 cursor-pointer select-none"
+          aria-label="Go to tucokids.com"
+        >
+          <img src={tucoLogo} alt="tuco Kids" className="h-8 md:h-9 w-auto" />
+          <span className="font-display font-bold text-[#4D4747] leading-[0.92] text-[14px] md:text-[16px] tracking-tight">
+            parenting<br />circle
+          </span>
+        </a>
 
-        {/* Center: Search */}
-        <div className="flex-1 min-w-0 flex justify-center">
-          <div className="max-w-sm w-full">
-            <SearchInput
-              searchTerm={searchTerm}
-              onSearch={onSearch}
-              conversations={conversations}
-              onSuggestionSelect={onSuggestionSelect}
-              compact={true}
-            />
-          </div>
-        </div>
+        <div className="flex-1" />
 
         {/* Right: Actions */}
-        <div className="flex items-center gap-1 md:gap-2 shrink-0 w-32 md:w-auto justify-end">
+        <div className="flex items-center gap-0.5 md:gap-1.5 shrink-0">
+          {/* Search */}
+          <div className="relative" ref={searchRef}>
+            <button
+              onClick={() => setShowSearch(v => !v)}
+              aria-label="Search"
+              aria-expanded={showSearch}
+              className={iconBtn}
+            >
+              <Search className="w-5 h-5" strokeWidth={2} />
+            </button>
+            {showSearch && (
+              <div className="fixed md:absolute top-[58px] md:top-full left-3 right-3 md:left-auto md:right-0 md:mt-2 md:w-80 z-[60]">
+                <SearchInput
+                  searchTerm={searchTerm}
+                  onSearch={onSearch}
+                  conversations={conversations}
+                  onSuggestionSelect={id => {
+                    onSuggestionSelect?.(id);
+                    setShowSearch(false);
+                  }}
+                  compact={true}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* User */}
+          {currentUser ? (
+            <div className="relative" ref={userMenuRef}>
+              <button
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                aria-label="Account menu"
+                className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-neutral-100 transition-colors font-display font-bold text-[13px] text-[#35B5EC]"
+              >
+                {currentUser.username.substring(0, 2).toUpperCase()}
+              </button>
+
+              {showUserMenu && (
+                <div className="absolute right-0 mt-2 w-48 bg-white border border-neutral-200 rounded-lg shadow-lg z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="px-4 py-3 border-b border-neutral-100">
+                    <p className="text-xs text-neutral-500 font-medium">Logged in as</p>
+                    <p className="font-display font-bold text-sm text-[#4D4747] mt-1 truncate">{currentUser.username}</p>
+                  </div>
+                  <div className="px-2 py-2 space-y-0.5">
+                    <button
+                      onClick={() => {
+                        onProfileClick?.();
+                        setShowUserMenu(false);
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-sm font-bold text-[#4D4747] hover:bg-neutral-100 rounded"
+                    >
+                      <User className="w-4 h-4" />
+                      Profile
+                    </button>
+                    <button
+                      onClick={() => {
+                        onLogout();
+                        setShowUserMenu(false);
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-sm font-bold text-red-600 hover:bg-red-50 rounded"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Sign Out
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <button onClick={onLoginClick} aria-label="Sign in" className={iconBtn}>
+              <User className="w-5 h-5" strokeWidth={2} />
+            </button>
+          )}
+
+          {/* Notifications */}
           <div className="relative" ref={notificationsRef}>
             <button
               onClick={() => setShowNotificationsDropdown(!showNotificationsDropdown)}
               aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : 'Notifications'}
-              className="p-1 relative hover:bg-neutral-50 rounded-full transition-colors"
+              className={iconBtn}
             >
-              <Bell className="w-5 h-5 text-[#4D4747]" strokeWidth={2} />
+              <Bell className="w-5 h-5" strokeWidth={2} />
               {unreadCount > 0 && (
-                <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-tuco-orange rounded-full border-2 border-white shadow-sm"></span>
+                <span className="absolute top-1 right-1 w-2 h-2 bg-tuco-orange rounded-full border-2 border-white shadow-sm"></span>
               )}
             </button>
 
             {showNotificationsDropdown && (
-              <div className="fixed md:absolute top-[64px] md:top-full left-4 right-4 md:left-auto md:right-0 md:mt-2 md:w-80 bg-white border border-neutral-200 rounded-2xl shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="fixed md:absolute top-[58px] md:top-full left-4 right-4 md:left-auto md:right-0 md:mt-2 md:w-80 bg-white border border-neutral-200 rounded-2xl shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
                 <div className="px-4 py-3 border-b border-neutral-50 bg-neutral-50/50 flex items-center justify-between">
                   <h3 className="font-display font-bold text-sm text-[#4D4747]">Notifications</h3>
                   <div className="flex items-center gap-2">
@@ -237,7 +318,7 @@ export function Header({
                     )}
                   </div>
                 </div>
-                
+
                 <div className="max-h-[400px] overflow-y-auto">
                   {notifications.length > 0 ? (
                     <div className="divide-y divide-neutral-50">
@@ -285,7 +366,7 @@ export function Header({
                     </div>
                   )}
                 </div>
-                
+
                 {notifications.length > 0 && (
                   <div className="p-2 border-t border-neutral-50">
                     <button
@@ -302,155 +383,25 @@ export function Header({
               </div>
             )}
           </div>
-          
+
+          {/* Wave / menu */}
+          <button
+            onClick={onOpenCategories}
+            aria-label="Menu"
+            className={iconBtn}
+          >
+            <WaveIcon className="w-5 h-5" />
+          </button>
+
+          {/* Ask */}
           <button
             onClick={onNewPostClick}
-            className="bg-[#35B5EC] text-white px-3 md:px-5 py-1.5 md:py-2 rounded-lg text-xs md:text-[13px] font-display font-bold transition-all shadow-sm active:scale-95"
+            className="ml-1 bg-[#35B5EC] text-white px-3 md:px-5 py-1.5 md:py-2 rounded-lg text-xs md:text-[13px] font-display font-bold transition-all shadow-sm active:scale-95"
           >
             ask
           </button>
-
-          {currentUser ? (
-            <div className="relative" ref={userMenuRef}>
-              <button
-                onClick={() => setShowUserMenu(!showUserMenu)}
-                className="w-8 h-8 md:w-9 md:h-9 bg-white border border-[#35B5EC] rounded-lg flex items-center justify-center text-xs md:text-[13px] font-display font-bold text-[#35B5EC] shadow-sm hover:bg-[#35B5EC]/5 transition-colors"
-              >
-                {currentUser.username.substring(0, 2).toUpperCase()}
-              </button>
-              
-              {showUserMenu && (
-                <div className="absolute right-0 mt-2 w-48 bg-white border border-neutral-200 rounded-lg shadow-lg z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                  <div className="px-4 py-3 border-b border-neutral-100">
-                    <p className="text-xs text-neutral-500 font-medium">Logged in as</p>
-                    <p className="font-display font-bold text-sm text-[#4D4747] mt-1 truncate">{currentUser.username}</p>
-                  </div>
-                  <div className="px-2 py-2 space-y-0.5">
-                    <button
-                      onClick={() => {
-                        onProfileClick?.();
-                        setShowUserMenu(false);
-                      }}
-                      className="w-full flex items-center gap-2 px-3 py-2 text-sm font-bold text-[#4D4747] hover:bg-neutral-100 rounded"
-                    >
-                      <User className="w-4 h-4" />
-                      Profile
-                    </button>
-                    <button
-                      onClick={() => {
-                        onLogout();
-                        setShowUserMenu(false);
-                      }}
-                      className="w-full flex items-center gap-2 px-3 py-2 text-sm font-bold text-red-600 hover:bg-red-50 rounded"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      Sign Out
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          ) : (
-            <button
-              onClick={onLoginClick}
-              aria-label="Sign in"
-              className="w-8 h-8 md:w-9 md:h-9 bg-white border border-[#35B5EC] rounded-lg flex items-center justify-center text-[#35B5EC] shadow-sm hover:bg-[#35B5EC]/5 transition-colors"
-            >
-              <User className="w-4 h-4 md:w-[18px] md:h-[18px]" strokeWidth={2.25} />
-            </button>
-          )}
         </div>
       </div>
     </header>
-  );
-}
-function UserMenu({
-  currentUser,
-  onLogout,
-  onModerationClick,
-  onAdminClick,
-  onProfileClick,
-  showUserMenu,
-  setShowUserMenu,
-  compact = false,
-}: {
-  currentUser: UserType;
-  onLogout: () => void;
-  onModerationClick?: () => void;
-  onAdminClick?: () => void;
-  onProfileClick?: () => void;
-  showUserMenu: boolean;
-  setShowUserMenu: (v: boolean) => void;
-  compact?: boolean;
-}) {
-  return (
-    <div className={`relative ${compact ? '' : 'ml-2'}`}>
-      <button
-        onClick={() => setShowUserMenu(!showUserMenu)}
-        className={`rounded-lg bg-tuco-cyan/10 border border-tuco-cyan text-tuco-cyan font-display font-bold flex items-center justify-center hover:bg-tuco-cyan/20 transition-all ${
-          compact ? 'w-7 h-7 text-xs' : 'w-9 h-9 text-xs'
-        }`}
-      >
-        {currentUser.username.slice(0, 2).toUpperCase()}
-      </button>
-      {showUserMenu && (
-        <div
-          className={`absolute right-0 mt-2 bg-white border border-neutral-200 rounded-lg shadow-lg z-50 ${
-            compact ? 'w-40' : 'w-56'
-          }`}
-        >
-          <div className={`border-b border-neutral-100 ${compact ? 'px-3 py-2' : 'px-4 py-3'}`}>
-            <p className="text-xs text-neutral-500 font-medium">Logged in as</p>
-            <p className="font-display font-bold text-sm text-neutral-900 mt-1 truncate">
-              {currentUser.username}
-            </p>
-          </div>
-          <div className="px-2 py-2 space-y-0.5">
-            <button
-              onClick={() => {
-                onProfileClick?.();
-                setShowUserMenu(false);
-              }}
-              className="w-full flex items-center gap-2 px-3 py-2 text-sm font-bold text-neutral-700 hover:bg-neutral-100 rounded"
-            >
-              <User className="w-4 h-4" />
-              Profile
-            </button>
-            <button
-              onClick={() => {
-                onLogout();
-                setShowUserMenu(false);
-              }}
-              className="w-full flex items-center gap-2 px-3 py-2 text-sm font-bold text-red-600 hover:bg-red-50 rounded"
-            >
-              <LogOut className="w-4 h-4" />
-              Sign Out
-            </button>
-            {(currentUser.role === 'moderator' || currentUser.role === 'tuco_team') && (
-              <button
-                onClick={() => {
-                  onAdminClick?.();
-                  setShowUserMenu(false);
-                }}
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm font-bold text-purple-700 hover:bg-purple-50 rounded"
-              >
-                ⚙️ Admin
-              </button>
-            )}
-            {currentUser.role === 'moderator' && (
-              <button
-                onClick={() => {
-                  onModerationClick?.();
-                  setShowUserMenu(false);
-                }}
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm font-bold text-orange-700 hover:bg-orange-50 rounded"
-              >
-                ⚖️ Moderation
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
   );
 }
