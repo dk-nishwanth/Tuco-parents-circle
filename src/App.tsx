@@ -1166,7 +1166,9 @@ function AppContent() {
     const isInCoolingPeriod = currentUser.role === 'member' && accountAgeDays < 1;
     
     const analysis = analyzeContent(text + ' ' + title, category);
-    let moderationStatus: ModerationStatus = 'pending';
+    // Auto-publish: posts go live immediately unless they trip the child-safety
+    // backstop (CLEAR_VIOLATION → rejected). Mirrors the server policy.
+    let moderationStatus: ModerationStatus = 'approved';
     if (analysis.outcome === 'CLEAR_VIOLATION') {
       moderationStatus = 'rejected';
     }
@@ -1233,14 +1235,18 @@ function AppContent() {
       saveUser(updatedUser);
       checkAndAwardBadges(updatedUser);
       setIsNewPostOpen(false);
-      
-      // All posts go to moderation — always show pending review message
-      setPendingReview({
-        threadId: newThread.id,
-        title,
-        category,
-        submittedAt: new Date().toISOString(),
-      });
+
+      // Posts auto-publish and appear live in the feed immediately. Only show
+      // the "in review" screen if a post actually came back pending (rare —
+      // e.g. a future manual-review category). Approved posts skip it.
+      if (moderationStatus === 'pending') {
+        setPendingReview({
+          threadId: newThread.id,
+          title,
+          category,
+          submittedAt: new Date().toISOString(),
+        });
+      }
     } catch (error) {
       console.error('Failed to create thread:', error);
       setWarningModal({
