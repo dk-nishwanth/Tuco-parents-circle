@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { User } from '../types';
 import { api } from '../utils/api';
 import { track } from '../utils/analytics';
-import { normalizeChildAge } from '../data/childAgeOptions';
+import { CHILD_AGE_OPTIONS } from '../data/childAgeOptions';
 import allImg from '../assets/all.png';
 import activeKidsImg from '../assets/activekids.png';
 import schoolImg from '../assets/school.png';
@@ -32,22 +32,19 @@ const INTERESTS: Interest[] = [
   { id: 'kids_growth', label: 'kids & growth', img: kidsGrowthImg, bg: '#F2A0A0' },
 ];
 
-const MIN_AGE = 3;
-const MAX_AGE = 15;
 const MAX_INTERESTS = 6;
 
 export function CompleteProfileModal({ user, onComplete }: Props) {
   const [step, setStep] = useState<'age' | 'interests'>('age');
-  const [ageInput, setAgeInput] = useState<string>('');
+  const [childAge, setChildAge] = useState<string>(user.childAge || '');
   const [selectedInterests, setSelectedInterests] = useState<string[]>(user.interests || []);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const handleNextStep = (e: React.FormEvent) => {
     e.preventDefault();
-    const age = parseInt(ageInput, 10);
-    if (Number.isNaN(age) || age < MIN_AGE || age > MAX_AGE) {
-      setError(`Please enter an age between ${MIN_AGE} and ${MAX_AGE} years.`);
+    if (!childAge) {
+      setError('Please choose your child\'s age.');
       return;
     }
     setError('');
@@ -66,13 +63,12 @@ export function CompleteProfileModal({ user, onComplete }: Props) {
     setError('');
     setLoading(true);
     try {
-      const canonicalAge = normalizeChildAge(ageInput) || ageInput;
       const updated = await api.updateMe({
-        childAge: canonicalAge,
+        childAge,
         interests: selectedInterests,
       });
       track('profile_completed', {
-        child_age: canonicalAge,
+        child_age: childAge,
         interests_count: selectedInterests.length,
       });
       onComplete(updated);
@@ -88,41 +84,54 @@ export function CompleteProfileModal({ user, onComplete }: Props) {
       <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-7 animate-in fade-in slide-in-from-bottom-4 duration-300">
         {step === 'age' ? (
           <form onSubmit={handleNextStep}>
-            <div className="text-center mb-5">
-              <p className="font-brand text-[26px] leading-tight text-[#4D4747]">welcome to</p>
-              {/* Small stacked wordmark matching the header brand */}
-              <div className="flex flex-col items-center mt-2">
-                <span className="font-brand text-[54px] leading-[0.9] text-[#4D4747]">
-                  tüco<sup className="text-[16px] align-super">®</sup>
+            <div className="text-center mb-6">
+              {/* Poppins per Figma */}
+              <p className="font-sans font-medium text-[22px] text-[#4D4747] leading-tight">
+                welcome to
+              </p>
+              {/* tuco K!DS wordmark — More Sugar brand font, same stack as header */}
+              <div className="flex flex-col items-center mt-3">
+                <span className="font-brand text-[64px] leading-[0.9] text-[#4D4747]">
+                  tüco<sup className="text-[18px] align-super">®</sup>
                 </span>
-                <span className="font-brand text-[14px] tracking-[0.15em] text-[#4D4747] -mt-1">
+                <span className="font-brand text-[15px] tracking-[0.18em] text-[#4D4747] -mt-1">
                   K!DS
                 </span>
-                <span className="font-brand text-[22px] leading-tight text-[#4D4747] mt-2">
+                {/* Figma spec: More Sugar Thin, 24px, line-height 86%, letter-spacing -5% */}
+                <span
+                  className="font-brand font-thin text-[#4D4747] mt-3"
+                  style={{ fontSize: '24px', lineHeight: '0.86', letterSpacing: '-0.05em' }}
+                >
                   parenting circle
                 </span>
               </div>
             </div>
 
+            {/* Question left-aligned per mockup */}
             <label
               htmlFor="child-age-input"
-              className="block font-brand text-[18px] text-[#4D4747] text-center mb-2"
+              className="block font-sans font-medium text-[16px] text-[#4D4747] mb-1.5"
             >
               how old is your child?
             </label>
-            <input
+            <select
               id="child-age-input"
-              type="number"
-              inputMode="numeric"
-              min={MIN_AGE}
-              max={MAX_AGE}
-              value={ageInput}
-              onChange={e => setAgeInput(e.target.value)}
-              className="w-full px-4 py-3 border-2 border-tuco-cyan rounded-xl text-center text-lg font-display font-bold text-neutral-800 focus:outline-none focus:ring-2 focus:ring-tuco-cyan/30 transition-all"
+              value={childAge}
+              onChange={e => setChildAge(e.target.value)}
+              className="w-full px-4 py-2.5 border-2 border-tuco-cyan rounded-xl text-sm font-sans text-neutral-800 bg-white focus:outline-none focus:ring-2 focus:ring-tuco-cyan/30 transition-all"
               autoFocus
-            />
-            <p className="text-[11px] text-neutral-400 text-center mt-1.5">
-              Enter an age between {MIN_AGE}–{MAX_AGE} yrs of age
+            >
+              <option value="">Select age group…</option>
+              {CHILD_AGE_OPTIONS.map(o => (
+                <option key={o} value={o}>{o}</option>
+              ))}
+            </select>
+            {/* Figma spec: Poppins Medium, 12px, letter-spacing -5% */}
+            <p
+              className="font-sans font-medium text-neutral-400 text-center mt-1.5"
+              style={{ fontSize: '12px', lineHeight: '1', letterSpacing: '-0.05em' }}
+            >
+              Enter an age between 3-15 yrs of age
             </p>
 
             {error && (
@@ -130,9 +139,18 @@ export function CompleteProfileModal({ user, onComplete }: Props) {
             )}
 
             <div className="flex justify-center mt-6">
+              {/* Figma spec: 140x35, radius 28, Poppins Medium 16px */}
               <button
                 type="submit"
-                className="bg-[#FFE259] hover:bg-[#FFD62E] text-[#4D4747] font-brand text-[18px] px-8 py-3 rounded-full shadow-sm transition-colors"
+                className="bg-[#FFE259] hover:bg-[#FFD62E] text-[#4D4747] font-sans font-medium flex items-center justify-center transition-colors"
+                style={{
+                  width: '140px',
+                  height: '35px',
+                  borderRadius: '28px',
+                  fontSize: '16px',
+                  lineHeight: '1',
+                  letterSpacing: '-0.05em',
+                }}
               >
                 next step →
               </button>
