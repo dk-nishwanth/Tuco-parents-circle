@@ -1235,18 +1235,9 @@ function AppContent() {
       saveUser(updatedUser);
       checkAndAwardBadges(updatedUser);
       setIsNewPostOpen(false);
-
-      // Posts auto-publish and appear live in the feed immediately. Only show
-      // the "in review" screen if a post actually came back pending (rare —
-      // e.g. a future manual-review category). Approved posts skip it.
-      if (moderationStatus === 'pending') {
-        setPendingReview({
-          threadId: newThread.id,
-          title,
-          category,
-          submittedAt: new Date().toISOString(),
-        });
-      }
+      // Posts auto-publish: the new thread is already prepended to the feed
+      // above, so it's live immediately. No "in review" screen (only clear
+      // violations are rejected, and those return earlier).
     } catch (error) {
       console.error('Failed to create thread:', error);
       setWarningModal({
