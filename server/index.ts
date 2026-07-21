@@ -1567,12 +1567,26 @@ app.post('/api/conversations/:id/replies', authenticate, async (req: AuthRequest
   console.log('💬 Adding reply to conversation:', req.params.id);
   try {
     const conversationId = parseInt(req.params.id);
+    if (Number.isNaN(conversationId)) {
+      return res.status(400).json({ error: 'Invalid thread id' });
+    }
     console.log('📝 Parsing reply data...');
     const parsed = replySchema.safeParse(req.body);
     if (!parsed.success) {
       const firstError = parsed.error.issues[0];
       console.log('❌ Reply validation failed:', firstError);
       return res.status(400).json({ error: firstError?.message || 'Validation failed' });
+    }
+
+    // Check the thread exists before we hand off to Prisma. Without this a
+    // missing/deleted thread bubbles up as a foreign-key crash returning 500;
+    // now we return a clean 404 the client can surface.
+    const thread = await prisma.conversation.findUnique({
+      where: { id: conversationId },
+      select: { id: true },
+    });
+    if (!thread) {
+      return res.status(404).json({ error: 'Thread not found' });
     }
 
     console.log('👤 Finding user:', req.userId);
