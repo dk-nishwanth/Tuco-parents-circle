@@ -1144,10 +1144,13 @@ app.post('/api/uploads/presign', authenticate, async (req: AuthRequest, res, nex
 });
 
 const createThreadSchema = z.object({
-  title: z.string().min(5).max(300),
+  title: z.string().trim().min(5, 'Please give your question a title of at least 5 characters.').max(300),
   category: z.string(),
-  city: z.string(),
-  text: z.string().min(10).max(5000),
+  city: z.string().optional().default(''),
+  // Body is optional: an image-only post is valid. When there's no image we
+  // require at least 10 characters (enforced by the refine below), matching
+  // the client. Friendly messages instead of raw Zod "Too small" text.
+  text: z.string().max(5000).optional().default(''),
   image: z.string().optional(),
   // Multi-image: max 4 images per post. Older clients still send `image` (single);
   // newer clients send `images` (array). Server accepts either and normalises.
@@ -1155,7 +1158,10 @@ const createThreadSchema = z.object({
   moderationStatus: z.string().optional(),
   greyAreaFlags: z.array(z.string()).optional(),
   reviewPriority: z.number().optional(),
-});
+}).refine(
+  d => d.text.trim().length >= 10 || (d.images && d.images.length > 0) || !!d.image,
+  { message: 'Add a few more details (at least 10 characters) or attach an image.', path: ['text'] },
+);
 
 app.post('/api/conversations', authenticate, async (req: AuthRequest, res, next) => {
   console.log('💬 Creating new conversation...');
@@ -1556,8 +1562,8 @@ app.delete('/api/conversations/:id', authenticate, async (req: AuthRequest, res,
 // ------------------------------
 
 const replySchema = z.object({
-  text: z.string().min(1).max(3000),
-  city: z.string(),
+  text: z.string().trim().min(1, 'Please write a reply.').max(3000),
+  city: z.string().optional().default(''),
   image: z.string().optional(),
   images: z.array(z.string()).max(4).optional(),
   parentId: z.number().optional(),

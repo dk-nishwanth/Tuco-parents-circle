@@ -76,12 +76,12 @@ export function NewPostModal({ isOpen, onClose, onSubmit, istucoTeam }: NewPostM
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) {
-      setErrorMsg('Please specify a title or question.');
+    if (title.trim().length < 5) {
+      setErrorMsg('Please give your question a title of at least 5 characters.');
       return;
     }
-    if (!text.trim() && images.length === 0) {
-      setErrorMsg('Please write an explanation or upload an image.');
+    if (images.length === 0 && text.trim().length < 10) {
+      setErrorMsg('Add a few more details (at least 10 characters) or attach an image.');
       return;
     }
     const finalCategory = category === 'other' ? (customCategory.trim().toLowerCase().replace(/\s+/g, '-') || 'other') : category;
