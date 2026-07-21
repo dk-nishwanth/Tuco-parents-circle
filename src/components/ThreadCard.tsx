@@ -194,14 +194,19 @@ export function ThreadCard({
           read more
         </button>
 
-        {/* Media — tuco video answer, an image carousel, or a single image */}
+        {/* Media — tuco video answer, an image carousel, or a single image.
+            Wrapped in a flex-centered container so posts with different image
+            aspect ratios (portrait / landscape / square) always sit centered
+            in the card as in the mockup. */}
         {tucoVideoId ? (
-          <div className="mb-4 w-full max-w-[300px]">
-            <TucoVideoCard
-              videoId={tucoVideoId}
-              variant="feed-inline"
-              caption="Video answer from tuco team"
-            />
+          <div className="mb-4 flex justify-center">
+            <div className="w-full max-w-[300px]">
+              <TucoVideoCard
+                videoId={tucoVideoId}
+                variant="feed-inline"
+                caption="Video answer from tuco team"
+              />
+            </div>
           </div>
         ) : (() => {
           const imgs = (thread.op.images && thread.op.images.length > 0)
@@ -210,7 +215,7 @@ export function ThreadCard({
           if (imgs.length === 0) return null;
           if (imgs.length === 1) {
             return (
-              <div className="mb-4">
+              <div className="mb-4 flex justify-center">
                 <img
                   src={imgs[0]}
                   alt=""
@@ -220,7 +225,11 @@ export function ThreadCard({
               </div>
             );
           }
-          return <ImageCarousel images={imgs} />;
+          return (
+            <div className="mb-4 flex justify-center">
+              <ImageCarousel images={imgs} />
+            </div>
+          );
         })()}
 
         {/* Footer: time + share / save / replies / views */}
