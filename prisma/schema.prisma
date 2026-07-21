@@ -24,6 +24,10 @@ model User {
   trustScore         Int            @default(0)
   emailNotifications Boolean        @default(true)
   savedPosts         Int[]
+  // Categories the user picked during the welcome flow. Powers a "For you"
+  // sort weighting and could seed personalised digests later. Empty = show
+  // everything without personalisation.
+  interests          String[]       @default([])
   chatSessions       ChatSession[]
   conversations      Conversation[]
   notifications      Notification[]

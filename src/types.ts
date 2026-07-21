@@ -100,6 +100,7 @@ export interface User {
   trustScore: number;
   emailNotifications?: boolean;
   savedPosts?: number[];
+  interests?: string[];
 }
 export type BadgeType =
   | 'community_member'

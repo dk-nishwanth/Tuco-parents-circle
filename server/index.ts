@@ -456,6 +456,7 @@ const formatUser = (u: any) => ({
   trustScore: (u.trustScore || 0) / 100, // stored as 0-100 in DB, frontend expects 0-1
   emailNotifications: u.emailNotifications ?? true,
   savedPosts: u.savedPosts || [],
+  interests: u.interests || [],
 });
 
 // Recursively format replies including nested ones
@@ -2104,7 +2105,7 @@ app.delete('/api/notifications', authenticate, async (req: AuthRequest, res, nex
 
 app.patch('/api/users/me', authenticate, async (req: AuthRequest, res, next) => {
   try {
-    const { username, city, childAge, emailNotifications, savedPosts, role } = req.body;
+    const { username, city, childAge, emailNotifications, savedPosts, role, interests } = req.body;
 
     const updateData: any = {};
     if (username) {
@@ -2122,6 +2123,10 @@ app.patch('/api/users/me', authenticate, async (req: AuthRequest, res, next) => 
     if (childAge !== undefined) updateData.childAge = normalizeChildAge(childAge);
     if (emailNotifications !== undefined) updateData.emailNotifications = emailNotifications;
     if (savedPosts !== undefined) updateData.savedPosts = savedPosts;
+    if (Array.isArray(interests)) {
+      // Cap at 6 category slugs, drop empties / duplicates, keep as strings.
+      updateData.interests = Array.from(new Set(interests.map(String).filter(Boolean))).slice(0, 6);
+    }
     // trustScore, badges, postCount, replyCount, totalUpvotes are server-managed only
 
     // Only TUCO_TEAM may change roles, and only via the admin endpoint for OTHER
