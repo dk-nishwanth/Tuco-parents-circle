@@ -2124,8 +2124,14 @@ app.patch('/api/users/me', authenticate, async (req: AuthRequest, res, next) => 
     if (emailNotifications !== undefined) updateData.emailNotifications = emailNotifications;
     if (savedPosts !== undefined) updateData.savedPosts = savedPosts;
     if (Array.isArray(interests)) {
-      // Cap at 6 category slugs, drop empties / duplicates, keep as strings.
-      updateData.interests = Array.from(new Set(interests.map(String).filter(Boolean))).slice(0, 6);
+      // Only accept known category IDs so a bad client can't stuff arbitrary
+      // strings into the personalisation signal. Deduped and capped at 6.
+      const VALID_INTERESTS = new Set([
+        'active_kids', 'school', 'skincare', 'parenting_hacks', 'kids_growth',
+      ]);
+      updateData.interests = Array.from(new Set(
+        interests.map(String).filter(v => VALID_INTERESTS.has(v))
+      )).slice(0, 6);
     }
     // trustScore, badges, postCount, replyCount, totalUpvotes are server-managed only
 

@@ -3,7 +3,6 @@ import { User } from '../types';
 import { api } from '../utils/api';
 import { track } from '../utils/analytics';
 import { CHILD_AGE_OPTIONS } from '../data/childAgeOptions';
-import allImg from '../assets/all.png';
 import activeKidsImg from '../assets/activekids.png';
 import schoolImg from '../assets/school.png';
 import skincareImg from '../assets/skincareandhaircare.png';
@@ -23,8 +22,9 @@ interface Interest {
   img: string;
   bg: string;
 }
+// Real categories only — "all" is a nav shortcut, not a topic anyone can
+// have an interest in, so it's excluded from the picker.
 const INTERESTS: Interest[] = [
-  { id: 'all', label: 'all', img: allImg, bg: '#BFEAF7' },
   { id: 'active_kids', label: 'active kids', img: activeKidsImg, bg: '#9FE0B4' },
   { id: 'school', label: 'school & learning', img: schoolImg, bg: '#F6C6A0' },
   { id: 'skincare', label: 'skincare & haircare', img: skincareImg, bg: '#FBE08A' },
@@ -32,7 +32,10 @@ const INTERESTS: Interest[] = [
   { id: 'kids_growth', label: 'kids & growth', img: kidsGrowthImg, bg: '#F2A0A0' },
 ];
 
-const MAX_INTERESTS = 6;
+// One selection allowed per real category (5). The Figma mockup shows six
+// tiles because it duplicates "active kids" as a placeholder, so 5 matches
+// what the app can actually filter on.
+const MAX_INTERESTS = 5;
 
 export function CompleteProfileModal({ user, onComplete }: Props) {
   const [step, setStep] = useState<'age' | 'interests'>('age');
@@ -162,7 +165,7 @@ export function CompleteProfileModal({ user, onComplete }: Props) {
               what interests you?
             </h2>
             <p className="font-brand text-[16px] text-[#4D4747] text-center mb-5">
-              select upto {MAX_INTERESTS}
+              select upto 5
             </p>
 
             <div className="grid grid-cols-3 gap-3 mb-5">
