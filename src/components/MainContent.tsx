@@ -2,6 +2,18 @@ import { useState, useMemo, useEffect } from 'react';
 import { Conversation, User } from '../types';
 import { ThreadCard } from './ThreadCard';
 import { filterThreads, sortThreads } from '../utils/helpers';
+import { findTucoVideoReply, parseYouTubeId } from './TucoVideo';
+
+// A thread "has video" when a tuco-team reply embeds a YouTube link, and
+// "has image" when the OP attached any picture. Used for both the highlights
+// picker and the feed ordering — media-rich threads sit at the top.
+function threadHasVideo(c: Conversation): boolean {
+  const r = findTucoVideoReply(c);
+  return !!(r && parseYouTubeId(r.text));
+}
+function threadHasImage(c: Conversation): boolean {
+  return (c.op.images?.length ?? 0) > 0 || !!c.op.image;
+}
 
 interface MainContentProps {
   activeCategory: string;
@@ -55,18 +67,21 @@ export function MainContent({
     setCurrentPage(1);
   }, [activeCategory, searchTerm, sortType]);
 
-  // "Thread of the week" — the single highest-scoring thread, auto-picked.
-  // Score mirrors the old Trending carousel: votes + replies + views with a
-  // 7-day recency boost. Only surfaced on the main "all" feed (not category
-  // filters, saved, or search). Falls back to all conversations if none are
-  // approved, so the highlight never vanishes.
+  // "Thread of the week" — auto-picked. Strong preference for a thread with
+  // a tuco-team video reply (per product ask: highlight should be a video
+  // whenever one exists), then falls back to image threads, then to text.
+  // Within each tier we tie-break on the same trending signal as before:
+  // votes + replies + views + 7-day recency.
   const threadOfWeek = useMemo(() => {
     const score = (c: Conversation) => {
       const ageHours = c.createdAt
         ? (Date.now() - new Date(c.createdAt).getTime()) / (1000 * 60 * 60)
         : 999;
       const recencyBoost = Math.max(0, 1 - ageHours / 168);
-      return (c.votes || 0) * 2 + (c.replies?.length || 0) * 3 + (c.views || 0) * 0.1 + recencyBoost * 20;
+      const trending = (c.votes || 0) * 2 + (c.replies?.length || 0) * 3 + (c.views || 0) * 0.1 + recencyBoost * 20;
+      // Large tier gaps so a low-engagement video still beats a viral text post.
+      const mediaTier = threadHasVideo(c) ? 10_000 : threadHasImage(c) ? 5_000 : 0;
+      return mediaTier + trending;
     };
     const approved = conversations.filter(c => c.moderationStatus === 'approved');
     const pool = approved.length > 0 ? approved : conversations;
@@ -89,7 +104,21 @@ export function MainContent({
     if (showHighlight && threadOfWeek) {
       filtered = filtered.filter(c => c.id !== threadOfWeek.id);
     }
-    return sortThreads(filtered, sortType, currentUser?.childAge, currentUser?.interests);
+    const sorted = sortThreads(filtered, sortType, currentUser?.childAge, currentUser?.interests);
+    // Media-first ordering (stable): keep pinned at the very top, then video
+    // threads, then image threads, then everything else. `sortThreads` already
+    // handled personalisation and pinning inside each media tier, so a stable
+    // partition here preserves that order.
+    const mediaRank = (c: Conversation): number => {
+      if (c.isPinned) return 0;
+      if (threadHasVideo(c)) return 1;
+      if (threadHasImage(c)) return 2;
+      return 3;
+    };
+    return sorted
+      .map((c, i) => ({ c, rank: mediaRank(c), i }))
+      .sort((a, b) => a.rank - b.rank || a.i - b.i)
+      .map(x => x.c);
   }, [conversations, searchTerm, activeCategory, sortType, savedPosts, currentUser?.childAge, currentUser?.interests, showHighlight, threadOfWeek]);
 
   const totalPages = Math.ceil(processedThreads.length / THREADS_PER_PAGE);

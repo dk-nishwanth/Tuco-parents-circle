@@ -1,5 +1,5 @@
 import { useState, ChangeEvent, useRef, useEffect, KeyboardEvent } from 'react';
-import { LogOut, User, Bell, MessageSquare, Award, ThumbsUp, Trash2, Search } from 'lucide-react';
+import { LogOut, User, Bell, MessageSquare, Award, ThumbsUp, Trash2, Search, ArrowLeft } from 'lucide-react';
 import tucoLogo from '../assets/tuco-logo.webp';
 import { Conversation, User as UserType, Notification } from '../types';
 import { searchThreadsWithRanking } from '../utils/helpers';
@@ -21,6 +21,9 @@ interface HeaderProps {
   onMarkAsRead?: (id: number) => void;
   onClearNotifications?: () => void;
   onThreadOpen?: (id: number) => void;
+  // Optional back-arrow button shown before the logo. Rendered inside the
+  // thread modal so users can return to the feed; omitted on the dashboard.
+  onBack?: () => void;
 }
 
 function SearchInput({
@@ -157,6 +160,7 @@ export function Header({
   onMarkAsRead,
   onClearNotifications,
   onThreadOpen,
+  onBack,
 }: HeaderProps) {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotificationsDropdown, setShowNotificationsDropdown] = useState(false);
@@ -188,6 +192,16 @@ export function Header({
   return (
     <header className="header bg-white border-b border-neutral-100 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-3 md:px-6 py-2 flex items-center gap-2 md:gap-3">
+        {/* Back button — only when the parent passes onBack (thread modal). */}
+        {onBack && (
+          <button
+            onClick={onBack}
+            aria-label="Go back"
+            className="p-1.5 -ml-1 rounded-full hover:bg-neutral-100 text-[#4D4747] transition-colors shrink-0"
+          >
+            <ArrowLeft className="w-5 h-5" strokeWidth={2} />
+          </button>
+        )}
         {/* Left: Logo + parenting circle */}
         <a
           href="https://tucokids.com/"

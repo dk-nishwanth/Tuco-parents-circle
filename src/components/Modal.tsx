@@ -592,6 +592,7 @@ export function Modal({
         notifications={notifications}
         onMarkAsRead={onMarkAsRead}
         onThreadOpen={onThreadOpen}
+        onBack={onClose}
       />
 
 
