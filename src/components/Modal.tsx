@@ -664,15 +664,17 @@ export function Modal({
             {thread.op.text}
           </p>
 
-          <ThreadImageCarousel
-            images={
-              thread.op.images && thread.op.images.length > 0
-                ? thread.op.images
-                : thread.op.image
-                ? [thread.op.image]
-                : []
-            }
-          />
+          <div className="flex justify-center">
+            <ThreadImageCarousel
+              images={
+                thread.op.images && thread.op.images.length > 0
+                  ? thread.op.images
+                  : thread.op.image
+                  ? [thread.op.image]
+                  : []
+              }
+            />
+          </div>
 
           <div className="flex items-center justify-end gap-5 pt-5 border-t border-neutral-100">
             <FollowButton
