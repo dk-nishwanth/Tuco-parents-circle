@@ -76,12 +76,8 @@ export function NewPostModal({ isOpen, onClose, onSubmit, istucoTeam }: NewPostM
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (title.trim().length < 5) {
-      setErrorMsg('Please give your question a title of at least 5 characters.');
-      return;
-    }
-    if (images.length === 0 && text.trim().length < 10) {
-      setErrorMsg('Add a few more details (at least 10 characters) or attach an image.');
+    if (!title.trim()) {
+      setErrorMsg('Please add a title or question.');
       return;
     }
     const finalCategory = category === 'other' ? (customCategory.trim().toLowerCase().replace(/\s+/g, '-') || 'other') : category;
@@ -174,7 +170,6 @@ export function NewPostModal({ isOpen, onClose, onSubmit, istucoTeam }: NewPostM
             </label>
             <div className="relative">
               <textarea
-                required={images.length === 0}
                 rows={4}
                 placeholder="Provide context. What has been your child's age, symptom, or situation? Let's help out..."
                 className="w-full bg-white border border-neutral-200 rounded-xl py-2 px-3 pr-10 text-xs sm:text-sm text-neutral-700 outline-none font-sans font-medium focus:border-tuco-cyan"

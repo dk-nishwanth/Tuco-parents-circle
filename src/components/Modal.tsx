@@ -2,7 +2,7 @@ import React, { useState, FormEvent, useRef, useEffect } from 'react';
 import { CATEGORIES } from '../data/categories';
 import { Conversation, User as UserType, Notification, Reply } from '../types';
 import { getAvatarColor, getInitials, searchThreadsWithRanking, formatTimeAgo, countAllReplies } from '../utils/helpers';
-import { Heart, MessageSquare, X, Eye, Bookmark, ChevronDown, Search, Bell, ArrowLeft, Menu, User, LogOut, Users, Share2 } from 'lucide-react';
+import { Heart, MessageSquare, X, Eye, Bookmark, ChevronDown, Search, Bell, ArrowLeft, Menu, User, LogOut, Users, Share2, Trash2 } from 'lucide-react';
 import { track } from '../utils/analytics';
 import tucoLogo from '../assets/tuco-logo.webp';
 import { FollowButton } from './FollowButton';
@@ -24,6 +24,7 @@ interface ModalProps {
   onReportReply?: (threadId: number, replyId: number) => void;
   onEditReply?: (threadId: number, replyId: number, newText: string) => void;
   onDeleteReply?: (threadId: number, replyId: number) => void;
+  onDeleteThread?: (threadId: number) => void;
   currentUser?: UserType | null;
   likedReplies?: Record<number, boolean>;
   users?: Record<string, UserType>;
@@ -344,6 +345,7 @@ export function Modal({
   onReportReply,
   onEditReply,
   onDeleteReply,
+  onDeleteThread,
   currentUser,
   likedReplies = {},
   users = {},
@@ -831,6 +833,16 @@ export function Modal({
                   labelWhenNot="Follow"
                   labelWhenFollowing="Following"
                 />
+              )}
+              {onDeleteThread && currentUser && thread.authorId && currentUser.id === thread.authorId && (
+                <button
+                  onClick={() => onDeleteThread(thread.id)}
+                  aria-label="Delete thread"
+                  className="flex items-center gap-1 text-[12px] font-bold text-red-500 hover:text-red-600 hover:bg-red-50 px-2.5 py-1 rounded-full transition-colors"
+                >
+                  <Trash2 className="w-3.5 h-3.5" strokeWidth={2} />
+                  Delete
+                </button>
               )}
               <span className="text-[12px] text-neutral-400 font-medium">
                 {formatTimeAgo(thread.createdAt)}

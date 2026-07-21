@@ -1144,12 +1144,12 @@ app.post('/api/uploads/presign', authenticate, async (req: AuthRequest, res, nex
 });
 
 const createThreadSchema = z.object({
-  title: z.string().trim().min(5, 'Please give your question a title of at least 5 characters.').max(300),
+  // No character minimums — a short title is fine, and the body is optional
+  // (title-only or image-only posts are allowed). The max caps are just abuse
+  // guards, not user-facing limits.
+  title: z.string().trim().min(1, 'Please add a title or question.').max(300),
   category: z.string(),
   city: z.string().optional().default(''),
-  // Body is optional: an image-only post is valid. When there's no image we
-  // require at least 10 characters (enforced by the refine below), matching
-  // the client. Friendly messages instead of raw Zod "Too small" text.
   text: z.string().max(5000).optional().default(''),
   image: z.string().optional(),
   // Multi-image: max 4 images per post. Older clients still send `image` (single);
@@ -1158,10 +1158,7 @@ const createThreadSchema = z.object({
   moderationStatus: z.string().optional(),
   greyAreaFlags: z.array(z.string()).optional(),
   reviewPriority: z.number().optional(),
-}).refine(
-  d => d.text.trim().length >= 10 || (d.images && d.images.length > 0) || !!d.image,
-  { message: 'Add a few more details (at least 10 characters) or attach an image.', path: ['text'] },
-);
+});
 
 app.post('/api/conversations', authenticate, async (req: AuthRequest, res, next) => {
   console.log('💬 Creating new conversation...');
@@ -1197,29 +1194,20 @@ app.post('/api/conversations', authenticate, async (req: AuthRequest, res, next)
     // same analysis here so a direct API call can't bypass it.
     const serverAnalysis = analyzeContent(`${title}\n${text}`, category);
     const serverRejected = serverAnalysis.outcome === 'CLEAR_VIOLATION';
-    // Auto-moderation decision tree (mods bypass):
-    //   CLEAR_VIOLATION (any signal — profanity, child-harm patterns, spam,
-    //     personal info, brand promo, medical prescription, misinformation,
-    //     personal attack, etc.) → REJECTED, never published.
-    //   New account (<24h) → PENDING regardless — cooling period guards
-    //     against drive-by content until the account has a track record.
-    //   UNCERTAIN (spam-like, too short) → PENDING for human review.
-    //   CLEAN → APPROVED and published live. This is the change that lets
-    //     the queue drain automatically instead of piling up.
+    // Auto-publish policy: posts go live immediately. The ONLY thing that
+    // blocks a post is the child-safety backstop — content flagged as a
+    // CLEAR_VIOLATION (explicit/harmful patterns) is auto-rejected and never
+    // published. Everything else is approved on submission, so nothing sits in
+    // a review queue and no post is ever "forgotten". (No length/spam/
+    // new-account gating — those used to route posts to PENDING.)
     let autoStatus: 'APPROVED' | 'REJECTED' | 'PENDING';
     let autoReason: string | null = null;
     if (serverRejected || requestedStatus === 'REJECTED') {
       autoStatus = 'REJECTED';
       autoReason = 'Auto-rejected: content matched community-guideline violation patterns.';
-    } else if (isInCoolingPeriod) {
-      autoStatus = 'PENDING';
-      autoReason = 'New account cooling period — waiting for moderator review.';
-    } else if (serverAnalysis.outcome === 'CLEAN') {
-      autoStatus = 'APPROVED';
-      autoReason = 'Auto-approved: passed all content checks.';
     } else {
-      autoStatus = 'PENDING';
-      autoReason = 'Auto-flagged as uncertain — waiting for moderator review.';
+      autoStatus = 'APPROVED';
+      autoReason = 'Auto-approved: published immediately.';
     }
     const status = isMod ? ((requestedStatus as any) || 'PENDING') : autoStatus;
 

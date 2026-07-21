@@ -496,14 +496,6 @@ export function analyzeContent(postContent: string, category: string): Moderatio
       civilityReminder: getGreyAreaReminder(greyAreaFlags),
     };
   }
-  if (postContent.trim().length < 20) {
-    return {
-      outcome: 'UNCERTAIN',
-      greyAreaFlags,
-      civilityReminder: getGreyAreaReminder(greyAreaFlags),
-    };
-  }
-
   if (greyAreaFlags.length > 0) {
     return {
       outcome: 'CLEAN',

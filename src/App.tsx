@@ -1100,6 +1100,41 @@ function AppContent() {
     }
   };
 
+  const handleDeleteThread = async (threadId: number) => {
+    if (!currentUser) {
+      openAuth('signup');
+      return;
+    }
+    if (!window.confirm('Delete this thread? This permanently removes the post and all its replies. This cannot be undone.')) {
+      return;
+    }
+    try {
+      await api.deleteConversation(threadId);
+      setConversations(prev => prev.filter(c => c.id !== threadId));
+      // Close the thread modal if the deleted thread is open.
+      setIsModalOpen(false);
+      setSelectedThreadId(null);
+      setActiveReplyTo(null);
+      if (window.location.hash.startsWith('#thread-')) {
+        window.history.replaceState({}, '', window.location.pathname + window.location.search);
+      }
+      setWarningModal({
+        isOpen: true,
+        type: 'info',
+        title: 'Thread Deleted',
+        message: 'Your thread has been deleted.',
+      });
+    } catch (error) {
+      console.error('Failed to delete thread:', error);
+      setWarningModal({
+        isOpen: true,
+        type: 'error',
+        title: 'Delete Failed',
+        message: error instanceof Error ? error.message : 'Failed to delete thread. Please try again.',
+      });
+    }
+  };
+
   const handleCreateNewThread = async (
     title: string,
     category: string,
@@ -1584,6 +1619,7 @@ function AppContent() {
         onReportReply={handleReportReply}
         onEditReply={handleEditReply}
         onDeleteReply={handleDeleteReply}
+        onDeleteThread={handleDeleteThread}
         currentUser={currentUser}
         likedReplies={likedReplies}
         users={users}
