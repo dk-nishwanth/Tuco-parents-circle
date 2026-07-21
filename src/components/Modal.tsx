@@ -2,7 +2,7 @@ import React, { useState, FormEvent, useRef, useEffect } from 'react';
 import { CATEGORIES } from '../data/categories';
 import { Conversation, User as UserType, Notification, Reply } from '../types';
 import { getAvatarColor, getInitials, searchThreadsWithRanking, formatTimeAgo, countAllReplies } from '../utils/helpers';
-import { Heart, MessageSquare, X, Eye, Bookmark, ChevronDown, Search, Bell, ArrowLeft, Menu, User, LogOut, Users, Share2, Trash2 } from 'lucide-react';
+import { Heart, MessageSquare, X, Eye, Bookmark, ChevronDown, Search, Bell, ArrowLeft, Menu, User, LogOut, Users, Share2, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { track } from '../utils/analytics';
 import tucoLogo from '../assets/tuco-logo.webp';
 import { FollowButton } from './FollowButton';
@@ -333,6 +333,86 @@ const ReplyComponent = ({
     </div>
   );
 };
+
+// Swipeable image carousel for the thread detail view (mirrors the feed card):
+// scroll-snap on mobile, chevrons on desktop, dot indicator underneath.
+function ThreadImageCarousel({ images }: { images: string[] }) {
+  const scrollerRef = useRef<HTMLDivElement | null>(null);
+  const [index, setIndex] = useState(0);
+
+  const scrollTo = (i: number) => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const clamped = Math.max(0, Math.min(images.length - 1, i));
+    el.scrollTo({ left: clamped * el.clientWidth, behavior: 'smooth' });
+    setIndex(clamped);
+  };
+  const handleScroll = () => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const i = Math.round(el.scrollLeft / el.clientWidth);
+    if (i !== index) setIndex(i);
+  };
+
+  if (images.length === 0) return null;
+
+  return (
+    <div className="mb-6 w-full max-w-[520px] relative group/carousel">
+      <div
+        ref={scrollerRef}
+        onScroll={handleScroll}
+        className="flex overflow-x-auto snap-x snap-mandatory rounded-2xl scrollbar-hide"
+        style={{ scrollbarWidth: 'none' }}
+      >
+        {images.map((src, i) => (
+          <img
+            key={i}
+            src={src}
+            alt=""
+            loading="lazy"
+            className="w-full flex-shrink-0 snap-center object-cover max-h-[480px] rounded-2xl"
+          />
+        ))}
+      </div>
+      {index > 0 && (
+        <button
+          type="button"
+          onClick={() => scrollTo(index - 1)}
+          aria-label="Previous image"
+          className="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-[#4D4747] shadow-md items-center justify-center text-white hover:bg-black transition-colors"
+        >
+          <ChevronLeft className="w-5 h-5" strokeWidth={2.5} />
+        </button>
+      )}
+      {index < images.length - 1 && (
+        <button
+          type="button"
+          onClick={() => scrollTo(index + 1)}
+          aria-label="Next image"
+          className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-[#4D4747] shadow-md items-center justify-center text-white hover:bg-black transition-colors"
+        >
+          <ChevronRight className="w-5 h-5" strokeWidth={2.5} />
+        </button>
+      )}
+      {images.length > 1 && (
+        <div className="flex items-center justify-center gap-1.5 mt-2">
+          {images.map((_, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => scrollTo(i)}
+              aria-label={`Go to image ${i + 1}`}
+              aria-current={i === index ? 'true' : undefined}
+              className={`h-1.5 rounded-full transition-all ${
+                i === index ? 'w-4 bg-[#4D4747]' : 'w-1.5 bg-neutral-300 hover:bg-neutral-400'
+              }`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function Modal({
   thread,
@@ -857,6 +937,16 @@ export function Modal({
           <p className="text-[14.5px] text-[#555555] leading-relaxed font-normal mb-8">
             {thread.op.text}
           </p>
+
+          <ThreadImageCarousel
+            images={
+              thread.op.images && thread.op.images.length > 0
+                ? thread.op.images
+                : thread.op.image
+                ? [thread.op.image]
+                : []
+            }
+          />
 
           <div className="flex items-center justify-end gap-5 pt-5 border-t border-neutral-100">
             <FollowButton
