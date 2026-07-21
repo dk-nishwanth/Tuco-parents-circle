@@ -49,13 +49,18 @@ interface TucoVideoCardProps {
   videoId: string;
   caption?: string;
   variant?: 'feed' | 'thread' | 'feed-fullbleed' | 'feed-inline';
+  // Optional custom poster (e.g. a curated thumbnail bundled under
+  // /thumbnails/). When set, we skip the YouTube-derived poster entirely so
+  // the branded thumbnail always renders — no flicker while YouTube's oar2.jpg
+  // 404s and no fallback chain.
+  posterUrl?: string;
 }
 
-export function TucoVideoCard({ videoId, caption, variant = 'feed' }: TucoVideoCardProps) {
+export function TucoVideoCard({ videoId, caption, variant = 'feed', posterUrl }: TucoVideoCardProps) {
   const [playing, setPlaying] = useState(false);
   // oar2.jpg / oardefault.jpg are YouTube Shorts' native portrait posters
   // (1080x1920 / 720x1280). Fall back to hqdefault.jpg for regular videos.
-  const poster = `https://i.ytimg.com/vi/${videoId}/oar2.jpg`;
+  const poster = posterUrl || `https://i.ytimg.com/vi/${videoId}/oar2.jpg`;
   const embed = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&playsinline=1`;
   const aspect = variant === 'thread' ? 'aspect-video' : 'aspect-[9/16]';
   // feed-fullbleed: on mobile keep the near-full-width look but with a small
@@ -94,6 +99,11 @@ export function TucoVideoCard({ videoId, caption, variant = 'feed' }: TucoVideoC
             loading="eager"
             className="absolute inset-0 w-full h-full object-cover opacity-90"
             onError={(e) => {
+              // Only walk the YouTube poster fallback chain when we're
+              // relying on YouTube in the first place — a custom posterUrl
+              // that 404s should surface, not silently swap to a Shorts
+              // thumbnail of an unrelated video.
+              if (posterUrl) return;
               const img = e.currentTarget;
               if (img.src.endsWith('/oar2.jpg')) img.src = `https://i.ytimg.com/vi/${videoId}/oardefault.jpg`;
               else if (img.src.endsWith('/oardefault.jpg')) img.src = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;

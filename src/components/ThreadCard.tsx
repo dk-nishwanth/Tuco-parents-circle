@@ -205,6 +205,10 @@ export function ThreadCard({
                 videoId={tucoVideoId}
                 variant="feed-inline"
                 caption="Video answer from tuco team"
+                // Use the OP's attached image as the video thumbnail when the
+                // thread has both — lets a curated /thumbnails/*.jpg override
+                // YouTube's auto-poster.
+                posterUrl={thread.op.images?.[0] || thread.op.image}
               />
             </div>
           </div>

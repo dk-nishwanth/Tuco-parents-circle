@@ -6,7 +6,7 @@ import { Heart, MessageSquare, X, Eye, Bookmark, ChevronDown, Search, Bell, Arro
 import { track } from '../utils/analytics';
 import tucoLogo from '../assets/tuco-logo.webp';
 import { FollowButton } from './FollowButton';
-import { TucoVideoCard, parseYouTubeId, stripYouTubeUrl } from './TucoVideo';
+import { TucoVideoCard, parseYouTubeId, stripYouTubeUrl, findTucoVideoReply } from './TucoVideo';
 import { Header } from './Header';
 
 interface ModalProps {
@@ -668,17 +668,23 @@ export function Modal({
             {thread.op.text}
           </p>
 
-          <div className="flex justify-center">
-            <ThreadImageCarousel
-              images={
-                thread.op.images && thread.op.images.length > 0
-                  ? thread.op.images
-                  : thread.op.image
-                  ? [thread.op.image]
-                  : []
-              }
-            />
-          </div>
+          {/* Skip the OP image when this thread also has a tuco-team video
+              reply — the OP's image is repurposed as the video's thumbnail
+              on the feed card, so re-rendering it above the video in the
+              detail view would just show the same picture twice. */}
+          {!findTucoVideoReply(thread) && (
+            <div className="flex justify-center">
+              <ThreadImageCarousel
+                images={
+                  thread.op.images && thread.op.images.length > 0
+                    ? thread.op.images
+                    : thread.op.image
+                    ? [thread.op.image]
+                    : []
+                }
+              />
+            </div>
+          )}
 
           <div className="flex items-center justify-end gap-5 pt-5 border-t border-neutral-100">
             <FollowButton
