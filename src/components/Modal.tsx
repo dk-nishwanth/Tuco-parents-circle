@@ -185,7 +185,11 @@ const ReplyComponent = ({
                 {bodyText}
               </p>
             ) : null}
-            {videoId ? <TucoVideoCard videoId={videoId} variant="thread" /> : null}
+            {videoId ? (
+              <div className="flex justify-center">
+                <TucoVideoCard videoId={videoId} variant="thread" />
+              </div>
+            ) : null}
           </div>
         );
       })()}

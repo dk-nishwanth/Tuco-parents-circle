@@ -105,15 +105,15 @@ export function MainContent({
       filtered = filtered.filter(c => c.id !== threadOfWeek.id);
     }
     const sorted = sortThreads(filtered, sortType, currentUser?.childAge, currentUser?.interests);
-    // Media-first ordering (stable). Pinned wins over unpinned, but WITHIN
-    // each pin group video wins over image wins over text — so a pinned
-    // video-answer thread appears above a pinned text-only thread. Buckets:
-    //   0 pinned+video  1 pinned+image  2 pinned+text
-    //   3 video         4 image         5 text
+    // Media-first ordering (stable), applied in EVERY category: threads with a
+    // video come first, then image threads, then text — regardless of pin
+    // status. Pinning is only a tiebreaker WITHIN each media tier. Buckets:
+    //   0 video+pinned  1 video      2 image+pinned  3 image
+    //   4 text+pinned   5 text
     const mediaTier = (c: Conversation): number =>
       threadHasVideo(c) ? 0 : threadHasImage(c) ? 1 : 2;
     const rank = (c: Conversation): number =>
-      (c.isPinned ? 0 : 3) + mediaTier(c);
+      mediaTier(c) * 2 + (c.isPinned ? 0 : 1);
     return sorted
       .map((c, i) => ({ c, rank: rank(c), i }))
       .sort((a, b) => a.rank - b.rank || a.i - b.i)
