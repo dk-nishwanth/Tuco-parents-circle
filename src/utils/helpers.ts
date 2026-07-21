@@ -109,6 +109,7 @@ export function sortThreads(
   threads: Conversation[],
   sortType: string,
   viewerChildAge?: string | null,
+  viewerInterests?: string[] | null,
 ): Conversation[] {
   const sorted = [...threads];
   const pinFirst = (list: Conversation[]) =>
@@ -139,23 +140,34 @@ export function sortThreads(
     case 'unanswered':
       return pinFirst(sorted.sort((a, b) => (a.replies?.length || 0) - (b.replies?.length || 0)));
     case 'for-you': {
-      // Only include threads whose age bucket is within 1 of the viewer's.
-      // Sort exact-match first, then adjacent, then by newness inside each tier.
-      // If viewer has no childAge yet, fall back to plain "new".
-      if (!viewerChildAge) return sortThreads(threads, 'new');
-      const filtered = sorted.filter(c => {
+      // Rank by relevance to the viewer instead of filtering threads out.
+      // Score = age-proximity (0-5) + interest-match (0-3) + recency (0-5) +
+      // small engagement kicker so popular threads don't get buried at 0.
+      // Falls back to "new" if we know nothing personal about the viewer.
+      if (!viewerChildAge && (!viewerInterests || viewerInterests.length === 0)) {
+        return sortThreads(threads, 'new');
+      }
+      const interestSet = new Set(viewerInterests || []);
+      const now = Date.now();
+      const scored = sorted.map(c => {
+        // Age proximity: exact bucket = 5, adjacent = 4, two away = 3, …
         const d = ageBucketDistance(c.childAge, viewerChildAge);
-        return d <= 1;
+        const ageScore = d === Infinity ? 0 : Math.max(0, 5 - d);
+        // Interest bonus: full weight for a direct category match.
+        const interestScore = interestSet.size > 0 && interestSet.has(c.category) ? 3 : 0;
+        // Recency: 5 for a day-old thread, 0 by a month.
+        const ageHours = c.createdAt ? (now - new Date(c.createdAt).getTime()) / 3_600_000 : 999;
+        const recencyScore = Math.max(0, 5 - ageHours / 144); // 144h ≈ 6 days
+        const engagementKicker = Math.log1p((c.votes || 0) + (c.replies?.length || 0)) * 0.5;
+        return { c, score: ageScore + interestScore + recencyScore + engagementKicker };
       });
       return pinFirst(
-        filtered.sort((a, b) => {
-          const da = ageBucketDistance(a.childAge, viewerChildAge);
-          const db = ageBucketDistance(b.childAge, viewerChildAge);
-          if (da !== db) return da - db;
-          const aTime = a.createdAt ? new Date(a.createdAt).getTime() : a.id;
-          const bTime = b.createdAt ? new Date(b.createdAt).getTime() : b.id;
+        scored.sort((a, b) => {
+          if (b.score !== a.score) return b.score - a.score;
+          const aTime = a.c.createdAt ? new Date(a.c.createdAt).getTime() : a.c.id;
+          const bTime = b.c.createdAt ? new Date(b.c.createdAt).getTime() : b.c.id;
           return bTime - aTime;
-        })
+        }).map(x => x.c)
       );
     }
     default:

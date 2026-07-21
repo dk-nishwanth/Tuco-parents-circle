@@ -37,7 +37,12 @@ export function MainContent({
   onJoinClick,
   currentUser,
 }: MainContentProps) {
-  const [sortType] = useState<string>('new');
+  // Personalise the default feed order for signed-in users: if we know their
+  // child's age (or they picked interests during onboarding), we rank threads
+  // by relevance instead of pure recency. Guests and users who skipped the
+  // welcome flow still get plain "new".
+  const hasPersonalSignal = Boolean(currentUser?.childAge) || (currentUser?.interests?.length ?? 0) > 0;
+  const [sortType] = useState<string>(hasPersonalSignal ? 'for-you' : 'new');
   const [currentPage, setCurrentPage] = useState<number>(1);
 
   const THREADS_PER_PAGE = 10;
@@ -84,8 +89,8 @@ export function MainContent({
     if (showHighlight && threadOfWeek) {
       filtered = filtered.filter(c => c.id !== threadOfWeek.id);
     }
-    return sortThreads(filtered, sortType, currentUser?.childAge);
-  }, [conversations, searchTerm, activeCategory, sortType, savedPosts, currentUser?.childAge, showHighlight, threadOfWeek]);
+    return sortThreads(filtered, sortType, currentUser?.childAge, currentUser?.interests);
+  }, [conversations, searchTerm, activeCategory, sortType, savedPosts, currentUser?.childAge, currentUser?.interests, showHighlight, threadOfWeek]);
 
   const totalPages = Math.ceil(processedThreads.length / THREADS_PER_PAGE);
   const startIndex = (currentPage - 1) * THREADS_PER_PAGE;
