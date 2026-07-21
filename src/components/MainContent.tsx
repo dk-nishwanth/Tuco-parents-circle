@@ -105,19 +105,22 @@ export function MainContent({
       filtered = filtered.filter(c => c.id !== threadOfWeek.id);
     }
     const sorted = sortThreads(filtered, sortType, currentUser?.childAge, currentUser?.interests);
-    // Media-first ordering (stable), applied in EVERY category: threads with a
-    // video come first, then image threads, then text — regardless of pin
-    // status. Pinning is only a tiebreaker WITHIN each media tier. Buckets:
-    //   0 video+pinned  1 video      2 image+pinned  3 image
-    //   4 text+pinned   5 text
-    const mediaTier = (c: Conversation): number =>
-      threadHasVideo(c) ? 0 : threadHasImage(c) ? 1 : 2;
-    const rank = (c: Conversation): number =>
-      mediaTier(c) * 2 + (c.isPinned ? 0 : 1);
-    return sorted
-      .map((c, i) => ({ c, rank: rank(c), i }))
-      .sort((a, b) => a.rank - b.rank || a.i - b.i)
-      .map(x => x.c);
+    // Media-first, but MIX video and image threads instead of grouping all
+    // videos then all images. Within each media type: pinned-first, then the
+    // base sort order. Then interleave (video, image, video, image, …) so the
+    // feed alternates media types — starting with a video. Text-only threads
+    // come last. Applied in every category.
+    const byPinned = (arr: Conversation[]): Conversation[] =>
+      [...arr.filter(c => c.isPinned), ...arr.filter(c => !c.isPinned)];
+    const videos = byPinned(sorted.filter(c => threadHasVideo(c)));
+    const images = byPinned(sorted.filter(c => !threadHasVideo(c) && threadHasImage(c)));
+    const textOnly = sorted.filter(c => !threadHasVideo(c) && !threadHasImage(c));
+    const mixed: Conversation[] = [];
+    for (let vi = 0, ii = 0; vi < videos.length || ii < images.length; ) {
+      if (vi < videos.length) mixed.push(videos[vi++]);
+      if (ii < images.length) mixed.push(images[ii++]);
+    }
+    return [...mixed, ...textOnly];
   }, [conversations, searchTerm, activeCategory, sortType, savedPosts, currentUser?.childAge, currentUser?.interests, showHighlight, threadOfWeek]);
 
   const totalPages = Math.ceil(processedThreads.length / THREADS_PER_PAGE);
