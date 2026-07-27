@@ -12,6 +12,12 @@ model User {
   username           String         @unique
   email              String         @unique
   passwordHash       String
+  // False only for accounts whose passwordHash is a random, unknowable
+  // placeholder (Google-created/claimed accounts that never set a real
+  // password). Existing rows default to true — the safe assumption, since
+  // treating a real password as "none" would let a change-password request
+  // skip verification entirely. Google flows explicitly set this false.
+  hasPassword        Boolean        @default(true)
   city               String
   childAge           String?
   role               UserRole       @default(MEMBER)

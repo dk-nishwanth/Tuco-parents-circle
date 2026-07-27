@@ -450,6 +450,7 @@ const formatUser = (u: any) => ({
   badges: u.badges || [],
   createdAt: u.createdAt ? u.createdAt.toISOString() : new Date().toISOString(),
   isVerified: u.isVerified || false,
+  hasPassword: u.hasPassword ?? true,
   postCount: u.postCount || 0,
   replyCount: u.replyCount || 0,
   totalUpvotes: u.totalUpvotes || 0,
@@ -717,6 +718,7 @@ app.post('/api/auth/signup', authLimiter, async (req: AuthRequest, res, next) =>
         where: { id: existing.id },
         data: {
           passwordHash,
+          hasPassword: true,
           username: username.trim(),
           city: (city || '').trim() || existing.city || 'India',
           childAge: normalizeChildAge(childAge) || existing.childAge,
@@ -730,6 +732,7 @@ app.post('/api/auth/signup', authLimiter, async (req: AuthRequest, res, next) =>
         data: {
           email: normalEmail,
           passwordHash,
+          hasPassword: true,
           // Trim/canonicalize server-side so no messy data enters regardless of client.
           username: username.trim(),
           city: (city || '').trim() || 'India',
@@ -879,10 +882,48 @@ app.post('/api/auth/reset-password', authLimiter, async (req, res, next) => {
     }
 
     const passwordHash = await bcrypt.hash(password, 12);
-    await prisma.user.update({ where: { id: record.userId }, data: { passwordHash } });
+    await prisma.user.update({ where: { id: record.userId }, data: { passwordHash, hasPassword: true } });
     await prisma.passwordResetToken.delete({ where: { token } }).catch(() => {});
 
     res.status(200).json({ message: 'Password reset successfully. You can now log in.' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Change password — for an already-logged-in user (no email involved). If the
+// account has a real password (hasPassword), the current one must be verified
+// first, so a leaked/stolen session token alone can't be used to lock the real
+// owner out. Accounts that never had a password (Google-only signup or claim)
+// skip that check — the live session already proves identity — and this is
+// how they set one for the first time.
+app.post('/api/users/me/password', authenticate, async (req: AuthRequest, res, next) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (!newPassword || typeof newPassword !== 'string' || newPassword.length < 6) {
+      return res.status(400).json({ error: 'New password must be at least 6 characters' });
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: req.userId } });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    if (user.hasPassword) {
+      if (!currentPassword || typeof currentPassword !== 'string') {
+        return res.status(400).json({ error: 'Current password is required' });
+      }
+      const valid = await bcrypt.compare(currentPassword, user.passwordHash);
+      if (!valid) {
+        return res.status(401).json({ error: 'Current password is incorrect' });
+      }
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 12);
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { passwordHash, hasPassword: true },
+    });
+
+    res.status(200).json({ message: 'Password updated successfully.' });
   } catch (error) {
     next(error);
   }
@@ -957,6 +998,7 @@ app.get('/api/auth/google/callback', async (req, res, next) => {
           isVerified: true,
           emailNotifications: true,
           passwordHash: await bcrypt.hash(googleId + JWT_SECRET, 10),
+          hasPassword: false,
         },
       });
     }
@@ -975,6 +1017,7 @@ app.get('/api/auth/google/callback', async (req, res, next) => {
         data: {
           email,
           passwordHash: await bcrypt.hash(googleId + JWT_SECRET, 10),
+          hasPassword: false,
           username,
           city: 'India',
           isVerified: true,
@@ -2590,35 +2633,6 @@ app.get('/robots.txt', (req, res) => {
   );
 });
 
-// ── SEO: dynamic sitemap from approved conversations ────────────────────────
-app.get('/sitemap.xml', async (req, res) => {
-  try {
-    const conversations = await prisma.conversation.findMany({
-      where: { moderationStatus: 'APPROVED' },
-      select: { id: true, title: true },
-      orderBy: { id: 'desc' },
-      take: 1000,
-    });
-
-    const base = FRONTEND_URL;
-    const urls = [
-      `<url><loc>${base}/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>`,
-      ...conversations.map(c => {
-        return `<url><loc>${base}/thread/${c.id}</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>`;
-      }),
-    ];
-
-    res.header('Content-Type', 'application/xml');
-    res.header('Cache-Control', 'public, max-age=3600');
-    res.send(
-      `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join('\n')}\n</urlset>`
-    );
-  } catch (err) {
-    console.error('Sitemap error:', err);
-    res.status(500).send('<?xml version="1.0"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>');
-  }
-});
-
 // ── Trust score recalculation ───────────────────────────────────────────────
 // Score breakdown (0–100):
 //   upvotes on posts          × 2   capped at 25
@@ -2923,6 +2937,93 @@ ${seoHead({
   }
 });
 
+// ── SEO: SSR-lite for bots on the feed + category pages ─────────────────────
+// Unlike `/` and `/thread/:id`, these paths ARE the real app for humans (not a
+// redirect target) — nginx used to serve the static SPA shell here directly,
+// bypassing this file entirely, which is why bots got an empty <div id="root">
+// with a canonical pointing at `/`. Non-bots still get the real built app;
+// bots get a real per-category title/description/canonical + thread links.
+const CATEGORY_META: Record<string, { label: string; description: string }> = {
+  skincare: {
+    label: 'Skincare, Haircare & Personal Care',
+    description: 'Indian parents discussing skincare, haircare and personal care for kids — routines, product picks, and real experience.',
+  },
+  school: {
+    label: 'School & Learning',
+    description: 'Indian parents discussing school choices, homework, exams, tuition and learning habits for kids.',
+  },
+  kids_growth: {
+    label: 'Kids & Growth',
+    description: 'Indian parents discussing child development, milestones, health and growth.',
+  },
+  active_kids: {
+    label: 'Active Kids',
+    description: 'Indian parents discussing sports, screen time, outdoor play and keeping kids active.',
+  },
+  parenting_hacks: {
+    label: 'Parenting Hacks',
+    description: 'Real parenting hacks and everyday tips from Indian parents raising kids.',
+  },
+};
+
+app.get(
+  ['/community', '/skincare', '/school', '/kids_growth', '/active_kids', '/parenting_hacks'],
+  async (req, res, next) => {
+    const ua = req.headers['user-agent'] || '';
+    if (!isBot(ua)) {
+      return res.sendFile(path.join(distPath, 'index.html'));
+    }
+
+    try {
+      const categoryParam = req.path.slice(1); // 'community' | 'skincare' | ...
+      const isAll = categoryParam === 'community';
+      const meta = CATEGORY_META[categoryParam];
+
+      const title = isAll
+        ? 'tuco Parents Circle — All Discussions'
+        : `${meta.label} — tuco Parents Circle`;
+      const description = isAll
+        ? 'Browse all parenting discussions on tuco Parents Circle — a safe, anonymous community for Indian parents.'
+        : meta.description;
+
+      const threads = await prisma.conversation.findMany({
+        where: {
+          moderationStatus: 'APPROVED',
+          ...(isAll ? {} : { category: categoryParam }),
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 50,
+        select: { id: true, title: true },
+      });
+
+      const linksHtml = threads
+        .map(t => `<li><a href="${FRONTEND_URL}/thread/${t.id}">${esc(t.title || 'Discussion')}</a></li>`)
+        .join('\n');
+
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.setHeader('Cache-Control', 'public, max-age=1800');
+      res.send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+${seoHead({
+  title,
+  description,
+  canonical: `${FRONTEND_URL}/${categoryParam}`,
+})}
+</head>
+<body>
+  <h1>${esc(isAll ? 'All Discussions' : meta.label)}</h1>
+  <p>${esc(description)}</p>
+  <ul>${linksHtml}</ul>
+</body>
+</html>`);
+    } catch {
+      next();
+    }
+  }
+);
+
 // Mount the static files at /community
 app.use('/community', express.static(distPath));
 
@@ -2944,13 +3045,22 @@ app.get('*', (req, res) => {
 // ------------------------------
 
 app.use((error: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  // Malformed percent-encoding in the URL (e.g. overlong-UTF8 %c0%af tricks
+  // scanners use to probe for /etc/passwd, .env, wp-config.php, etc). Express
+  // throws this while decoding the path, before any route runs — it's a bad
+  // request from the client, not a server fault. Respond 400 and skip the
+  // noisy error-level log; these are frequent, harmless, and not actionable.
+  if (error instanceof URIError) {
+    return res.status(400).json({ error: 'Bad request' });
+  }
+
   // Log detailed error information
   console.error('⚠️ Server Error:');
   console.error('  Message:', error.message);
   console.error('  Stack:', error.stack);
   console.error('  Request URL:', req.url);
   console.error('  Request Method:', req.method);
-  
+
   res.status(500).json({
     error: NODE_ENV === 'production' ? 'Internal server error' : error.message,
   });

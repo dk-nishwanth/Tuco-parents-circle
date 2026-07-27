@@ -94,6 +94,10 @@ export interface User {
   badges: Badge[];
   createdAt: string;
   isVerified: boolean;
+  // False only for Google-only accounts that never set a real password —
+  // lets the UI show "Set a password" instead of "Change password" and skip
+  // asking for a current password that doesn't exist.
+  hasPassword?: boolean;
   postCount: number;
   replyCount: number;
   totalUpvotes: number;

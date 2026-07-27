@@ -1,6 +1,112 @@
+import { useState, FormEvent } from 'react';
 import { User, Conversation } from '../types';
 import { BADGE_DISPLAY } from '../utils/badgeSystem';
-import { Mail, MapPin, Award, Lock, Baby, Shield, MessageSquare } from 'lucide-react';
+import { api } from '../utils/api';
+import { Mail, MapPin, Award, Lock, Baby, Shield, MessageSquare, KeyRound } from 'lucide-react';
+
+// Self-contained change-password form. Accounts with hasPassword === false
+// (Google-only, never set a real password) skip the current-password field —
+// the server enforces that same rule, this just matches the UI to it.
+function ChangePasswordSection({ hasPassword }: { hasPassword: boolean }) {
+  const [open, setOpen] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  const reset = () => {
+    setCurrentPassword('');
+    setNewPassword('');
+    setConfirmPassword('');
+    setError('');
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    if (newPassword.length < 6) {
+      setError('New password must be at least 6 characters.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await api.changePassword({
+        currentPassword: hasPassword ? currentPassword : undefined,
+        newPassword,
+      });
+      setSuccess('Password updated successfully.');
+      reset();
+      setTimeout(() => setOpen(false), 1500);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update password.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="border-t border-neutral-150 pt-4 mt-4">
+      <button
+        type="button"
+        onClick={() => {
+          setOpen(v => !v);
+          reset();
+          setSuccess('');
+        }}
+        className="flex items-center gap-2 text-sm font-bold text-tuco-cyan hover:text-tuco-cyan-hover"
+      >
+        <KeyRound className="w-4 h-4" />
+        {hasPassword ? 'Change password' : 'Set a password'}
+      </button>
+      {open && (
+        <form onSubmit={handleSubmit} className="mt-3 space-y-2.5 max-w-sm">
+          {hasPassword && (
+            <input
+              type="password"
+              placeholder="Current password"
+              value={currentPassword}
+              onChange={e => setCurrentPassword(e.target.value)}
+              autoComplete="current-password"
+              className="w-full bg-neutral-50 border border-neutral-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-tuco-cyan"
+            />
+          )}
+          <input
+            type="password"
+            placeholder="New password (min. 6 characters)"
+            value={newPassword}
+            onChange={e => setNewPassword(e.target.value)}
+            autoComplete="new-password"
+            className="w-full bg-neutral-50 border border-neutral-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-tuco-cyan"
+          />
+          <input
+            type="password"
+            placeholder="Confirm new password"
+            value={confirmPassword}
+            onChange={e => setConfirmPassword(e.target.value)}
+            autoComplete="new-password"
+            className="w-full bg-neutral-50 border border-neutral-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-tuco-cyan"
+          />
+          {error && <p className="text-xs font-bold text-red-600">{error}</p>}
+          {success && <p className="text-xs font-bold text-emerald-600">{success}</p>}
+          <button
+            type="submit"
+            disabled={submitting}
+            className="bg-tuco-cyan hover:bg-tuco-cyan-hover disabled:opacity-60 text-white text-sm font-bold px-4 py-2 rounded-lg transition-colors"
+          >
+            {submitting ? 'Updating…' : 'Update password'}
+          </button>
+        </form>
+      )}
+    </div>
+  );
+}
 interface MemberProfileProps {
   user: User;
   conversations?: Conversation[];
@@ -115,6 +221,7 @@ export function MemberProfile({
         <p className="text-[10px] text-neutral-400 font-medium pt-1 border-t border-neutral-200">
           User ID: <span className="font-mono">{user.id}</span>
         </p>
+        {isCurrentUser && <ChangePasswordSection hasPassword={user.hasPassword ?? true} />}
       </div>
       {}
       <div className="grid grid-cols-3 gap-3 mb-6">

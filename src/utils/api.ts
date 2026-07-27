@@ -327,6 +327,17 @@ export const api = {
     return handleResponse<User>(res);
   },
 
+  // currentPassword is omitted for accounts with hasPassword === false
+  // (Google-only) — the server only requires it when a real password exists.
+  async changePassword(data: { currentPassword?: string; newPassword: string }): Promise<{ message: string }> {
+    const res = await fetch(`${API_BASE_URL}/users/me/password`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify(data),
+    });
+    return handleResponse<{ message: string }>(res);
+  },
+
   async getUsers(): Promise<Record<string, User>> {
     const res = await fetch(`${API_BASE_URL}/users`);
     return handleResponse<Record<string, User>>(res);
