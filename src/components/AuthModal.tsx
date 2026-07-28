@@ -9,8 +9,24 @@ interface AuthModalProps {
   onLogin: (email: string, password: string) => void;
   initialMode?: 'login' | 'signup' | 'forgot' | 'reset';
   initialResetToken?: string;
+  // Which guest action opened this modal, if any — lets the signup pitch
+  // speak to what the person was actually trying to do, instead of one
+  // generic message. Undefined for explicit "Sign in" buttons.
+  trigger?: 'vote' | 'save' | 'reply' | 'post';
 }
-export function AuthModal({ isOpen, onClose, onSignup, onLogin, initialMode, initialResetToken }: AuthModalProps) {
+
+// Copy for the contextual banner shown above the signup form when a guest
+// action (vote/save/reply/post) triggered the modal. The discount-code hook
+// references the real first milestone (see badgeSystem: community_insider =
+// 5 posts -> 5% off, 30 days) so it's a concrete promise, not vague marketing.
+const TRIGGER_COPY: Record<NonNullable<AuthModalProps['trigger']>, string> = {
+  vote: "Sign up to vote on this — and start earning badges as you help other parents.",
+  save: "Sign up to save this post — and start earning badges as you help other parents.",
+  reply: "Sign up to reply — and start earning badges as you help other parents.",
+  post: "Sign up to start a discussion — and start earning badges as you help other parents.",
+};
+
+export function AuthModal({ isOpen, onClose, onSignup, onLogin, initialMode, initialResetToken, trigger }: AuthModalProps) {
   const [mode, setMode] = useState<'login' | 'signup' | 'forgot' | 'reset'>(initialMode || 'login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -189,6 +205,18 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin, initialMode, ini
         </div>
         {}
         <div className="p-6">
+          {/* Contextual pitch: only shown when a guest action (vote/save/reply/
+              post) triggered this modal, so the message matches their intent
+              instead of a generic sign-up pitch. */}
+          {mode === 'signup' && trigger && (
+            <div className="mb-5 p-3 bg-tuco-yellow/10 border border-tuco-yellow/40 rounded-xl flex items-start gap-2.5">
+              <span className="text-lg leading-none shrink-0">🌱</span>
+              <p className="text-xs text-neutral-700 font-medium leading-relaxed">
+                {TRIGGER_COPY[trigger]}{' '}
+                <span className="font-bold">Your first 5 posts unlock a discount code.</span>
+              </p>
+            </div>
+          )}
           {}
           {(mode === 'login' || mode === 'signup') && (
             <div className="flex gap-2 mb-6">
@@ -286,6 +314,7 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin, initialMode, ini
                     type="email"
                     autoComplete="email"
                     inputMode="email"
+                    autoFocus
                     placeholder="any@email.com"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
@@ -299,6 +328,7 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin, initialMode, ini
                   <Lock className="absolute left-3 top-3 w-4 h-4 text-neutral-400" strokeWidth={1.5} />
                   <input
                     type={showPassword ? 'text' : 'password'}
+                    autoComplete="current-password"
                     placeholder="••••••••"
                     value={password}
                     onChange={e => setPassword(e.target.value)}
@@ -334,6 +364,9 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin, initialMode, ini
                   <Mail className="absolute left-3 top-3 w-4 h-4 text-neutral-400" strokeWidth={1.5} />
                   <input
                     type="email"
+                    autoComplete="email"
+                    inputMode="email"
+                    autoFocus
                     placeholder="your@email.com"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
@@ -364,6 +397,7 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin, initialMode, ini
                 <label className="block text-xs font-bold text-neutral-700 mb-1.5">Reset Token</label>
                 <input
                   type="text"
+                  autoFocus
                   placeholder="Paste token from email"
                   value={resetToken}
                   onChange={e => setResetToken(e.target.value)}
@@ -376,6 +410,7 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin, initialMode, ini
                   <Lock className="absolute left-3 top-3 w-4 h-4 text-neutral-400" strokeWidth={1.5} />
                   <input
                     type={showPassword ? 'text' : 'password'}
+                    autoComplete="new-password"
                     placeholder="At least 6 characters"
                     value={newPassword}
                     onChange={e => setNewPassword(e.target.value)}
@@ -412,6 +447,9 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin, initialMode, ini
                   <Mail className="absolute left-3 top-3 w-4 h-4 text-neutral-400" strokeWidth={1.5} />
                   <input
                     type="email"
+                    autoComplete="email"
+                    inputMode="email"
+                    autoFocus
                     placeholder="mom@example.com"
                     value={email}
                     onChange={e => { markSignupStarted(); setEmail(e.target.value); }}
@@ -427,6 +465,7 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin, initialMode, ini
                   <Lock className="absolute left-3 top-3 w-4 h-4 text-neutral-400" strokeWidth={1.5} />
                   <input
                     type={showPassword ? 'text' : 'password'}
+                    autoComplete="new-password"
                     placeholder="At least 6 characters"
                     value={password}
                     onChange={e => { markSignupStarted(); setPassword(e.target.value); }}
@@ -445,6 +484,7 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin, initialMode, ini
                   <User className="absolute left-3 top-3 w-4 h-4 text-neutral-400" strokeWidth={1.5} />
                   <input
                     type="text"
+                    autoComplete="username"
                     placeholder="e.g. PriyasMom, ArjunsDad"
                     value={username}
                     onChange={e => { markSignupStarted(); setUsername(e.target.value); }}

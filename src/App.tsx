@@ -103,8 +103,14 @@ function AppContent() {
   // open in 'signup'. Explicit "Sign in" buttons pass 'login'. This is the
   // single biggest conversion fix: it stops new users from landing on a login
   // form and failing with an account that doesn't exist yet.
-  const openAuth = (mode: 'login' | 'signup' = 'signup') => {
+  // Which guest action prompted the auth modal, if any — lets AuthModal show
+  // a message tailored to what the guest was actually trying to do (vote,
+  // save, reply, post) instead of one generic pitch. Cleared to undefined for
+  // explicit "Sign in" buttons, which have no specific triggering action.
+  const [authTrigger, setAuthTrigger] = useState<'vote' | 'save' | 'reply' | 'post' | undefined>(undefined);
+  const openAuth = (mode: 'login' | 'signup' = 'signup', trigger?: 'vote' | 'save' | 'reply' | 'post') => {
     setAuthInitialMode(mode);
+    setAuthTrigger(mode === 'signup' ? trigger : undefined);
     setIsAuthOpen(true);
   };
   const [isModerationOpen, setIsModerationOpen] = useState<boolean>(false);
@@ -497,7 +503,7 @@ function AppContent() {
 
   const toggleSavedPost = (threadId: number) => {
     if (!currentUser) {
-      openAuth('signup');
+      openAuth('signup', 'save');
       return;
     }
     let newSaved: number[];
@@ -765,7 +771,7 @@ function AppContent() {
   }, [isModalOpen]);
   const handleVote = async (threadId: number, type: 'up' | 'down') => {
     if (!currentUser) {
-      openAuth('signup');
+      openAuth('signup', 'vote');
       return;
     }
     
@@ -819,7 +825,7 @@ function AppContent() {
 
   const handleLikeReply = async (threadId: number, replyId: number) => {
     if (!currentUser) {
-      openAuth('signup');
+      openAuth('signup', 'vote');
       return;
     }
 
@@ -910,7 +916,7 @@ function AppContent() {
     parentId?: number
   ) => {
     if (!currentUser) {
-      openAuth('signup');
+      openAuth('signup', 'reply');
       return;
     }
 
@@ -1146,7 +1152,7 @@ function AppContent() {
     // still shows a preview.
     const image = images[0];
     if (!currentUser) {
-      openAuth('signup');
+      openAuth('signup', 'post');
       return;
     }
     if (currentUser.role === 'tuco_team') {
@@ -1380,7 +1386,7 @@ function AppContent() {
   };
 
   const openNewPost = () => {
-    if (!currentUser) openAuth('signup');
+    if (!currentUser) openAuth('signup', 'post');
     else setIsNewPostOpen(true);
   };
 
@@ -1664,6 +1670,7 @@ function AppContent() {
         onLogin={handleLogin}
         initialMode={authInitialMode}
         initialResetToken={authResetToken}
+        trigger={authTrigger}
       />
       {currentUser && (
         <ProfileModal
