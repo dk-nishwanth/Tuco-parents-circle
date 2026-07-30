@@ -187,10 +187,10 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin, initialMode, ini
   };
   return (
     <div
-      className="fixed inset-0 bg-neutral-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-[70] overflow-y-auto"
+      className="fixed inset-0 bg-neutral-900/60 backdrop-blur-xs flex items-start sm:items-center justify-center p-4 py-8 z-[70] overflow-y-auto"
       onClick={e => e.target === e.currentTarget && onClose()}
     >
-      <div role="dialog" aria-modal="true" aria-label="Sign in or sign up" className="bg-white border border-neutral-200 rounded-3xl w-full max-w-md overflow-hidden shadow-xl animate-in fade-in-50 zoom-in-95 duration-200">
+      <div role="dialog" aria-modal="true" aria-label="Sign in or sign up" className="bg-white border border-neutral-200 rounded-3xl w-full max-w-md max-h-[90vh] overflow-y-auto shadow-xl animate-in fade-in-50 zoom-in-95 duration-200">
         {}
         <div className="bg-gradient-to-r from-tuco-cyan/10 to-orange-50 px-6 py-5 border-b border-neutral-200 flex items-center justify-between">
           <h2 className="font-display font-black text-lg text-neutral-800">
