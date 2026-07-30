@@ -321,8 +321,12 @@ const authLimiter = rateLimit({
 });
 
 const corsOptions = {
+  // Reuses the FRONTEND_URL constant (which already has a safe hardcoded
+  // fallback) instead of falling back to `true` — reflecting any origin
+  // combined with credentials:true would let any site make authenticated
+  // cross-origin requests if the env var were ever unset in production.
   origin: NODE_ENV === 'production'
-    ? process.env.FRONTEND_URL || true
+    ? FRONTEND_URL
     : ['http://localhost:3000', 'http://localhost:3006', 'http://localhost:5173'],
   credentials: true,
   optionsSuccessStatus: 200,
@@ -1860,7 +1864,7 @@ app.post('/api/conversations/:id/replies', authenticate, async (req: AuthRequest
 app.patch('/api/replies/:id', authenticate, async (req: AuthRequest, res, next) => {
   try {
     const id = parseInt(req.params.id);
-    const { text, likes, moderationStatus, moderationReason } = req.body;
+    const { text, moderationStatus, moderationReason } = req.body;
 
     const reply = await prisma.reply.findUnique({ where: { id } });
     if (!reply) return res.status(404).json({ error: 'Reply not found' });
@@ -1870,9 +1874,11 @@ app.patch('/api/replies/:id', authenticate, async (req: AuthRequest, res, next) 
       return res.status(403).json({ error: 'Not authorized' });
     }
 
+    // likes are managed exclusively via /api/votes, never accepted here —
+    // this endpoint previously let any authenticated user set an arbitrary
+    // like count on any reply.
     const updateData: any = {};
     if (text !== undefined) updateData.text = text;
-    if (likes !== undefined) updateData.likes = likes;
     if (moderationStatus && isMod) updateData.moderationStatus = moderationStatus.toUpperCase();
 
     const updated = await prisma.reply.update({
