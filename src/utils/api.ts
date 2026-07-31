@@ -184,8 +184,6 @@ export const api = {
       moderationStatus: string;
       moderationReason: string;
       moderatedBy: string;
-      title: string;
-      opText: string;
     }>
   ): Promise<Conversation> {
     const res = await fetch(`${API_BASE_URL}/conversations/${id}`, {

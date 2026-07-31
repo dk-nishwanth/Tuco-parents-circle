@@ -1459,19 +1459,9 @@ app.patch('/api/conversations/:id', optionalAuth, async (req: AuthRequest, res, 
     if (Number.isNaN(id)) {
       return res.status(400).json({ error: 'Invalid conversation id' });
     }
-    const { votes, views, isPinned, isFeatured, featuredLabel, moderationStatus, moderationReason, moderatedBy, title, opText } = req.body;
+    const { votes, views, isPinned, isFeatured, featuredLabel, moderationStatus, moderationReason, moderatedBy } = req.body;
 
     const isMod = req.userRole === 'MODERATOR' || req.userRole === 'TUCO_TEAM';
-
-    // Owner-editable fields (title/body text). Any authenticated user can only
-    // edit their own post; moderators can edit any post.
-    if (title !== undefined || opText !== undefined) {
-      const existing = await prisma.conversation.findUnique({ where: { id }, select: { authorId: true } });
-      if (!existing) return res.status(404).json({ error: 'Conversation not found' });
-      if (existing.authorId !== req.userId && !isMod) {
-        return res.status(403).json({ error: 'Not authorized' });
-      }
-    }
 
     const wantsModChange =
       moderationStatus !== undefined || isPinned !== undefined || isFeatured !== undefined ||
@@ -1508,8 +1498,6 @@ app.patch('/api/conversations/:id', optionalAuth, async (req: AuthRequest, res, 
     if (isPinned !== undefined) updateData.isPinned = isPinned;
     if (isFeatured !== undefined) updateData.isFeatured = isFeatured;
     if (featuredLabel !== undefined) updateData.featuredLabel = featuredLabel;
-    if (title !== undefined) updateData.title = title;
-    if (opText !== undefined) updateData.opText = opText;
     if (moderationStatus) updateData.moderationStatus = moderationStatus.toUpperCase();
     if (moderationReason) updateData.moderationReason = moderationReason;
     if (moderatedBy) updateData.moderatedBy = moderatedBy;

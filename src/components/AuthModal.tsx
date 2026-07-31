@@ -537,16 +537,8 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin, initialMode, ini
           )}
           {(mode === 'login' || mode === 'signup') && <p className="text-xs text-neutral-500 text-center mt-6 pt-6 border-t border-neutral-150">
             By signing up, you agree to our{' '}
-            <a href="/guidelines" target="_blank" rel="noopener noreferrer" className="text-tuco-cyan font-bold hover:underline">
+            <a href="#" className="text-tuco-cyan font-bold hover:underline">
               Community Guidelines
-            </a>
-            {', '}
-            <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-tuco-cyan font-bold hover:underline">
-              Terms
-            </a>
-            {' & '}
-            <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-tuco-cyan font-bold hover:underline">
-              Privacy Policy
             </a>
           </p>}
         </div>
