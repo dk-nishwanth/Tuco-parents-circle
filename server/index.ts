@@ -818,6 +818,9 @@ app.post('/api/auth/login', authLimiter, async (req: AuthRequest, res, next) => 
 
     console.log('✅ Login successful for user:', user.id);
     const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: '30d' });
+    prisma.loginEvent.create({
+      data: { userId: user.id, method: 'EMAIL', ipAddress: req.ip, userAgent: req.headers['user-agent'] },
+    }).catch(err => console.warn('⚠️ Failed to record login event:', err));
     res.status(200).json({ token, user: formatUser(user) });
   } catch (error) {
     console.error('❌ Login error:', error);
@@ -1042,6 +1045,9 @@ app.get('/api/auth/google/callback', async (req, res, next) => {
     }
 
     const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET as string, { expiresIn: '30d' });
+    prisma.loginEvent.create({
+      data: { userId: user.id, method: 'GOOGLE', ipAddress: req.ip, userAgent: req.headers['user-agent'] },
+    }).catch(err => console.warn('⚠️ Failed to record login event:', err));
     // Exchange code pattern: store token server-side, redirect with a one-time code
     const oauthCode = crypto.randomBytes(16).toString('hex');
     await prisma.oAuthCode.create({

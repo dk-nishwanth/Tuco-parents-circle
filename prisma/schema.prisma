@@ -41,6 +41,7 @@ model User {
   votes              Vote[]
   follows            Follow[]       @relation("Follower")
   followers          Follow[]       @relation("FollowedUser")
+  loginEvents        LoginEvent[]
 }
 
 model Conversation {
@@ -267,6 +268,27 @@ enum EmailType {
   REPLY_NOTIFICATION
   MODERATION
   TRANSACTIONAL
+}
+
+enum LoginMethod {
+  EMAIL
+  GOOGLE
+}
+
+// One row per successful sign-in, for basic login-activity visibility
+// (who logged in, when, from where) — separate from User.createdAt, which
+// only captures the original signup.
+model LoginEvent {
+  id        Int         @id @default(autoincrement())
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  method    LoginMethod
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime    @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
 }
 
 // User→user and user→thread follow relationships. One row per follow, with
