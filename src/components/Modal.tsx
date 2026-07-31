@@ -2,7 +2,7 @@ import React, { useState, FormEvent, useRef, useEffect } from 'react';
 import { CATEGORIES } from '../data/categories';
 import { Conversation, User as UserType, Notification, Reply } from '../types';
 import { getAvatarColor, getInitials, searchThreadsWithRanking, formatTimeAgo, countAllReplies } from '../utils/helpers';
-import { Heart, MessageSquare, X, Eye, Bookmark, ChevronDown, Search, Bell, ArrowLeft, Menu, User, LogOut, Users, Share2, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Heart, MessageSquare, X, Eye, Bookmark, ChevronDown, Search, Bell, ArrowLeft, Menu, User, LogOut, Users, Share2, Trash2, ChevronLeft, ChevronRight, Pencil, Check } from 'lucide-react';
 import { track } from '../utils/analytics';
 import tucoLogo from '../assets/tuco-logo.webp';
 import { FollowButton } from './FollowButton';
@@ -26,6 +26,7 @@ interface ModalProps {
   onEditReply?: (threadId: number, replyId: number, newText: string) => void;
   onDeleteReply?: (threadId: number, replyId: number) => void;
   onDeleteThread?: (threadId: number) => void;
+  onEditThread?: (threadId: number, newTitle: string, newOpText: string) => void;
   currentUser?: UserType | null;
   likedReplies?: Record<number, boolean>;
   users?: Record<string, UserType>;
@@ -434,6 +435,7 @@ export function Modal({
   onEditReply,
   onDeleteReply,
   onDeleteThread,
+  onEditThread,
   currentUser,
   likedReplies = {},
   users = {},
@@ -466,6 +468,9 @@ export function Modal({
   const [isSortOpen, setIsSortOpen] = useState(false);
   const [replySort, setReplySort] = useState<'new' | 'top' | 'old'>('new');
   const [shareCopied, setShareCopied] = useState(false);
+  const [isEditingThread, setIsEditingThread] = useState(false);
+  const [editThreadTitle, setEditThreadTitle] = useState(thread.title);
+  const [editThreadText, setEditThreadText] = useState(thread.op.text);
 
   // Load this thread's saved draft whenever the thread becomes available.
   // This can't be done in the useState initializer above because on a fresh
@@ -644,6 +649,20 @@ export function Modal({
                   labelWhenFollowing="Following"
                 />
               )}
+              {onEditThread && currentUser && thread.authorId && currentUser.id === thread.authorId && !isEditingThread && (
+                <button
+                  onClick={() => {
+                    setEditThreadTitle(thread.title);
+                    setEditThreadText(thread.op.text);
+                    setIsEditingThread(true);
+                  }}
+                  aria-label="Edit thread"
+                  className="flex items-center gap-1 text-[12px] font-bold text-neutral-500 hover:text-[#35B5EC] hover:bg-blue-50 px-2.5 py-1 rounded-full transition-colors"
+                >
+                  <Pencil className="w-3.5 h-3.5" strokeWidth={2} />
+                  Edit
+                </button>
+              )}
               {onDeleteThread && currentUser && thread.authorId && currentUser.id === thread.authorId && (
                 <button
                   onClick={() => onDeleteThread(thread.id)}
@@ -660,13 +679,53 @@ export function Modal({
             </div>
           </div>
 
-          <h2 className="font-bold text-[21px] text-[#4D4747] leading-[1.25] mb-5 tracking-tight">
-            {thread.title}
-          </h2>
+          {isEditingThread ? (
+            <div className="mb-8">
+              <input
+                type="text"
+                value={editThreadTitle}
+                onChange={e => setEditThreadTitle(e.target.value)}
+                className="w-full font-bold text-[21px] text-[#4D4747] leading-[1.25] mb-3 tracking-tight border border-neutral-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#35B5EC]"
+                maxLength={300}
+              />
+              <textarea
+                value={editThreadText}
+                onChange={e => setEditThreadText(e.target.value)}
+                rows={5}
+                className="w-full text-[14.5px] text-[#555555] leading-relaxed font-normal border border-neutral-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#35B5EC] resize-none"
+              />
+              <div className="flex items-center gap-2 mt-3">
+                <button
+                  onClick={() => {
+                    if (editThreadTitle.trim() && editThreadText.trim()) {
+                      onEditThread?.(thread.id, editThreadTitle.trim(), editThreadText.trim());
+                    }
+                    setIsEditingThread(false);
+                  }}
+                  className="flex items-center gap-1 text-[13px] font-bold text-white bg-[#35B5EC] hover:bg-[#2ba0d4] px-3 py-1.5 rounded-full transition-colors"
+                >
+                  <Check className="w-3.5 h-3.5" strokeWidth={2.5} />
+                  Save
+                </button>
+                <button
+                  onClick={() => setIsEditingThread(false)}
+                  className="text-[13px] font-bold text-neutral-500 hover:text-neutral-700 px-3 py-1.5 rounded-full transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <h2 className="font-bold text-[21px] text-[#4D4747] leading-[1.25] mb-5 tracking-tight">
+                {thread.title}
+              </h2>
 
-          <p className="text-[14.5px] text-[#555555] leading-relaxed font-normal mb-8">
-            {thread.op.text}
-          </p>
+              <p className="text-[14.5px] text-[#555555] leading-relaxed font-normal mb-8">
+                {thread.op.text}
+              </p>
+            </>
+          )}
 
           {/* Skip the OP image when this thread also has a tuco-team video
               reply — the OP's image is repurposed as the video's thumbnail

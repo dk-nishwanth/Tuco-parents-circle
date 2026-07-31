@@ -21,6 +21,7 @@ import { PublicProfilePage } from './components/PublicProfilePage';
 import { ProfileModal } from './components/ProfileModal';
 import { WarningModal } from './components/WarningModal';
 import { ReportModal } from './components/ReportModal';
+import { LegalPage } from './components/LegalPage';
 import { NotificationsPage } from './components/NotificationsPage';
 import { INITIAL_CONVERSATIONS } from './data/conversations';
 import { CATEGORIES } from './data/categories';
@@ -1141,6 +1142,27 @@ function AppContent() {
     }
   };
 
+  const handleEditThread = async (threadId: number, newTitle: string, newOpText: string) => {
+    if (!currentUser) {
+      openAuth('signup');
+      return;
+    }
+    try {
+      await api.updateConversation(threadId, { title: newTitle, opText: newOpText });
+      setConversations(prev =>
+        prev.map(c => (c.id === threadId ? { ...c, title: newTitle, op: { ...c.op, text: newOpText } } : c))
+      );
+    } catch (error) {
+      console.error('Failed to edit thread:', error);
+      setWarningModal({
+        isOpen: true,
+        type: 'error',
+        title: 'Edit Failed',
+        message: error instanceof Error ? error.message : 'Failed to save changes. Please try again.',
+      });
+    }
+  };
+
   const handleCreateNewThread = async (
     title: string,
     category: string,
@@ -1623,6 +1645,7 @@ function AppContent() {
         onEditReply={handleEditReply}
         onDeleteReply={handleDeleteReply}
         onDeleteThread={handleDeleteThread}
+        onEditThread={handleEditThread}
         currentUser={currentUser}
         likedReplies={likedReplies}
         users={users}
@@ -1831,6 +1854,9 @@ export default function App() {
     <Routes>
       <Route path="/admin" element={<AdminRoute />} />
       <Route path="/u/:username" element={<PublicProfilePage />} />
+      <Route path="/privacy" element={<LegalPage doc="privacy" />} />
+      <Route path="/terms" element={<LegalPage doc="terms" />} />
+      <Route path="/guidelines" element={<LegalPage doc="guidelines" />} />
       <Route path="/" element={<AppContent />} />
       <Route path="/:category" element={<AppContent />} />
     </Routes>
