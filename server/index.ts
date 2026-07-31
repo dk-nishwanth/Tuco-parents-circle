@@ -264,6 +264,14 @@ startup();
 app.set('trust proxy', 1); // trust nginx reverse proxy for correct client IPs in rate limiting
 
 app.use(helmet({
+  // Helmet's own default is `no-referrer`, which strips the Referer header on
+  // every cross-origin request — including the tuco-team YouTube embeds below.
+  // YouTube's embed player validates the referrer to confirm it's being loaded
+  // from a real site, and with no referrer at all it fails some videos (esp.
+  // Shorts) with error 153 ("video player configuration error"), even though
+  // the same video plays fine directly on YouTube. `strict-origin-when-cross-origin`
+  // still only ever leaks the bare origin (not the full path/query) cross-site.
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
   contentSecurityPolicy: NODE_ENV === 'production' ? {
     // Extend helmet's strict defaults so tuco team YouTube video replies can render:
     // the poster comes from i.ytimg.com and the player embeds youtube-nocookie.com.
