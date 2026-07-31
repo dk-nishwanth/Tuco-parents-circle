@@ -61,7 +61,12 @@ export function TucoVideoCard({ videoId, caption, variant = 'feed', posterUrl }:
   // oar2.jpg / oardefault.jpg are YouTube Shorts' native portrait posters
   // (1080x1920 / 720x1280). Fall back to hqdefault.jpg for regular videos.
   const poster = posterUrl || `https://i.ytimg.com/vi/${videoId}/oar2.jpg`;
-  const embed = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&playsinline=1`;
+  // youtube-nocookie.com previously here triggered YouTube error 153
+  // ("video player configuration error") for at least one tuco-team Short
+  // (-hyb99wJmNk) — the channel apparently hasn't enabled embedding on the
+  // privacy-enhanced domain specifically, even though regular youtube.com
+  // embeds it fine (confirmed via YouTube's own oembed endpoint).
+  const embed = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&playsinline=1`;
   const aspect = variant === 'thread' ? 'aspect-video' : 'aspect-[9/16]';
   // feed-fullbleed: on mobile keep the near-full-width look but with a small
   // side gutter (proportionally reduces the 9:16 height); on desktop cap the
