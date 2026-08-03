@@ -35,10 +35,6 @@ const BAD_WORDS = [
   'arsehole',
   'motherfucker',
   'motherfuckers',
-  'suck',
-  'sucks',
-  'sucked',
-  'sucking',
   'chut',
   'chutiya',
   'chutiyap',
@@ -75,13 +71,6 @@ const BAD_WORDS = [
   'pussies',
   'retard',
   'retards',
-  'idiot',
-  'stupid',
-  'moron',
-  'dumb',
-  'ignorant',
-  'fool',
-  'foolish',
   'shithead',
   'shit head',
   'dumbass',
@@ -109,13 +98,8 @@ const BAD_WORDS = [
   'molester',
   'pedo',
   'pedophile',
-  'kill',
-  'killing',
-  'killed',
   'murder',
   'murderer',
-  'die',
-  'death',
   'hate speech',
   'hatespeech',
   'nigger',
@@ -174,6 +158,36 @@ const BAD_WORDS = [
   'untouchable',
   'casteist',
   'anti-caste',
+  'arsewipe',
+  'dickhead',
+  'dick head',
+  'prickish',
+  'what the fuck',
+];
+
+// Words people use constantly in ordinary casual complaints/venting
+// ("this is so frustrating, ugh", "that sucks", "my back is killing me") —
+// too common to hard-block. Flagged as UNCERTAIN (grey-area reminder, post
+// still goes through) instead of CLEAR_VIOLATION. Actual targeted abuse
+// ("you are stupid", "your kid is ugly") is still caught by
+// PERSONAL_ATTACK_PATTERNS below regardless of this list.
+const SOFT_WORDS = [
+  'idiot',
+  'stupid',
+  'moron',
+  'dumb',
+  'ignorant',
+  'fool',
+  'foolish',
+  'suck',
+  'sucks',
+  'sucked',
+  'sucking',
+  'kill',
+  'killing',
+  'killed',
+  'die',
+  'death',
   'the hell',
   'what the hell',
   'why the hell',
@@ -189,11 +203,6 @@ const BAD_WORDS = [
   'bloody',
   'bugger',
   'sod',
-  'arsewipe',
-  'arsewipe',
-  'dickhead',
-  'dick head',
-  'prickish',
   'coward',
   'loser',
   'pathetic',
@@ -206,13 +215,11 @@ const BAD_WORDS = [
   'garbage',
   'wtf',
   'what the f',
-  'what the fuck',
   'what the heck',
   'heck',
   'jeez',
   'jeezus',
   'lame',
-  'pathetic',
   'idiotic',
   'moronic',
   'brainless',
@@ -232,8 +239,14 @@ const BAD_WORDS = [
   'awful',
   'terrible',
   'horrible',
-  'disgusting',
 ];
+
+const SOFT_WORD_PATTERNS = SOFT_WORDS.map(word => {
+  if (word.includes('the hell') || word.includes('what the') || word.includes('god damn')) {
+    return new RegExp(word.replace(/\s+/g, '\\s*'), 'gi');
+  }
+  return new RegExp(`\\b${word}\\b`, 'gi');
+});
 
 const BAD_WORD_PATTERNS = BAD_WORDS.map(word => {
   if (word.includes('the hell') || word.includes('what the') || word.includes('god damn')) {
@@ -275,11 +288,11 @@ const PERSONAL_INFO_PATTERNS = [
   /\d{10,}/g,
   /[\w.-]+@[\w.-]+\.\w+/g,
   /\b\d{6}\b/g,
-  /school\s+(name|is|called)/gi,
+  /school\s+(name\s+is|is\s+called)/gi,
   /lives\s+at/gi,
   /address\s+is/gi,
-  /phone\s+(number|is)/gi,
-  /mobile\s+(number|is)/gi,
+  /phone\s+number/gi,
+  /mobile\s+number/gi,
 ];
 
 const BRAND_PROMOTION_PATTERNS = [
@@ -490,6 +503,13 @@ export function analyzeContent(postContent: string, category: string): Moderatio
   }
 
   if (SPAM_PATTERNS.some(p => { p.lastIndex = 0; return p.test(postContent); })) {
+    return {
+      outcome: 'UNCERTAIN',
+      greyAreaFlags,
+      civilityReminder: getGreyAreaReminder(greyAreaFlags),
+    };
+  }
+  if (SOFT_WORD_PATTERNS.some(p => { p.lastIndex = 0; return p.test(postContent); })) {
     return {
       outcome: 'UNCERTAIN',
       greyAreaFlags,
