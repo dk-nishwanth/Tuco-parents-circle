@@ -644,6 +644,14 @@ const RESEND_TEMPLATES = {
   NEW_DEVICE_LOGIN: '3b83a4c3-75a5-4d63-8067-7d5a0e2614fa',
 } as const;
 
+// There's no separate "real name" field anywhere in the app — only a
+// pen-name (username), and some (especially Google sign-ups, which append
+// random digits for uniqueness) end up like "Aishvarya533". Strip a trailing
+// numeric suffix so emails greet "Aishvarya" instead of "Aishvarya533".
+function displayName(username: string): string {
+  return username.replace(/\s*\d+$/, '').trim() || username;
+}
+
 // "tuco Forum Members" segment — keeps the broadcast/newsletter contact
 // list current automatically. Fire-and-forget: a Resend hiccup here must
 // never block or fail a signup.
@@ -660,7 +668,7 @@ async function syncResendContact(email: string, username: string): Promise<void>
       },
       body: JSON.stringify({
         email,
-        first_name: username,
+        first_name: displayName(username),
         unsubscribed: false,
         segments: [{ id: RESEND_SEGMENT_ID }],
       }),
@@ -890,7 +898,7 @@ app.post('/api/auth/signup', authLimiter, async (req: AuthRequest, res, next) =>
       await sendTemplateEmail(
         user.email,
         RESEND_TEMPLATES.WELCOME,
-        { USERNAME: user.username },
+        { USERNAME: displayName(user.username) },
         'WELCOME'
       );
     } catch (emailErr) {
@@ -933,7 +941,7 @@ async function maybeSendNewDeviceAlert(
       email,
       RESEND_TEMPLATES.NEW_DEVICE_LOGIN,
       {
-        USERNAME: username,
+        USERNAME: displayName(username),
         IP: ip || 'unknown',
         DEVICE: (userAgent || 'unknown').slice(0, 120),
       },
@@ -1030,7 +1038,7 @@ app.post('/api/auth/forgot-password', authLimiter, async (req, res, next) => {
     await sendTemplateEmail(
       user.email,
       RESEND_TEMPLATES.PASSWORD_RESET,
-      { USERNAME: user.username, RESET_URL: resetUrl }
+      { USERNAME: displayName(user.username), RESET_URL: resetUrl }
     );
 
     res.status(200).json({ message: 'If that email exists, a reset link has been sent.' });
@@ -1203,7 +1211,7 @@ app.get('/api/auth/google/callback', async (req, res, next) => {
       sendTemplateEmail(
         user.email,
         RESEND_TEMPLATES.WELCOME,
-        { USERNAME: user.username },
+        { USERNAME: displayName(user.username) },
         'WELCOME'
       ).catch(err => console.warn('⚠️ Google welcome email failed:', err));
       syncResendContact(user.email, user.username);
