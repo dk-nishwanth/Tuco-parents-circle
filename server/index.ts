@@ -635,6 +635,50 @@ async function sendEmail(
   }
 }
 
+// Hosted Resend templates (created via the Templates API) — editable from
+// the Resend dashboard without a code deploy. Falls back to the inline
+// emailShell()-based sendEmail() for anything not yet migrated.
+const RESEND_TEMPLATES = {
+  WELCOME: 'cabdb77a-9016-4dff-9b34-d798ddee1a92',
+  PASSWORD_RESET: 'e5f67395-207d-452b-a3f4-51dfa6d7c6bc',
+  NEW_DEVICE_LOGIN: '3b83a4c3-75a5-4d63-8067-7d5a0e2614fa',
+} as const;
+
+async function sendTemplateEmail(
+  to: string,
+  templateId: string,
+  variables: Record<string, string>,
+  type: EmailLogType = 'TRANSACTIONAL',
+): Promise<boolean> {
+  if (!resend) {
+    if (NODE_ENV === 'production') {
+      console.error(`🚨 EMAIL NOT SENT (RESEND_API_KEY missing) — template ${templateId} to ${to}.`);
+    } else {
+      console.log(`[EMAIL SIMULATED] To: ${to} | Template: ${templateId} | Vars: ${JSON.stringify(variables)}`);
+    }
+    await logEmail(type, to, `[template ${templateId}]`, JSON.stringify(variables));
+    return true;
+  }
+  try {
+    // `template` isn't in this SDK version's TS types yet, but the API
+    // accepts it — see https://resend.com/docs/api-reference/emails/send-email
+    const { error } = await resend.emails.send({
+      from: process.env.EMAIL_FROM || 'tuco Parents Circle <noreply@tucokids.com>',
+      to,
+      template: { id: templateId, variables },
+    } as any);
+    if (error) {
+      console.error(`🚨 Template email REJECTED by Resend — template ${templateId} to ${to}:`, error);
+      return false;
+    }
+    await logEmail(type, to, `[template ${templateId}]`, JSON.stringify(variables));
+    return true;
+  } catch (err) {
+    console.error('Template email send failed (network/SDK error):', err);
+    return false;
+  }
+}
+
 const SITE_URL = process.env.FRONTEND_URL || 'https://community.tucokids.com';
 const SYSTEM_USER_EMAIL = 'seed@tucokids.internal';
 
@@ -814,16 +858,10 @@ app.post('/api/auth/signup', authLimiter, async (req: AuthRequest, res, next) =>
 
     // Send welcome email (don't fail signup if email fails)
     try {
-      await sendEmail(
+      await sendTemplateEmail(
         user.email,
-        'Welcome to tuco Parents Circle! 👋',
-        emailShell(
-          `<p style="margin:0 0 4px;font-size:19px;font-weight:700;">You're in, ${user.username}! 🎉</p>
-           <p style="margin:0 0 16px;">tuco Parents Circle is a safe space for Indian parents to ask questions, share what's worked for their kids, and support each other — no judgement, just real parents helping parents.</p>
-           <p style="margin:0;">Jump in and ask your first question, or see what other parents are talking about today.</p>`,
-          'Explore the Community',
-          FRONTEND_URL
-        ),
+        RESEND_TEMPLATES.WELCOME,
+        { USERNAME: user.username },
         'WELCOME'
       );
     } catch (emailErr) {
@@ -861,17 +899,14 @@ async function maybeSendNewDeviceAlert(
     const seenBefore = priorLogins.some(l => l.userAgent === userAgent);
     if (seenBefore) return;
 
-    await sendEmail(
+    await sendTemplateEmail(
       email,
-      'New login to your tuco Parents Circle account',
-      emailShell(
-        `<p style="margin:0 0 4px;font-size:19px;font-weight:700;">Hi ${username},</p>
-         <p style="margin:0 0 6px;">We noticed a login to your account from a device we haven't seen before.</p>
-         <p style="margin:0 0 16px;font-size:13px;color:#8A8A8A;">${ip ? `IP: ${ip}` : ''}${userAgent ? `<br/>Device: ${userAgent.slice(0, 120)}` : ''}</p>
-         <p style="margin:16px 0 0;font-size:13px;color:#8A8A8A;">Was this you? No action needed. If it wasn't, reset your password right away.</p>`,
-        'Was this me? Review Account',
-        FRONTEND_URL
-      ),
+      RESEND_TEMPLATES.NEW_DEVICE_LOGIN,
+      {
+        USERNAME: username,
+        IP: ip || 'unknown',
+        DEVICE: (userAgent || 'unknown').slice(0, 120),
+      },
       'TRANSACTIONAL'
     );
   } catch (err) {
@@ -962,16 +997,10 @@ app.post('/api/auth/forgot-password', authLimiter, async (req, res, next) => {
     });
 
     const resetUrl = `${FRONTEND_URL}?reset_token=${token}`;
-    await sendEmail(
+    await sendTemplateEmail(
       user.email,
-      'Reset your tuco Parents Circle password',
-      emailShell(
-        `<p style="margin:0 0 4px;font-size:19px;font-weight:700;">Hi ${user.username},</p>
-         <p style="margin:0 0 6px;">We got a request to reset your password. Click below to set a new one — this link expires in 1 hour.</p>
-         <p style="margin:16px 0 0;font-size:13px;color:#8A8A8A;">Didn't request this? You can safely ignore this email — your password won't change.</p>`,
-        'Reset Password',
-        resetUrl
-      )
+      RESEND_TEMPLATES.PASSWORD_RESET,
+      { USERNAME: user.username, RESET_URL: resetUrl }
     );
 
     res.status(200).json({ message: 'If that email exists, a reset link has been sent.' });
@@ -1141,16 +1170,10 @@ app.get('/api/auth/google/callback', async (req, res, next) => {
       // Welcome new Google sign-ups too — previously only email/password
       // signups got this, so most members (who join via Google) got nothing.
       // Fire-and-forget: never let a mail hiccup block the login.
-      sendEmail(
+      sendTemplateEmail(
         user.email,
-        'Welcome to tuco Parents Circle! 👋',
-        emailShell(
-          `<p style="margin:0 0 4px;font-size:19px;font-weight:700;">You're in, ${user.username}! 🎉</p>
-           <p style="margin:0 0 16px;">tuco Parents Circle is a safe space for Indian parents to ask questions, share what's worked for their kids, and support each other — no judgement, just real parents helping parents.</p>
-           <p style="margin:0;">Jump in and ask your first question, or see what other parents are talking about today.</p>`,
-          'Explore the Community',
-          FRONTEND_URL
-        ),
+        RESEND_TEMPLATES.WELCOME,
+        { USERNAME: user.username },
         'WELCOME'
       ).catch(err => console.warn('⚠️ Google welcome email failed:', err));
     }
