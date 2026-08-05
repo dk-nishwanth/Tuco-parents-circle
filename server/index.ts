@@ -575,8 +575,8 @@ function emailShell(bodyHtml: string, ctaLabel?: string, ctaUrl?: string): strin
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#F9FAFB;padding:32px 16px;">
       <tr><td align="center">
         <table role="presentation" width="480" cellpadding="0" cellspacing="0" style="max-width:480px;width:100%;background-color:#ffffff;border-radius:24px;overflow:hidden;">
-          <tr><td style="background-color:#FFE259;padding:24px 32px;text-align:center;">
-            <img src="${FRONTEND_URL}/tuco-logo.webp" alt="tuco Kids" height="28" style="height:28px;" />
+          <tr><td style="background-color:#FFE259;padding:22px 32px;text-align:center;">
+            <span style="font-family:Arial,Helvetica,sans-serif;font-size:24px;font-weight:700;color:#4D4747;letter-spacing:-0.02em;">tüco<span style="font-size:12px;vertical-align:super;">®</span> K!DS</span>
           </td></tr>
           <tr><td style="padding:32px 32px 28px;color:#4D4747;font-size:15px;line-height:1.6;">
             ${bodyHtml}
