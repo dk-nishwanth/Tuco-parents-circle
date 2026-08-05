@@ -611,16 +611,26 @@ async function sendEmail(
     return true;
   }
   try {
-    await resend.emails.send({
+    // The Resend SDK resolves to { data, error } for API-level failures
+    // (unverified domain, invalid recipient, etc.) — it does NOT throw for
+    // those, only for network-level failures. Checking only the thrown-error
+    // path (as this used to) meant every API-level rejection was silently
+    // treated as a success: logged as sent, caller told "delivered", with
+    // nothing ever reaching an inbox.
+    const { error } = await resend.emails.send({
       from: process.env.EMAIL_FROM || 'tuco Parents Circle <noreply@tucokids.com>',
       to,
       subject,
       html,
     });
+    if (error) {
+      console.error(`🚨 Email send REJECTED by Resend — "${subject}" to ${to}:`, error);
+      return false;
+    }
     await logEmail(type, to, subject, html);
     return true;
   } catch (err) {
-    console.error('Email send failed:', err);
+    console.error('Email send failed (network/SDK error):', err);
     return false;
   }
 }
