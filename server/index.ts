@@ -644,6 +644,35 @@ const RESEND_TEMPLATES = {
   NEW_DEVICE_LOGIN: '3b83a4c3-75a5-4d63-8067-7d5a0e2614fa',
 } as const;
 
+// "tuco Forum Members" segment — keeps the broadcast/newsletter contact
+// list current automatically. Fire-and-forget: a Resend hiccup here must
+// never block or fail a signup.
+const RESEND_SEGMENT_ID = '5d263a33-83bb-4f28-abe5-a6753237310a';
+
+async function syncResendContact(email: string, username: string): Promise<void> {
+  if (!process.env.RESEND_API_KEY) return;
+  try {
+    const res = await fetch('https://api.resend.com/contacts', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email,
+        first_name: username,
+        unsubscribed: false,
+        segments: [{ id: RESEND_SEGMENT_ID }],
+      }),
+    });
+    if (!res.ok) {
+      console.warn('⚠️ Resend contact sync failed:', email, res.status, await res.text().catch(() => ''));
+    }
+  } catch (err) {
+    console.warn('⚠️ Resend contact sync error:', email, err);
+  }
+}
+
 async function sendTemplateEmail(
   to: string,
   templateId: string,
@@ -867,6 +896,7 @@ app.post('/api/auth/signup', authLimiter, async (req: AuthRequest, res, next) =>
     } catch (emailErr) {
       console.warn('⚠️ Welcome email failed, but signup successful:', emailErr);
     }
+    syncResendContact(user.email, user.username);
 
     console.log('✅ Signup successful');
     res.status(201).json({ token, user: formatUser(user) });
@@ -1176,6 +1206,7 @@ app.get('/api/auth/google/callback', async (req, res, next) => {
         { USERNAME: user.username },
         'WELCOME'
       ).catch(err => console.warn('⚠️ Google welcome email failed:', err));
+      syncResendContact(user.email, user.username);
     }
 
     const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET as string, { expiresIn: '30d' });
