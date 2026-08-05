@@ -828,6 +828,47 @@ app.post('/api/auth/signup', authLimiter, async (req: AuthRequest, res, next) =>
   }
 });
 
+// Security alert for a login from a browser/device we haven't seen for this
+// user before — NOT sent on every login (that would be noisy and burn
+// through the email quota fast for a forum people check daily). Skips the
+// user's very first-ever tracked login too, since everything looks "new"
+// then and the welcome email already covers that moment.
+async function maybeSendNewDeviceAlert(
+  userId: string,
+  email: string,
+  username: string,
+  userAgent: string | undefined,
+  ip: string | undefined,
+): Promise<void> {
+  try {
+    const priorLogins = await prisma.loginEvent.findMany({
+      where: { userId },
+      select: { userAgent: true },
+      take: 50,
+      orderBy: { createdAt: 'desc' },
+    });
+    if (priorLogins.length === 0) return; // first-ever login — nothing to compare against
+    const seenBefore = priorLogins.some(l => l.userAgent === userAgent);
+    if (seenBefore) return;
+
+    await sendEmail(
+      email,
+      'New login to your tuco Parents Circle account',
+      emailShell(
+        `<p style="margin:0 0 4px;font-size:19px;font-weight:700;">Hi ${username},</p>
+         <p style="margin:0 0 6px;">We noticed a login to your account from a device we haven't seen before.</p>
+         <p style="margin:0 0 16px;font-size:13px;color:#8A8A8A;">${ip ? `IP: ${ip}` : ''}${userAgent ? `<br/>Device: ${userAgent.slice(0, 120)}` : ''}</p>
+         <p style="margin:16px 0 0;font-size:13px;color:#8A8A8A;">Was this you? No action needed. If it wasn't, reset your password right away.</p>`,
+        'Was this me? Review Account',
+        FRONTEND_URL
+      ),
+      'TRANSACTIONAL'
+    );
+  } catch (err) {
+    console.warn('⚠️ New-device login alert failed:', err);
+  }
+}
+
 const loginSchema = z.object({
   email: z.string().email(),
   password: z.string(),
@@ -867,6 +908,8 @@ app.post('/api/auth/login', authLimiter, async (req: AuthRequest, res, next) => 
 
     console.log('✅ Login successful for user:', user.id);
     const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: '30d' });
+    maybeSendNewDeviceAlert(user.id, user.email, user.username, req.headers['user-agent'], req.ip)
+      .catch(err => console.warn('⚠️ New-device alert check failed:', err));
     prisma.loginEvent.create({
       data: { userId: user.id, method: 'EMAIL', ipAddress: req.ip, userAgent: req.headers['user-agent'] },
     }).catch(err => console.warn('⚠️ Failed to record login event:', err));
@@ -1090,13 +1133,21 @@ app.get('/api/auth/google/callback', async (req, res, next) => {
       // Fire-and-forget: never let a mail hiccup block the login.
       sendEmail(
         user.email,
-        'Welcome to tuco Parents Circle!',
-        `<h2>Welcome, ${user.username}!</h2><p>You've joined the tuco Parents Circle community. Start sharing your parenting experiences today!</p><p><a href="${FRONTEND_URL}">Visit the community</a></p>`,
+        'Welcome to tuco Parents Circle! 👋',
+        emailShell(
+          `<p style="margin:0 0 4px;font-size:19px;font-weight:700;">You're in, ${user.username}! 🎉</p>
+           <p style="margin:0 0 16px;">tuco Parents Circle is a safe space for Indian parents to ask questions, share what's worked for their kids, and support each other — no judgement, just real parents helping parents.</p>
+           <p style="margin:0;">Jump in and ask your first question, or see what other parents are talking about today.</p>`,
+          'Explore the Community',
+          FRONTEND_URL
+        ),
         'WELCOME'
       ).catch(err => console.warn('⚠️ Google welcome email failed:', err));
     }
 
     const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET as string, { expiresIn: '30d' });
+    maybeSendNewDeviceAlert(user.id, user.email, user.username, req.headers['user-agent'], req.ip)
+      .catch(err => console.warn('⚠️ New-device alert check failed:', err));
     prisma.loginEvent.create({
       data: { userId: user.id, method: 'GOOGLE', ipAddress: req.ip, userAgent: req.headers['user-agent'] },
     }).catch(err => console.warn('⚠️ Failed to record login event:', err));
