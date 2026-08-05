@@ -392,24 +392,32 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin, initialMode, ini
           )}
           {mode === 'reset' && (
             <form onSubmit={handleResetSubmit} className="space-y-4">
-              <p className="text-sm text-neutral-600">Enter the token from your email and your new password.</p>
-              <div>
-                <label className="block text-xs font-bold text-neutral-700 mb-1.5">Reset Token</label>
-                <input
-                  type="text"
-                  autoFocus
-                  placeholder="Paste token from email"
-                  value={resetToken}
-                  onChange={e => setResetToken(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-neutral-200 rounded-lg outline-none text-sm focus:border-tuco-cyan focus:ring-2 focus:ring-tuco-cyan/10"
-                />
-              </div>
+              <p className="text-sm text-neutral-600">Choose your new password.</p>
+              {/* The token arrives pre-filled from the email link (App.tsx reads
+                  ?reset_token from the URL) — showing it as an editable field
+                  was just confusing noise for the normal case. Only surface it
+                  if that capture somehow didn't happen, so a manual-paste
+                  fallback still exists. */}
+              {!resetToken && (
+                <div>
+                  <label className="block text-xs font-bold text-neutral-700 mb-1.5">Reset Token</label>
+                  <input
+                    type="text"
+                    autoFocus
+                    placeholder="Paste token from email"
+                    value={resetToken}
+                    onChange={e => setResetToken(e.target.value)}
+                    className="w-full px-4 py-2.5 border border-neutral-200 rounded-lg outline-none text-sm focus:border-tuco-cyan focus:ring-2 focus:ring-tuco-cyan/10"
+                  />
+                </div>
+              )}
               <div>
                 <label className="block text-xs font-bold text-neutral-700 mb-1.5">New Password</label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 w-4 h-4 text-neutral-400" strokeWidth={1.5} />
                   <input
                     type={showPassword ? 'text' : 'password'}
+                    autoFocus={!!resetToken}
                     autoComplete="new-password"
                     placeholder="At least 6 characters"
                     value={newPassword}
