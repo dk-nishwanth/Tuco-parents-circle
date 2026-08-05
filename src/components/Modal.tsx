@@ -20,7 +20,7 @@ interface ModalProps {
     text: string,
     image?: string,
     parentId?: number
-  ) => void;
+  ) => void | Promise<void>;
   onLikeReply?: (threadId: number, replyId: number) => void;
   onReportReply?: (threadId: number, replyId: number) => void;
   onEditReply?: (threadId: number, replyId: number, newText: string) => void;
@@ -75,7 +75,7 @@ const ReplyComponent = ({
     text: string,
     image?: string,
     parentId?: number
-  ) => void;
+  ) => void | Promise<void>;
   onLikeReply?: (threadId: number, replyId: number) => void;
   onReportReply?: (threadId: number, replyId: number) => void;
   onEditReply?: (threadId: number, replyId: number, newText: string) => void;
@@ -90,6 +90,7 @@ const ReplyComponent = ({
   const [isReplying, setIsReplying] = useState(false);
   const [replyText, setReplyText] = useState('');
   const [shareCopied, setShareCopied] = useState(false);
+  const [isSubmittingNestedReply, setIsSubmittingNestedReply] = useState(false);
   const replyInputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -98,10 +99,16 @@ const ReplyComponent = ({
     }
   }, [isReplying]);
 
-  const handleSubmitNestedReply = (e: FormEvent) => {
+  const handleSubmitNestedReply = async (e: FormEvent) => {
     e.preventDefault();
+    if (isSubmittingNestedReply) return; // guard against double-click/double-Enter firing two replies
     if (replyText.trim() && currentUser) {
-      onAddReply(threadId, currentUser.username, currentUser.city, replyText, undefined, reply.id);
+      setIsSubmittingNestedReply(true);
+      try {
+        await onAddReply(threadId, currentUser.username, currentUser.city, replyText, undefined, reply.id);
+      } finally {
+        setIsSubmittingNestedReply(false);
+      }
       setReplyText('');
       setIsReplying(false);
       if (setActiveReplyTo) setActiveReplyTo(null);
@@ -294,10 +301,10 @@ const ReplyComponent = ({
           <div className="flex gap-2 mt-2">
             <button
               type="submit"
-              disabled={!replyText.trim()}
+              disabled={!replyText.trim() || isSubmittingNestedReply}
               className="bg-[#FED018] hover:bg-[#fccb0a] disabled:opacity-50 disabled:cursor-not-allowed text-neutral-800 px-4 py-2 rounded-full text-sm font-bold transition-colors"
             >
-              Reply
+              {isSubmittingNestedReply ? 'Posting…' : 'Reply'}
             </button>
             <button
               type="button"
@@ -466,6 +473,9 @@ export function Modal({
   const [isSortOpen, setIsSortOpen] = useState(false);
   const [replySort, setReplySort] = useState<'new' | 'top' | 'old'>('new');
   const [shareCopied, setShareCopied] = useState(false);
+  // Guards against double-click/double-Enter firing two identical replies
+  // before the first request's response comes back.
+  const [isSubmittingReply, setIsSubmittingReply] = useState(false);
 
   // Load this thread's saved draft whenever the thread becomes available.
   // This can't be done in the useState initializer above because on a fresh
@@ -548,25 +558,31 @@ export function Modal({
   const category = CATEGORIES[thread.category] || { icon: '💬', label: 'General' };
   const categoryItem = CATEGORIES[activeCategory];
   
-  const handleReplySubmit = (e: FormEvent) => {
+  const handleReplySubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (isSubmittingReply) return; // guard against double-click/double-Enter firing two replies
     if (!replyText.trim() && !replyImage) {
       setErrorMessage('Please write some thoughts or upload an image.');
       return;
     }
-    onAddReply(
-      thread.id,
-      currentUser?.username || 'Guest',
-      currentUser?.city || 'India',
-      replyText.trim(),
-      replyImage
-    );
-    // Only clear if user is logged in — if not, auth modal opens and we want to preserve the text
-    if (currentUser) {
-      setReplyText('');
-      setReplyImage(undefined);
-      setErrorMessage('');
-      try { if (draftKey) sessionStorage.removeItem(draftKey); } catch { /* ignore */ }
+    setIsSubmittingReply(true);
+    try {
+      await onAddReply(
+        thread.id,
+        currentUser?.username || 'Guest',
+        currentUser?.city || 'India',
+        replyText.trim(),
+        replyImage
+      );
+      // Only clear if user is logged in — if not, auth modal opens and we want to preserve the text
+      if (currentUser) {
+        setReplyText('');
+        setReplyImage(undefined);
+        setErrorMessage('');
+        try { if (draftKey) sessionStorage.removeItem(draftKey); } catch { /* ignore */ }
+      }
+    } finally {
+      setIsSubmittingReply(false);
     }
   };
 
@@ -778,9 +794,10 @@ export function Modal({
                 <button
                   type="submit"
                   onClick={handleReplySubmit}
-                  className="bg-[#35B5EC] hover:bg-[#2da3d6] text-white px-9 py-2.5 rounded-full text-[14px] font-bold transition-all shadow-sm active:scale-95"
+                  disabled={isSubmittingReply}
+                  className="bg-[#35B5EC] hover:bg-[#2da3d6] disabled:opacity-60 disabled:cursor-not-allowed text-white px-9 py-2.5 rounded-full text-[14px] font-bold transition-all shadow-sm active:scale-95"
                 >
-                  Comment
+                  {isSubmittingReply ? 'Posting…' : 'Comment'}
                 </button>
               </div>
             </div>

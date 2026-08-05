@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { User } from '../types';
 import { api } from '../utils/api';
 import { track } from '../utils/analytics';
@@ -12,6 +12,11 @@ import kidsGrowthImg from '../assets/kidsgrowth.png';
 interface Props {
   user: User;
   onComplete: (updatedUser: User) => void;
+  // Lets the user dismiss this for the current session (e.g. the save
+  // fails, or they just don't want to fill it in right now) instead of
+  // being trapped with no way out. They'll be prompted again next login
+  // since childAge stays unset server-side.
+  onSkip: () => void;
 }
 
 // The interest tiles. Order + colour follow the top-nav so the onboarding
@@ -37,12 +42,18 @@ const INTERESTS: Interest[] = [
 // what the app can actually filter on.
 const MAX_INTERESTS = 5;
 
-export function CompleteProfileModal({ user, onComplete }: Props) {
+export function CompleteProfileModal({ user, onComplete, onSkip }: Props) {
   const [step, setStep] = useState<'age' | 'interests'>('age');
   const [childAge, setChildAge] = useState<string>(user.childAge || '');
   const [selectedInterests, setSelectedInterests] = useState<string[]>(user.interests || []);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onSkip(); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onSkip]);
 
   const handleNextStep = (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,8 +94,19 @@ export function CompleteProfileModal({ user, onComplete }: Props) {
   };
 
   return (
-    <div className="fixed inset-0 bg-neutral-900/70 backdrop-blur-sm flex items-center justify-center p-4 z-[80]">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-7 animate-in fade-in slide-in-from-bottom-4 duration-300">
+    <div
+      className="fixed inset-0 bg-neutral-900/70 backdrop-blur-sm flex items-center justify-center p-4 z-[80]"
+      onClick={e => { if (e.target === e.currentTarget) onSkip(); }}
+    >
+      <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-sm p-7 animate-in fade-in slide-in-from-bottom-4 duration-300">
+        <button
+          type="button"
+          onClick={onSkip}
+          aria-label="Skip for now"
+          className="absolute top-3 right-3 w-7 h-7 flex items-center justify-center rounded-full text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-colors text-lg"
+        >
+          ×
+        </button>
         {step === 'age' ? (
           <form onSubmit={handleNextStep}>
             <div className="text-center mb-6">

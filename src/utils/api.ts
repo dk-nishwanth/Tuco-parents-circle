@@ -26,8 +26,23 @@ function authHeaders(): Record<string, string> {
     : { 'Content-Type': 'application/json' };
 }
 
+// Called when an authenticated request comes back 401/403 with a token still
+// on file — i.e. the session itself was rejected (expired/invalid/rotated
+// secret), not a login attempt with a wrong password (those never carry a
+// token, see login() below). App.tsx wires this up to force a clean logout +
+// a "please sign in again" prompt, instead of every subsequent reply/post/
+// vote silently failing while the UI still looks logged in.
+let onSessionExpired: (() => void) | null = null;
+export function setSessionExpiredHandler(fn: (() => void) | null): void {
+  onSessionExpired = fn;
+}
+
 async function handleResponse<T>(res: Response): Promise<T> {
   if (!res.ok) {
+    if ((res.status === 401 || res.status === 403) && tokenStore.get()) {
+      tokenStore.clear();
+      onSessionExpired?.();
+    }
     const body = await res.json().catch(() => ({ error: 'Unknown error' }));
     throw new Error(body.error || `HTTP ${res.status}`);
   }
@@ -57,6 +72,7 @@ export async function uploadImage(file: File, kind: 'post' | 'reply' = 'post'): 
       body: JSON.stringify({ contentType: file.type, size: file.size, kind }),
     });
     if (presignRes.status === 503) {
+      // Expected, silent fallback: server has no S3 credentials configured.
       return fileToDataUrl(file);
     }
     if (!presignRes.ok) {
@@ -75,8 +91,11 @@ export async function uploadImage(file: File, kind: 'post' | 'reply' = 'post'): 
     if (!putRes.ok) throw new Error(`S3 upload failed (${putRes.status})`);
     return publicUrl;
   } catch (err) {
-    // Network error / CORS / bucket missing — fall back so posting still works.
-    console.warn('Image upload via S3 failed, falling back to inline base64:', err);
+    // S3 IS configured but the upload actually failed (bad credentials, CORS
+    // misconfig, bucket policy, etc). This is a real bug, not the expected
+    // "not configured" path above — surface it loudly so it isn't mistaken
+    // for normal fallback behavior.
+    console.error('S3 upload failed unexpectedly (falling back to inline base64 so the post still succeeds):', err);
     return fileToDataUrl(file);
   }
 }

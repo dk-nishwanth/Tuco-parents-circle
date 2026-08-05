@@ -11,7 +11,7 @@ interface NewPostModalProps {
     category: string,
     text: string,
     images: string[]
-  ) => void;
+  ) => void | Promise<void>;
   istucoTeam?: boolean;
 }
 
@@ -25,6 +25,7 @@ export function NewPostModal({ isOpen, onClose, onSubmit, istucoTeam }: NewPostM
   const [text, setText] = useState('');
   const [images, setImages] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
   // Close on Escape, matching the X button and backdrop click.
@@ -74,20 +75,26 @@ export function NewPostModal({ isOpen, onClose, onSubmit, istucoTeam }: NewPostM
     setImages(prev => prev.filter((_, i) => i !== idx));
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (submitting) return; // guard against double-click/double-Enter firing two creates
     if (!title.trim()) {
       setErrorMsg('Please add a title or question.');
       return;
     }
     const finalCategory = category === 'other' ? (customCategory.trim().toLowerCase().replace(/\s+/g, '-') || 'other') : category;
-    onSubmit(title.trim(), finalCategory, text.trim(), images);
-    setTitle('');
-    setCategory('skincare');
-    setCustomCategory('');
-    setText('');
-    setImages([]);
-    setErrorMsg('');
+    setSubmitting(true);
+    try {
+      await onSubmit(title.trim(), finalCategory, text.trim(), images);
+      setTitle('');
+      setCategory('skincare');
+      setCustomCategory('');
+      setText('');
+      setImages([]);
+      setErrorMsg('');
+    } finally {
+      setSubmitting(false);
+    }
   };
   return (
     <div
@@ -243,13 +250,13 @@ export function NewPostModal({ isOpen, onClose, onSubmit, istucoTeam }: NewPostM
             </button>
             <button
                 type="submit"
-                disabled={uploading}
+                disabled={uploading || submitting}
                 className="flex-1 py-2 bg-tuco-cyan hover:bg-tuco-cyan-hover disabled:bg-tuco-cyan/60 disabled:cursor-not-allowed text-white text-xs sm:text-sm font-display font-bold rounded-xl flex items-center justify-center gap-1.5 cursor-pointer shadow-sm active:scale-98 transition-all"
               >
-              {uploading
+              {(uploading || submitting)
                 ? <Loader2 className="w-3.5 h-3.5 animate-spin" strokeWidth={1.5} />
                 : <Send className="w-3.5 h-3.5" strokeWidth={1.5} />}
-              <span>{uploading ? 'Uploading…' : 'Launch Thread'}</span>
+              <span>{uploading ? 'Uploading…' : submitting ? 'Posting…' : 'Launch Thread'}</span>
             </button>
           </div>
         </form>

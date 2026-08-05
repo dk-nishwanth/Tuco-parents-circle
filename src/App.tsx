@@ -52,7 +52,7 @@ import {
   sendWeeklyEngagementToAllUsers,
 } from './utils/emailService';
 import { mergeSeedWithExisting } from './utils/seedContent';
-import { api, tokenStore } from './utils/api';
+import { api, tokenStore, setSessionExpiredHandler } from './utils/api';
 import tucoLogo from './assets/tuco-logo.webp';
 function enrichConversations(threads: Conversation[]): Conversation[] {
   return threads.map((c, i) => ({
@@ -671,6 +671,25 @@ function AppContent() {
     setCurrentUser(null);
     setSavedPosts([]);
   };
+
+  // Any authenticated request (reply, post, vote, ...) that comes back with
+  // a rejected token lands here: force a clean logout and tell the user why,
+  // instead of leaving the UI looking logged-in while every action quietly
+  // fails with a raw "Invalid or expired token" error.
+  useEffect(() => {
+    setSessionExpiredHandler(() => {
+      setSessionCredentials(null);
+      setCurrentUser(null);
+      setSavedPosts([]);
+      setWarningModal({
+        isOpen: true,
+        type: 'error',
+        title: 'Session Expired',
+        message: 'Your session has expired. Please sign in again to continue.',
+      });
+    });
+    return () => setSessionExpiredHandler(null);
+  }, []);
   const selectedThread = conversations.find(c => c.id === selectedThreadId) || null;
   const isSearchMode = searchTerm.trim().length > 0;
   // All conversations the current user is allowed to see (used for sidebar counts and trending)
@@ -1790,6 +1809,7 @@ function AppContent() {
             setCurrentUser(updatedUser);
             setShowCompleteProfile(false);
           }}
+          onSkip={() => setShowCompleteProfile(false)}
         />
       )}
     </div>
