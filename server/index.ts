@@ -557,6 +557,41 @@ async function logEmail(type: EmailLogType, to: string, subject: string, html: s
   }
 }
 
+// Shared branded wrapper for every outgoing email — logo, brand colors
+// (#35B5EC cyan, #FED018 yellow, #4D4747 warm grey), consistent footer.
+// Table-based layout + inline styles only, since email clients strip
+// <style> blocks and flexbox/grid.
+function emailShell(bodyHtml: string, ctaLabel?: string, ctaUrl?: string): string {
+  const cta = ctaLabel && ctaUrl
+    ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:28px 0;">
+         <tr><td style="background-color:#35B5EC;border-radius:10px;">
+           <a href="${ctaUrl}" style="display:inline-block;padding:13px 28px;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;">${ctaLabel}</a>
+         </td></tr>
+       </table>`
+    : '';
+  return `<!doctype html>
+<html>
+  <body style="margin:0;padding:0;background-color:#F9FAFB;font-family:Arial,Helvetica,sans-serif;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#F9FAFB;padding:32px 16px;">
+      <tr><td align="center">
+        <table role="presentation" width="480" cellpadding="0" cellspacing="0" style="max-width:480px;width:100%;background-color:#ffffff;border-radius:24px;overflow:hidden;">
+          <tr><td style="background-color:#FFE259;padding:24px 32px;text-align:center;">
+            <img src="${FRONTEND_URL}/tuco-logo.webp" alt="tuco Kids" height="28" style="height:28px;" />
+          </td></tr>
+          <tr><td style="padding:32px 32px 28px;color:#4D4747;font-size:15px;line-height:1.6;">
+            ${bodyHtml}
+            ${cta}
+          </td></tr>
+          <tr><td style="padding:18px 32px;background-color:#F9FAFB;border-top:1px solid #F0F0F0;text-align:center;">
+            <p style="margin:0;font-size:12px;color:#A3A3A3;">tuco Parents Circle — a safe space for Indian parents.</p>
+          </td></tr>
+        </table>
+      </td></tr>
+    </table>
+  </body>
+</html>`;
+}
+
 async function sendEmail(
   to: string,
   subject: string,
@@ -771,8 +806,14 @@ app.post('/api/auth/signup', authLimiter, async (req: AuthRequest, res, next) =>
     try {
       await sendEmail(
         user.email,
-        'Welcome to tuco Parents Circle!',
-        `<h2>Welcome, ${user.username}!</h2><p>You've joined the tuco Parents Circle community. Start sharing your parenting experiences today!</p><p><a href="${process.env.FRONTEND_URL || 'https://community.tucokids.com'}">Visit the community</a></p>`,
+        'Welcome to tuco Parents Circle! 👋',
+        emailShell(
+          `<p style="margin:0 0 4px;font-size:19px;font-weight:700;">You're in, ${user.username}! 🎉</p>
+           <p style="margin:0 0 16px;">tuco Parents Circle is a safe space for Indian parents to ask questions, share what's worked for their kids, and support each other — no judgement, just real parents helping parents.</p>
+           <p style="margin:0;">Jump in and ask your first question, or see what other parents are talking about today.</p>`,
+          'Explore the Community',
+          FRONTEND_URL
+        ),
         'WELCOME'
       );
     } catch (emailErr) {
@@ -871,10 +912,13 @@ app.post('/api/auth/forgot-password', authLimiter, async (req, res, next) => {
     await sendEmail(
       user.email,
       'Reset your tuco Parents Circle password',
-      `<h2>Hi ${user.username},</h2>
-       <p>You requested a password reset. Click the link below to set a new password. This link expires in 1 hour.</p>
-       <p><a href="${resetUrl}" style="background:#35B5EC;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;">Reset Password</a></p>
-       <p>If you didn't request this, you can safely ignore this email.</p>`
+      emailShell(
+        `<p style="margin:0 0 4px;font-size:19px;font-weight:700;">Hi ${user.username},</p>
+         <p style="margin:0 0 6px;">We got a request to reset your password. Click below to set a new one — this link expires in 1 hour.</p>
+         <p style="margin:16px 0 0;font-size:13px;color:#8A8A8A;">Didn't request this? You can safely ignore this email — your password won't change.</p>`,
+        'Reset Password',
+        resetUrl
+      )
     );
 
     res.status(200).json({ message: 'If that email exists, a reset link has been sent.' });
