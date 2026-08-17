@@ -4,6 +4,7 @@ import { ThreadCard } from './ThreadCard';
 import { filterThreads, sortThreads } from '../utils/helpers';
 import { findTucoVideoReply, parseYouTubeId } from './TucoVideo';
 import { BlogsSection } from './BlogsSection';
+import { QuizSection } from './QuizSection';
 
 // A thread "has video" when a tuco-team reply embeds a YouTube link, and
 // "has image" when the OP attached any picture. Used for both the highlights
@@ -174,6 +175,10 @@ export function MainContent({
               {/* Blogs — shown after the first thread on the default feed's first page */}
               {index === 0 && currentPage === 1 && activeCategory === 'all' && !searchTerm && (
                 <BlogsSection />
+              )}
+              {/* Quiz teaser — shown after the second thread, right after Blogs */}
+              {index === 1 && currentPage === 1 && activeCategory === 'all' && !searchTerm && (
+                <QuizSection />
               )}
             </Fragment>
           ))
