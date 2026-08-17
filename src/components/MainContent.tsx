@@ -6,6 +6,7 @@ import { findTucoVideoReply, parseYouTubeId } from './TucoVideo';
 import { BlogsSection } from './BlogsSection';
 import { QuizSection } from './QuizSection';
 import { FounderFocusSection } from './FounderFocusSection';
+import { QuizFlowSection } from './QuizFlowSection';
 
 // A thread "has video" when a tuco-team reply embeds a YouTube link, and
 // "has image" when the OP attached any picture. Used for both the highlights
@@ -180,6 +181,10 @@ export function MainContent({
               {/* Quiz teaser — shown after the second thread, right after Blogs */}
               {index === 1 && currentPage === 1 && activeCategory === 'all' && !searchTerm && (
                 <QuizSection />
+              )}
+              {/* Quiz flow — shown after the third thread, right above Founder Focus */}
+              {index === 2 && currentPage === 1 && activeCategory === 'all' && !searchTerm && (
+                <QuizFlowSection />
               )}
               {/* Founder Focus — shown after the third thread, links out to Instagram */}
               {index === 2 && currentPage === 1 && activeCategory === 'all' && !searchTerm && (
