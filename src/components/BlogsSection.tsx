@@ -3,6 +3,7 @@ interface BlogItem {
   author: string;
   date: string;
   href: string;
+  image?: string;
 }
 
 const BLOGS: BlogItem[] = [
@@ -11,12 +12,14 @@ const BLOGS: BlogItem[] = [
     author: 'tuco kids',
     date: '31 July 2026',
     href: 'https://tucokids.com/blogs/health/hair-loss-in-children-due-to-vitamin-deficiency-causes-diagnosis-home-remedies',
+    image: 'https://tucokids.com/cdn/shop/articles/SEO_Blog_Banners_New-25.webp?v=1785496702',
   },
   {
     title: 'Why Is My Child Losing So Much Hair? Causes Every Indian Parent Should Know',
     author: 'Srividhya Suresh',
     date: '15 May 2026',
     href: 'https://tucokids.com/blogs/health/why-is-my-child-losing-so-much-hair-causes-every-indian-parent-should-know',
+    image: 'https://tucokids.com/cdn/shop/articles/SEO_6_b361dcb6-4bb3-4cae-a6c1-3434c4198b50.webp?v=1780653739',
   },
   {
     title: 'Champi Ritual For Kids Why Indian Moms Swear By It',
@@ -56,7 +59,16 @@ export function BlogsSection() {
               </div>
             </div>
             <div className="flex flex-col items-end justify-between flex-shrink-0">
-              <div className="w-32 h-20 md:w-52 md:h-28 rounded-xl bg-neutral-200" />
+              {blog.image ? (
+                <img
+                  src={blog.image}
+                  alt={blog.title}
+                  className="w-32 h-20 md:w-52 md:h-28 rounded-xl object-cover bg-neutral-200"
+                  loading="lazy"
+                />
+              ) : (
+                <div className="w-32 h-20 md:w-52 md:h-28 rounded-xl bg-neutral-200" />
+              )}
               <span className="text-sm md:text-base text-neutral-600 mt-4 whitespace-nowrap">{blog.date}</span>
             </div>
           </a>
