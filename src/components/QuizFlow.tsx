@@ -224,7 +224,13 @@ export function QuizFlow() {
     }
     if (!category) return;
     setView('loading');
-    const resolved = resolveQuiz(category, answers as Record<string, string | string[]>);
+    const qAnswers: Record<string, string | string[]> = {
+      q1: answers[1],
+      q2: answers[2],
+      q3: answers[3],
+      q4: answers[4],
+    };
+    const resolved = resolveQuiz(category, qAnswers);
     fetchLiveProductInfo(resolved.picks.map(p => p.handle)).then(liveByHandle => {
       const picks = resolved.picks.map(p => ({ ...p, ...liveByHandle[p.handle] }));
       setResult({ title: resolved.title, sub: resolved.sub, picks });
