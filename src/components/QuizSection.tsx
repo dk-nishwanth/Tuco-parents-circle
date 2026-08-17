@@ -9,7 +9,7 @@ export function QuizSection() {
         <img
           src={quizGirlImage}
           alt="Know your child's skin"
-          className="w-56 h-56 md:w-56 md:h-56 object-contain flex-shrink-0"
+          className="w-56 h-56 md:w-[290px] md:h-[290px] object-contain flex-shrink-0"
         />
         <div className="flex flex-col items-center md:items-start mt-6 md:mt-0">
           <h2 className="font-brand font-normal text-[#4D4747] text-[36px] md:text-[40px] leading-none tracking-[-0.05em] text-center md:text-left">
