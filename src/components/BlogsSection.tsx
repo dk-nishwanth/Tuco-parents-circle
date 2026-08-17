@@ -22,10 +22,11 @@ const BLOGS: BlogItem[] = [
     image: 'https://tucokids.com/cdn/shop/articles/SEO_6_b361dcb6-4bb3-4cae-a6c1-3434c4198b50.webp?v=1780653739',
   },
   {
-    title: 'Champi Ritual For Kids Why Indian Moms Swear By It',
+    title: 'Baby Rashes on Face: Causes & Home Remedies',
     author: 'tuco kids',
-    date: '12 May 2026',
-    href: 'https://tucokids.com/blogs/health/champi-for-kids-traditional-indian-hair-oil-massage-guide-for-modern-parents',
+    date: '11 August 2026',
+    href: 'https://tucokids.com/blogs/skincare/baby-rashes-on-face-causes-home-remedies',
+    image: 'https://tucokids.com/cdn/shop/articles/37_22b0b924-52db-43ed-80cb-7f9902dbace2.png?v=1786458983',
   },
 ];
 
