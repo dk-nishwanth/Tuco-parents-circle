@@ -9,7 +9,7 @@ export function FounderFocusSection() {
       href={INSTAGRAM_URL}
       target="_blank"
       rel="noopener noreferrer"
-      className="block w-[308px] md:w-[420px] mx-auto rounded-3xl overflow-hidden border border-neutral-200 shadow-sm hover:opacity-90 transition-opacity"
+      className="block w-[308px] md:w-[420px] mx-auto hover:opacity-90 transition-opacity"
     >
       <img
         src={founderFocusImage}
