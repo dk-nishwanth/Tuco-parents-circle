@@ -106,11 +106,16 @@ export function QuizFlow() {
         </button>
       )}
       <div className="flex justify-center mb-4">
-        <img src={quizMascot} alt="" className="w-20 h-20 md:w-24 md:h-24 object-contain" />
+        <img src={quizMascot} alt="" className="w-20 h-20 md:w-32 md:h-32 object-contain" />
       </div>
-      <p className="font-display font-semibold text-[13px] tracking-wide text-[#00B9F1] uppercase text-center">
-        question {step + 1}/{total}
-      </p>
+      <div className="flex items-center justify-center gap-2">
+        <span className="font-display font-semibold text-sm text-[#00B9F1] bg-[#E6F8FE] rounded-full px-4 py-1.5">
+          question
+        </span>
+        <span className="font-display text-sm text-[#4D4747]">
+          {step + 1} of {total}
+        </span>
+      </div>
       <h3 className="font-display font-semibold text-[#4D4747] text-[22px] md:text-[26px] leading-snug mt-2 mb-5 text-center">
         {current.question}
       </h3>
