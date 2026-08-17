@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import quizMascot from '../assets/quiz-mascot.png';
+import quizMascotThanks from '../assets/quiz-mascot-thanks.png';
 
 interface QuizOption {
   label: string;
@@ -81,11 +82,14 @@ export function QuizFlow() {
   if (finished) {
     return (
       <div className="flex flex-col items-center text-center py-6">
-        <h3 className="font-brand font-normal text-[#4D4747] text-[28px] md:text-[32px] leading-tight tracking-[-0.05em]">
-          thanks for taking the quiz!
-        </h3>
-        <p className="font-display font-normal text-neutral-600 text-[15px] md:text-[17px] mt-3 max-w-sm">
-          we&rsquo;re working on matching you with the right products.
+        <img src={quizMascotThanks} alt="" className="w-24 h-24 md:w-28 md:h-28 object-contain" />
+        <p
+          className="font-display font-medium text-[#4D4747] mt-6 max-w-sm"
+          style={{ fontSize: 20, lineHeight: '20px', letterSpacing: '-0.05em', textAlign: 'center' }}
+        >
+          thank you for your response!
+          <br />
+          we&rsquo;ll keep this in mind while formulating our products!
         </p>
       </div>
     );
