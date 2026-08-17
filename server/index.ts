@@ -793,6 +793,44 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Proxies tucokids.com's public /products/:handle.js endpoint for the quiz
+// results screen. That endpoint has no CORS headers, so the browser can't
+// call it directly from community.tucokids.com — this fetches it
+// server-to-server (no CORS restriction) and returns just the fields the
+// results cards need.
+const SHOPIFY_HANDLE_RE = /^[a-z0-9-]+$/;
+app.get('/api/quiz-products', async (req, res) => {
+  const handlesParam = String(req.query.handles || '');
+  const handles = handlesParam
+    .split(',')
+    .map(h => h.trim())
+    .filter(h => h && SHOPIFY_HANDLE_RE.test(h))
+    .slice(0, 10);
+
+  const results = await Promise.all(
+    handles.map(async handle => {
+      try {
+        const r = await fetch(`https://tucokids.com/products/${handle}.js`);
+        if (!r.ok) return { handle, available: undefined };
+        const data: any = await r.json();
+        const image = data.featured_image || data.images?.[0] || null;
+        return {
+          handle,
+          title: data.title as string,
+          price: typeof data.price === 'number' ? data.price / 100 : null,
+          image: image ? (image.startsWith('http') ? image : `https:${image}`) : null,
+          available: !!data.available,
+          url: `https://tucokids.com/products/${handle}`,
+        };
+      } catch {
+        return { handle, available: undefined };
+      }
+    })
+  );
+
+  res.json(results);
+});
+
 // ------------------------------
 // AUTH ENDPOINTS
 // ------------------------------

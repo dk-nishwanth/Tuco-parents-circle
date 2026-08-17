@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import quizMascot from '../assets/quiz-mascot.png';
-import quizMascotThanks from '../assets/quiz-mascot-thanks.png';
+import { resolveQuiz, fetchLiveProductInfo, formatPrice, type Pick, type LiveProductInfo } from '../utils/quizProducts';
 
 const ICON_SKIN = 'https://cdn.shopify.com/s/files/1/0619/9990/7032/files/Mask_group_33dbd242-d9c4-48fa-b56b-a6f2a06fcdc8.png?v=1786616265';
 const ICON_HAIR = 'https://cdn.shopify.com/s/files/1/0619/9990/7032/files/Mask_group_1.png?v=1786616265';
@@ -183,11 +183,14 @@ const QUESTIONS: Record<Category, QuizQuestion[]> = {
 
 const TOTAL_STEPS = 5; // category + 4 questions
 
+type ViewState = 'quiz' | 'loading' | 'results';
+
 export function QuizFlow() {
   const [category, setCategory] = useState<Category | null>(null);
   const [step, setStep] = useState(0); // 0 = category select, 1-4 = questions
   const [answers, setAnswers] = useState<Record<number, string | string[]>>({});
-  const [finished, setFinished] = useState(false);
+  const [view, setView] = useState<ViewState>('quiz');
+  const [result, setResult] = useState<{ title: string; sub: string; picks: (Pick & LiveProductInfo)[] } | null>(null);
 
   const questions = category ? QUESTIONS[category] : null;
   const currentQuestion = questions ? questions[step - 1] : null;
@@ -217,9 +220,16 @@ export function QuizFlow() {
   const goNext = () => {
     if (step < 4) {
       setStep(step + 1);
-    } else {
-      setFinished(true);
+      return;
     }
+    if (!category) return;
+    setView('loading');
+    const resolved = resolveQuiz(category, answers as Record<string, string | string[]>);
+    fetchLiveProductInfo(resolved.picks.map(p => p.handle)).then(liveByHandle => {
+      const picks = resolved.picks.map(p => ({ ...p, ...liveByHandle[p.handle] }));
+      setResult({ title: resolved.title, sub: resolved.sub, picks });
+      setView('results');
+    });
   };
 
   const goBack = () => {
@@ -231,18 +241,92 @@ export function QuizFlow() {
     }
   };
 
-  if (finished) {
+  const retake = () => {
+    setCategory(null);
+    setStep(0);
+    setAnswers({});
+    setResult(null);
+    setView('quiz');
+  };
+
+  if (view === 'loading') {
     return (
-      <div className="flex flex-col items-center text-center py-6">
-        <img src={quizMascotThanks} alt="" className="w-24 h-24 md:w-28 md:h-28 object-contain" />
-        <p
-          className="font-display font-medium text-[#4D4747] mt-6 max-w-sm"
-          style={{ fontSize: 20, lineHeight: '20px', letterSpacing: '-0.05em', textAlign: 'center' }}
-        >
-          thank you for your response!
-          <br />
-          we&rsquo;ll keep this in mind while formulating our products!
-        </p>
+      <div className="flex flex-col items-center text-center py-10">
+        <img src={quizMascot} alt="" className="w-20 h-20 object-contain animate-pulse" />
+        <div className="w-8 h-8 mt-4 rounded-full border-[3px] border-neutral-200 border-t-[#00B9F1] animate-spin" />
+        <p className="font-display text-sm text-neutral-500 mt-4">checking live prices &amp; stock&hellip;</p>
+      </div>
+    );
+  }
+
+  if (view === 'results' && result) {
+    return (
+      <div className="w-full max-w-md mx-auto">
+        <div className="flex justify-center mb-3">
+          <span className="font-display font-bold text-[11px] tracking-wide uppercase text-[#00B9F1] bg-[#E6F8FE] rounded-full px-4 py-1.5">
+            your top 5 picks
+          </span>
+        </div>
+        <h3 className="font-brand font-normal text-[#4D4747] text-[28px] leading-tight tracking-[-0.05em] text-center">
+          {result.title}
+        </h3>
+        <p className="font-display text-sm text-neutral-500 text-center mt-1 mb-5">{result.sub}</p>
+        <div className="flex flex-col gap-3">
+          {result.picks.map(p => (
+            <div
+              key={p.handle}
+              className={`flex gap-3 items-start p-3.5 rounded-2xl border ${
+                p.primary ? 'border-[#00B9F1] bg-[#F0FCFF]' : 'border-neutral-200 bg-white'
+              }`}
+            >
+              {p.image ? (
+                <img src={p.image} alt="" className="w-16 h-16 rounded-xl object-cover bg-neutral-100 flex-shrink-0" />
+              ) : (
+                <div className="w-16 h-16 rounded-xl bg-neutral-100 flex-shrink-0" />
+              )}
+              <div className="flex-1 min-w-0">
+                <p className="font-display font-semibold text-sm text-[#4D4747] leading-snug">{p.name}</p>
+                {p.note && <p className="font-display text-xs text-neutral-500 mt-0.5">{p.note}</p>}
+                <div className="flex items-center flex-wrap gap-2 mt-2.5">
+                  {typeof p.price === 'number' && (
+                    <span className="font-display font-bold text-sm text-[#4D4747]">{formatPrice(p.price)}</span>
+                  )}
+                  {p.available === true && (
+                    <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-green-100 text-green-700">
+                      in stock
+                    </span>
+                  )}
+                  {p.available === false && (
+                    <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-red-100 text-red-700">
+                      out of stock
+                    </span>
+                  )}
+                  {p.available === undefined && (
+                    <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-neutral-100 text-neutral-500">
+                      check availability
+                    </span>
+                  )}
+                  <a
+                    href={p.url || `https://tucokids.com/products/${p.handle}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="ml-auto text-[12px] font-semibold px-3 py-1.5 rounded-md bg-[#4D4747] text-white"
+                  >
+                    shop now
+                  </a>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="flex justify-center mt-6">
+          <button
+            onClick={retake}
+            className="px-6 py-2.5 rounded-full border-2 border-neutral-200 font-display font-semibold text-sm text-[#4D4747] hover:border-[#00B9F1] transition-colors"
+          >
+            retake quiz
+          </button>
+        </div>
       </div>
     );
   }
