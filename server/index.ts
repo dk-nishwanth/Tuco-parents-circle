@@ -287,6 +287,7 @@ app.use(helmet({
         'https://*.s3.ap-south-1.amazonaws.com',
         'https://*.cloudfront.net',
         'https://tucokids.com',
+        'https://cdn.shopify.com',
       ],
       'frame-src': ["'self'", 'https://www.youtube-nocookie.com', 'https://www.youtube.com'],
     },
