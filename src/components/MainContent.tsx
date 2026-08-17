@@ -1,8 +1,9 @@
-import { useState, useMemo, useEffect } from 'react';
+import { Fragment, useState, useMemo, useEffect } from 'react';
 import { Conversation, User } from '../types';
 import { ThreadCard } from './ThreadCard';
 import { filterThreads, sortThreads } from '../utils/helpers';
 import { findTucoVideoReply, parseYouTubeId } from './TucoVideo';
+import { BlogsSection } from './BlogsSection';
 
 // A thread "has video" when a tuco-team reply embeds a YouTube link, and
 // "has image" when the OP attached any picture. Used for both the highlights
@@ -157,19 +158,24 @@ export function MainContent({
       {/* Feed */}
       <div className="thread-list flex flex-col gap-4">
         {paginatedThreads.length > 0 ? (
-          paginatedThreads.map(thread => (
-            <ThreadCard
-              key={thread.id}
-              thread={thread}
-              onOpen={onThreadOpen}
-              onVote={onVote}
-              onSavePost={onSavePost}
-              isSaved={savedPosts.includes(thread.id)}
-              votedState={votedThreads[thread.id] || null}
-              users={users}
-              isLoggedIn={isLoggedIn}
-              onJoinClick={onJoinClick}
-            />
+          paginatedThreads.map((thread, index) => (
+            <Fragment key={thread.id}>
+              <ThreadCard
+                thread={thread}
+                onOpen={onThreadOpen}
+                onVote={onVote}
+                onSavePost={onSavePost}
+                isSaved={savedPosts.includes(thread.id)}
+                votedState={votedThreads[thread.id] || null}
+                users={users}
+                isLoggedIn={isLoggedIn}
+                onJoinClick={onJoinClick}
+              />
+              {/* Blogs — shown after the first thread on the default feed's first page */}
+              {index === 0 && currentPage === 1 && activeCategory === 'all' && !searchTerm && (
+                <BlogsSection />
+              )}
+            </Fragment>
           ))
         ) : (
           <div className="no-results bg-white border border-neutral-200 rounded-3xl p-10 text-center flex flex-col items-center justify-center">
