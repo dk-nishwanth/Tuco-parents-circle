@@ -54,7 +54,8 @@ export type GreyAreaFlag =
   | 'religious_cultural'
   | 'mental_health'
   | 'english'
-  | 'negative_tuco_review';
+  | 'negative_tuco_review'
+  | 'safety_concern';
 export interface Category {
   id: string;
   label: string;

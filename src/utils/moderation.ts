@@ -1,5 +1,22 @@
 import { AIApprovalOutcome, GreyAreaFlag, UserRole } from '../types';
 
+// Deliberately NOT in BAD_WORDS (CLEAR_VIOLATION = instant, unappealable
+// auto-reject with no human ever seeing it):
+// - Caste terms (dalit, obc, brahmin, chamar, casteist, anti-caste, etc.) —
+//   these are neutral demographic/administrative words (school admission
+//   categories, reservation status) or anti-discrimination language, not
+//   slurs. Blocking them only censors legitimate discussion.
+// - Discrimination-naming words (racist, sexist, homophobic, transphobic,
+//   misogynist) — saying "that comment was racist" described bad behaviour,
+//   it isn't itself a slur.
+// - Safety-disclosure words (rape, molest, pedophile, murder) — a parent
+//   reporting or asking for help about exactly these things needs their
+//   post to go LIVE and get urgent moderator attention, not silently
+//   vanish. See SAFETY_DISCLOSURE_PATTERNS below — genuine advocacy of
+//   harm against a child is still caught separately by CHILD_HARM_PATTERNS.
+// - porn/nude/boobs — moved to SOFT_WORDS: real questions like "found porn
+//   on my son's phone" shouldn't be treated as a violation, just held for a
+//   civility nudge.
 const BAD_WORDS = [
   'fuck',
   'fucking',
@@ -84,22 +101,6 @@ const BAD_WORDS = [
   'blow job',
   'handjob',
   'hand job',
-  'boobs',
-  'boob',
-  'tits',
-  'tit',
-  'porn',
-  'porno',
-  'nudity',
-  'nude',
-  'rape',
-  'rapist',
-  'molest',
-  'molester',
-  'pedo',
-  'pedophile',
-  'murder',
-  'murderer',
   'hate speech',
   'hatespeech',
   'nigger',
@@ -111,12 +112,6 @@ const BAD_WORDS = [
   'fag',
   'dyke',
   'tranny',
-  'transphobic',
-  'homophobic',
-  'racist',
-  'sexist',
-  'misogynist',
-  'misogynistic',
   'terrorist',
   'terrorism',
   'chuti',
@@ -143,21 +138,6 @@ const BAD_WORDS = [
   'saale',
   'kaminey',
   'kamina',
-  'chamar',
-  'chamaar',
-  'bhangi',
-  'low caste',
-  'dalit',
-  'obc',
-  'sc st',
-  'schedule caste',
-  'brahmin',
-  'kshatriya',
-  'vaishya',
-  'shudra',
-  'untouchable',
-  'casteist',
-  'anti-caste',
   'arsewipe',
   'dickhead',
   'dick head',
@@ -239,6 +219,17 @@ const SOFT_WORDS = [
   'awful',
   'terrible',
   'horrible',
+  // Moved here from BAD_WORDS: a real "found this on my kid's phone /
+  // browser" question shouldn't be auto-rejected, just held for a civility
+  // nudge like everything else in this list.
+  'porn',
+  'porno',
+  'nudity',
+  'nude',
+  'boobs',
+  'boob',
+  'tits',
+  'tit',
 ];
 
 const SOFT_WORD_PATTERNS = SOFT_WORDS.map(word => {
@@ -401,6 +392,18 @@ const NEGATIVE_TUCO_PATTERNS = [
   /hate\s+tuco|avoid\s+tuco|never\s+buy\s+tuco/gi,
 ];
 
+// A parent disclosing or asking for help about one of these is exactly the
+// person who most needs their post to stay visible and get a moderator's
+// attention fast — never auto-rejected (see the note above BAD_WORDS).
+// This flag exists purely to surface the thread at the top of the
+// moderation queue, never to block it.
+const SAFETY_DISCLOSURE_PATTERNS = [
+  /\b(rape|rapist|raped)\b/gi,
+  /\b(molest|molester|molested|molesting)\b/gi,
+  /\b(pedo|pedophile|paedophile)\b/gi,
+  /\b(murder|murderer|murdered)\b/gi,
+];
+
 export interface ModerationAnalysis {
   outcome: AIApprovalOutcome;
   greyAreaFlags: GreyAreaFlag[];
@@ -428,6 +431,9 @@ export function detectGreyAreas(content: string): GreyAreaFlag[] {
   if (NEGATIVE_TUCO_PATTERNS.some(p => { p.lastIndex = 0; return p.test(content); })) {
     flags.push('negative_tuco_review');
   }
+  if (SAFETY_DISCLOSURE_PATTERNS.some(p => { p.lastIndex = 0; return p.test(content); })) {
+    flags.push('safety_concern');
+  }
   return flags;
 }
 
@@ -451,6 +457,11 @@ export function getGreyAreaReminder(flags: GreyAreaFlag[]): string | undefined {
   if (flags.includes('negative_tuco_review')) {
     reminders.push(
       'Honest product feedback is allowed. tuco Team cannot remove negative reviews or close threads for criticism.'
+    );
+  }
+  if (flags.includes('safety_concern')) {
+    reminders.push(
+      'This post touches on a serious safety topic. Please respond with care and support, not judgment.'
     );
   }
   return reminders.length > 0 ? reminders.join(' ') : undefined;
@@ -556,6 +567,10 @@ export function getReviewPriority(
   else if (trustScore >= 0.7) priority += 15;
   if (greyAreaFlags.includes('negative_tuco_review')) priority -= 20;
   if (greyAreaFlags.includes('mental_health')) priority -= 5;
+  // Sorted to the top of the moderation queue regardless of trust level —
+  // a safety disclosure needs a human's eyes fast, not to sit behind
+  // "trusted member" deprioritization.
+  if (greyAreaFlags.includes('safety_concern')) priority += 100;
   return priority;
 }
 
@@ -592,5 +607,6 @@ export const MODERATION_RULES = {
     MENTAL_HEALTH: 'Mental health & sensitivity',
     ENGLISH: 'English/Hindi/Regional languages',
     NEGATIVE_TUCO: 'Negative tuco feedback (allow)',
+    SAFETY_CONCERN: 'Safety disclosure (rape/molestation/murder mention) — never reject; review with priority',
   },
 };

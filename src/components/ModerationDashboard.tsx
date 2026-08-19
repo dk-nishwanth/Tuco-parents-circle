@@ -188,6 +188,11 @@ export function ModerationDashboard({
                           ⚠️ Negative tuco review — allow; cannot remove
                         </p>
                       )}
+                      {thread.greyAreaFlags?.includes('safety_concern') && (
+                        <p className="text-[10px] text-red-700 font-bold mb-2 bg-red-50 border border-red-200 rounded px-2 py-1 inline-block">
+                          🚨 Safety disclosure mentioned — never reject; review with priority
+                        </p>
+                      )}
                       <div className="text-xs text-neutral-500 space-y-1">
                         <div className="flex items-center gap-2">
                           <UserIcon className="w-3 h-3" />
