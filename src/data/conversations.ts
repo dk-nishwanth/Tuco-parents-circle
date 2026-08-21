@@ -222,7 +222,7 @@ export const INITIAL_CONVERSATIONS: Conversation[] = [
       author: 'DivyaNair',
       city: 'Kochi',
       time: '2 weeks ago',
-      text: "Ok this one is a game changer. We used to be stressed every single morning trying to get two kids ready for school and ourselves ready for work. Now we do 90% of the prep THE NIGHT BEFORE. Here's our routine...",
+      text: "Ok this one is a game changer. We used to be stressed every single morning trying to get two kids ready for school and ourselves ready for work. Now we do 90% of the prep THE NIGHT BEFORE. Here's our routine: uniforms ironed and laid out, bags packed and checked against the timetable, tiffins assembled (just needs reheating in the morning), and both kids pick their own clothes for the next day right after dinner so there's zero drama at 7 AM. We also prep breakfast the night before — batter made, veggies chopped — so mornings are just assembly, not cooking. Cut our chaos down massively. What's your night-before routine?",
       authorBadges: ['trusted_member'],
     },
     replies: [
