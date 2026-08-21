@@ -290,6 +290,21 @@ app.use(helmet({
         'https://cdn.shopify.com',
       ],
       'frame-src': ["'self'", 'https://www.youtube-nocookie.com', 'https://www.youtube.com'],
+      // Without this, GA4 doesn't just log noisily to the console — it never
+      // loads at all: gtag.js is served from googletagmanager.com (not
+      // 'self'), so helmet's default script-src 'self' silently drops the
+      // <script> tag before it can even fire the page_view beacon.
+      'script-src': ["'self'", 'https://www.googletagmanager.com'],
+      // gtag's actual event beacons (page_view, custom events, etc.) go out
+      // as fetch/XHR/image pings to these hosts, which is what connect-src
+      // (not script-src) governs. Without this, the script loads fine but
+      // every event silently fails to send.
+      'connect-src': [
+        "'self'",
+        'https://www.google-analytics.com',
+        'https://analytics.google.com',
+        'https://region1.google-analytics.com',
+      ],
     },
   } : false,
 }));

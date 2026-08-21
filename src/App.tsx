@@ -603,6 +603,10 @@ function AppContent() {
         // badge persist failed silently — local state already updated
       }
 
+      eligibleBadges.forEach(badgeType => {
+        track('badge_earned', { badge_type: badgeType, user_id: user.id });
+      });
+
       const badgeNames = eligibleBadges
         .map(b => `${BADGE_DISPLAY[b].icon} ${BADGE_DISPLAY[b].name}`)
         .join(', ');
@@ -674,7 +678,7 @@ function AppContent() {
       console.error('Login failed:', error);
       track('login_failed', {
         method: 'email',
-        error: error instanceof Error ? error.message.slice(0, 100) : 'unknown',
+        failure_reason: error instanceof Error ? error.message.slice(0, 100) : 'unknown',
       });
       throw error; // let AuthModal show inline error
     }
@@ -867,7 +871,7 @@ function AppContent() {
       });
       // 'undone' fires when the user clicks the same vote again to remove it.
       const action = previousState === type ? 'undone' : 'set';
-      track('vote', { target: 'thread', type, action, thread_id: threadId });
+      track('vote', { target: 'thread', type, vote_type: type, action, thread_id: threadId });
       // Refresh data from server to ensure consistency
       await refreshData();
     } catch (error) {

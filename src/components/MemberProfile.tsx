@@ -1,7 +1,8 @@
-import { useState, FormEvent } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 import { User, Conversation } from '../types';
 import { BADGE_DISPLAY } from '../utils/badgeSystem';
 import { api } from '../utils/api';
+import { track } from '../utils/analytics';
 import { Mail, MapPin, Award, Lock, Baby, Shield, MessageSquare, KeyRound } from 'lucide-react';
 
 // Self-contained change-password form. Accounts with hasPassword === false
@@ -139,6 +140,17 @@ export function MemberProfile({
         : user.role === 'trusted'
           ? 'Trusted Member'
           : 'Community Member';
+
+  // Fires once per profile view, not per render, so re-renders (e.g. from
+  // an unrelated state update while this profile is open) don't re-log it.
+  useEffect(() => {
+    if (!isCurrentUser) return;
+    user.badges
+      .filter(b => b.discountCode)
+      .forEach(b => track('discount_code_viewed', { discount_code: b.discountCode, user_id: user.id }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isCurrentUser, user.id]);
+
   return (
     <div className="bg-white border border-neutral-200 rounded-2xl p-6 shadow-sm">
       {}
