@@ -346,12 +346,22 @@ function AppContent() {
     return () => clearInterval(interval);
   }, [currentUser]);
 
-  // Handle initial hash. Two deep-link formats:
+  // Handle the URL hash. Two deep-link formats:
   //   #thread-<id>  → open that thread modal
   //   #reply-<id>   → find the reply's parent thread, open it, then scroll
   //                   the reply into view once the modal renders.
+  // Runs once conversations load AND on every 'hashchange' — without the
+  // listener, navigating from one #thread-N link to another while the SPA
+  // is already mounted (e.g. editing the address bar, or clicking a second
+  // shared link in the same tab) does a same-page hash-only navigation that
+  // never re-triggers a [conversations]-only effect, so the new thread
+  // silently never opens. This looked like a random/inconsistent bug
+  // because whichever link happened to cause a fresh full page load worked,
+  // and everything after it (same tab, hash-only change) didn't.
   useEffect(() => {
     if (conversations.length === 0) return;
+
+    const handleHash = () => {
     const threadMatch = window.location.hash.match(/^#thread-(\d+)$/);
     if (threadMatch) {
       const threadId = parseInt(threadMatch[1], 10);
@@ -394,6 +404,11 @@ function AppContent() {
         setTimeout(tryScroll, 250);
       }
     }
+    };
+
+    handleHash();
+    window.addEventListener('hashchange', handleHash);
+    return () => window.removeEventListener('hashchange', handleHash);
   }, [conversations]);
 
   // Open a thread when arriving via /?thread=<id>. A member's profile page
