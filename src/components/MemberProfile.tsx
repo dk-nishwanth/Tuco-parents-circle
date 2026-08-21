@@ -145,6 +145,7 @@ export function MemberProfile({
   // an unrelated state update while this profile is open) don't re-log it.
   useEffect(() => {
     if (!isCurrentUser) return;
+    track('profile_viewed', { profile_username: user.username, viewer_relation: 'own' });
     user.badges
       .filter(b => b.discountCode)
       .forEach(b => track('discount_code_viewed', { discount_code: b.discountCode, user_id: user.id }));

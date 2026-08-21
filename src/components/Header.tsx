@@ -3,6 +3,7 @@ import { LogOut, User, Bell, MessageSquare, Award, ThumbsUp, Trash2, Search, Arr
 import tucoLogo from '../assets/tuco-logo.webp';
 import { Conversation, User as UserType, Notification } from '../types';
 import { searchThreadsWithRanking } from '../utils/helpers';
+import { track } from '../utils/analytics';
 interface HeaderProps {
   searchTerm: string;
   onSearch: (term: string) => void;
@@ -340,6 +341,7 @@ export function Header({
                         <div
                           key={notification.id}
                           onClick={() => {
+                            track('notification_clicked', { notification_type: notification.type, notification_id: notification.id });
                             onMarkAsRead?.(notification.id);
                             if (notification.threadId) onThreadOpen?.(notification.threadId);
                             setShowNotificationsDropdown(false);

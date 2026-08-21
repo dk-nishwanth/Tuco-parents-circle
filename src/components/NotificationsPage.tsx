@@ -1,5 +1,6 @@
 import { X, Bell, ThumbsUp, MessageSquare, Award, CheckCircle, Trash2 } from 'lucide-react';
 import { Notification } from '../types';
+import { track } from '../utils/analytics';
 
 interface NotificationsPageProps {
   isOpen: boolean;
@@ -76,6 +77,7 @@ export function NotificationsPage({
                 <div
                   key={notification.id}
                   onClick={() => {
+                    track('notification_clicked', { notification_type: notification.type, notification_id: notification.id });
                     if (!notification.read) onMarkAsRead(notification.id);
                     if (notification.threadId) {
                       onThreadOpen(notification.threadId);

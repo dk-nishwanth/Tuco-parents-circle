@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, MessageSquare, ThumbsUp, Calendar, MapPin } from 'lucide-react';
 import { api, tokenStore } from '../utils/api';
 import { LoadingScreen } from './LoadingScreen';
 import { FollowButton } from './FollowButton';
+import { track } from '../utils/analytics';
 
 type ProfileData = Awaited<ReturnType<typeof api.getPublicProfile>>;
 
@@ -25,11 +26,25 @@ export function PublicProfilePage() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [me, setMe] = useState<{ id: string } | null>(null);
+  const [meLoading, setMeLoading] = useState(!!tokenStore.get());
+  const trackedProfileRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!tokenStore.get()) { setMe(null); return; }
-    api.getMe().then(u => setMe({ id: u.id })).catch(() => setMe(null));
+    if (!tokenStore.get()) { setMe(null); setMeLoading(false); return; }
+    api.getMe().then(u => setMe({ id: u.id })).catch(() => setMe(null)).finally(() => setMeLoading(false));
   }, []);
+
+  // Fires once per profile visited, after we know both who the profile
+  // belongs to AND whether the viewer is logged in — so 'own' vs 'other'
+  // isn't a coin-flip on which of the two requests happens to resolve first.
+  useEffect(() => {
+    if (!data || meLoading || trackedProfileRef.current === data.user.id) return;
+    trackedProfileRef.current = data.user.id;
+    track('profile_viewed', {
+      profile_username: data.user.username,
+      viewer_relation: !me ? 'guest' : me.id === data.user.id ? 'own' : 'other',
+    });
+  }, [data, me, meLoading]);
 
   useEffect(() => {
     if (!username) return;

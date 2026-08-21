@@ -178,6 +178,23 @@ function AppContent() {
     setAnalyticsUser(currentUser?.id ?? null);
   }, [currentUser?.id]);
 
+  // return_visit: a logged-in member coming back after 7+ days away.
+  // Guests are excluded — 'tuco_last_visit' would otherwise just measure
+  // browser-cache lifetime, not an actual returning person.
+  useEffect(() => {
+    if (!currentUser) return;
+    const RETURN_THRESHOLD_MS = 7 * 24 * 60 * 60 * 1000;
+    const lastVisitRaw = localStorage.getItem('tuco_last_visit');
+    const now = Date.now();
+    if (lastVisitRaw) {
+      const gapMs = now - parseInt(lastVisitRaw, 10);
+      if (gapMs >= RETURN_THRESHOLD_MS) {
+        track('return_visit', { days_since_last_visit: Math.floor(gapMs / (24 * 60 * 60 * 1000)) });
+      }
+    }
+    try { localStorage.setItem('tuco_last_visit', String(now)); } catch { /* ignore quota */ }
+  }, [currentUser?.id]);
+
   // Fire a manual GA4 page_view on every SPA route change.
   // Without this, only the initial document load is counted; category nav is invisible.
   useEffect(() => {
@@ -737,6 +754,17 @@ function AppContent() {
     const ranked = searchThreadsWithRanking(visibleConversations, searchTerm, 50);
     return filterThreads(ranked, '', searchCategoryFilter, searchDateFilter);
   }, [visibleConversations, searchTerm, searchCategoryFilter, searchDateFilter]);
+  // search_performed: debounced so it fires once per pause in typing, not
+  // once per keystroke (there's no explicit submit step — results update
+  // live as the user types).
+  useEffect(() => {
+    const term = searchTerm.trim();
+    if (term.length < 2) return;
+    const timer = setTimeout(() => {
+      track('search_performed', { search_term: term, result_count: searchResults.length });
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [searchTerm, searchResults.length]);
   const featuredThreads = useMemo(() => getFeaturedThreads(visibleConversations), [visibleConversations]);
   const pendingThreads = useMemo(
     () =>
@@ -872,6 +900,12 @@ function AppContent() {
       // 'undone' fires when the user clicks the same vote again to remove it.
       const action = previousState === type ? 'undone' : 'set';
       track('vote', { target: 'thread', type, vote_type: type, action, thread_id: threadId });
+      // The doc's "post_liked" maps to a fresh upvote on a thread — there's
+      // no separate like feature, this *is* the like. Only the newly-set
+      // case counts as "liked"; undoing one isn't a fresh like.
+      if (type === 'up' && action === 'set') {
+        track('post_liked', { thread_id: threadId });
+      }
       // Refresh data from server to ensure consistency
       await refreshData();
     } catch (error) {
