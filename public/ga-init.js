@@ -8,4 +8,9 @@
 window.dataLayer = window.dataLayer || [];
 function gtag() { dataLayer.push(arguments); }
 gtag('js', new Date());
-gtag('config', 'G-X9P5L4CF0R');
+// GA4's debug_mode has to be set on this initial config call — setting it
+// via a later gtag('set'/'config', ...) call doesn't retroactively flag
+// hits already using the initialized client. ?ga_debug=1 is opt-in only
+// (checked once, at load) so it never affects real visitors' events.
+const debugMode = new URLSearchParams(window.location.search).get('ga_debug') === '1';
+gtag('config', 'G-X9P5L4CF0R', debugMode ? { debug_mode: true } : {});
