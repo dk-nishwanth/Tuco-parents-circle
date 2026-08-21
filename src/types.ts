@@ -36,6 +36,7 @@ export interface Conversation {
   isHot?: boolean;
   isFeatured?: boolean;
   featuredLabel?: string;
+  isWeeklyHighlight?: boolean;
   votes: number;
   views: number;
   op: Op;

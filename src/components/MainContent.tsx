@@ -71,25 +71,30 @@ export function MainContent({
     setCurrentPage(1);
   }, [activeCategory, searchTerm, sortType]);
 
-  // "Thread of the week" — auto-picked. Strong preference for a thread with
-  // a tuco-team video reply (per product ask: highlight should be a video
-  // whenever one exists), then falls back to image threads, then to text.
-  // Within each tier we tie-break on the same trending signal as before:
-  // votes + replies + views + 7-day recency.
+  // "Thread of the week" — a stable weekly pick, not recomputed on every
+  // vote/view. A cron job (or a moderator) sets isWeeklyHighlight on exactly
+  // one thread; we just display whichever one that is. Only fall back to
+  // the old auto-scored pick if nothing has been rotated in yet (e.g. before
+  // the cron's first run), so the section never goes empty.
   const threadOfWeek = useMemo(() => {
+    const approved = conversations.filter(c => c.moderationStatus === 'approved');
+    const pool = approved.length > 0 ? approved : conversations;
+    if (pool.length === 0) return null;
+
+    const pinned = pool.find(c => c.isWeeklyHighlight);
+    if (pinned) return pinned;
+
+    // Fallback: prefer a thread with a tuco-team video reply, then image,
+    // then plain text, tie-broken by votes + replies + views + recency.
     const score = (c: Conversation) => {
       const ageHours = c.createdAt
         ? (Date.now() - new Date(c.createdAt).getTime()) / (1000 * 60 * 60)
         : 999;
       const recencyBoost = Math.max(0, 1 - ageHours / 168);
       const trending = (c.votes || 0) * 2 + (c.replies?.length || 0) * 3 + (c.views || 0) * 0.1 + recencyBoost * 20;
-      // Large tier gaps so a low-engagement video still beats a viral text post.
       const mediaTier = threadHasVideo(c) ? 10_000 : threadHasImage(c) ? 5_000 : 0;
       return mediaTier + trending;
     };
-    const approved = conversations.filter(c => c.moderationStatus === 'approved');
-    const pool = approved.length > 0 ? approved : conversations;
-    if (pool.length === 0) return null;
     return [...pool].sort((a, b) => score(b) - score(a))[0] ?? null;
   }, [conversations]);
 

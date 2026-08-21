@@ -515,6 +515,7 @@ const formatConversation = (c: any) => {
     isHot: c.isHot || false,
     isFeatured: c.isFeatured || false,
     featuredLabel: c.featuredLabel,
+    isWeeklyHighlight: c.isWeeklyHighlight || false,
     votes: c.votes || 0,
     views: c.views || 0,
     op: {
@@ -1674,14 +1675,14 @@ app.patch('/api/conversations/:id', optionalAuth, async (req: AuthRequest, res, 
     if (Number.isNaN(id)) {
       return res.status(400).json({ error: 'Invalid conversation id' });
     }
-    const { votes, views, isPinned, isFeatured, featuredLabel, moderationStatus, moderationReason, moderatedBy } = req.body;
+    const { votes, views, isPinned, isFeatured, featuredLabel, isWeeklyHighlight, moderationStatus, moderationReason, moderatedBy } = req.body;
 
     const isMod = req.userRole === 'MODERATOR' || req.userRole === 'TUCO_TEAM';
 
     const wantsModChange =
       moderationStatus !== undefined || isPinned !== undefined || isFeatured !== undefined ||
-      featuredLabel !== undefined || votes !== undefined || moderationReason !== undefined ||
-      moderatedBy !== undefined;
+      featuredLabel !== undefined || isWeeklyHighlight !== undefined || votes !== undefined ||
+      moderationReason !== undefined || moderatedBy !== undefined;
 
     // View counting is server-side only: opening a thread fires a +1. We ignore the
     // client-supplied `views` number (advisory) and increment in the DB instead.
@@ -1713,6 +1714,7 @@ app.patch('/api/conversations/:id', optionalAuth, async (req: AuthRequest, res, 
     if (isPinned !== undefined) updateData.isPinned = isPinned;
     if (isFeatured !== undefined) updateData.isFeatured = isFeatured;
     if (featuredLabel !== undefined) updateData.featuredLabel = featuredLabel;
+    if (isWeeklyHighlight !== undefined) updateData.isWeeklyHighlight = isWeeklyHighlight;
     if (moderationStatus) updateData.moderationStatus = moderationStatus.toUpperCase();
     if (moderationReason) updateData.moderationReason = moderationReason;
     if (moderatedBy) updateData.moderatedBy = moderatedBy;

@@ -52,6 +52,11 @@ model Conversation {
   isHot            Boolean          @default(false)
   isFeatured       Boolean          @default(false)
   featuredLabel    String?
+  // "Highlights of the week" — a single thread manually/cron-rotated into
+  // this slot, distinct from isFeatured (used elsewhere for "Circle Mom of
+  // the Month"). Only one row should be true at a time; enforced by the
+  // rotation code, not the DB.
+  isWeeklyHighlight Boolean         @default(false)
   votes            Int              @default(0)
   views            Int              @default(0)
   opAuthor         String
