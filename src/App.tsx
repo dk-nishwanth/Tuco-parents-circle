@@ -359,17 +359,13 @@ function AppContent() {
   // because whichever link happened to cause a fresh full page load worked,
   // and everything after it (same tab, hash-only change) didn't.
   useEffect(() => {
-    console.log('[DEBUG-HASH] effect (re)run, conversations.length=', conversations.length);
     if (conversations.length === 0) return;
 
     const handleHash = () => {
-    console.log('[DEBUG-HASH] handleHash called, hash=', window.location.hash);
     const threadMatch = window.location.hash.match(/^#thread-(\d+)$/);
     if (threadMatch) {
       const threadId = parseInt(threadMatch[1], 10);
-      const exists = conversations.some(c => c.id === threadId);
-      console.log('[DEBUG-HASH] threadId=', threadId, 'exists in conversations=', exists);
-      if (exists) {
+      if (conversations.some(c => c.id === threadId)) {
         setSelectedThreadId(threadId);
         setIsModalOpen(true);
       }
@@ -412,11 +408,7 @@ function AppContent() {
 
     handleHash();
     window.addEventListener('hashchange', handleHash);
-    console.log('[DEBUG-HASH] listener attached');
-    return () => {
-      console.log('[DEBUG-HASH] listener removed (cleanup)');
-      window.removeEventListener('hashchange', handleHash);
-    };
+    return () => window.removeEventListener('hashchange', handleHash);
   }, [conversations]);
 
   // Open a thread when arriving via /?thread=<id>. A member's profile page
@@ -798,8 +790,15 @@ function AppContent() {
 
   // Listen for back button/history change to close modal
   useEffect(() => {
-    const handlePopState = (event: PopStateEvent) => {
-      if (isModalOpen) {
+    const handlePopState = () => {
+      // popstate can fire alongside hashchange when navigating between two
+      // #thread-<id> links in the same tab. If we closed unconditionally
+      // here, this handler would race the hash-deeplink effect and force
+      // the modal shut right after it just opened the new thread. Only
+      // treat this as "close" when the resulting hash no longer names a
+      // thread/reply — i.e. a real back-out of the modal.
+      const stillPointsAtThread = /^#(thread|reply)-\d+$/.test(window.location.hash);
+      if (isModalOpen && !stillPointsAtThread) {
         setIsModalOpen(false);
         setActiveReplyTo(null);
         setTimeout(() => {
