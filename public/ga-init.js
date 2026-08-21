@@ -13,5 +13,4 @@ gtag('js', new Date());
 // hits already using the initialized client. ?ga_debug=1 is opt-in only
 // (checked once, at load) so it never affects real visitors' events.
 const debugMode = new URLSearchParams(window.location.search).get('ga_debug') === '1';
-console.log('[GA-INIT-DEBUG] search=', window.location.search, 'debugMode=', debugMode);
 gtag('config', 'G-X9P5L4CF0R', debugMode ? { debug_mode: true } : {});
