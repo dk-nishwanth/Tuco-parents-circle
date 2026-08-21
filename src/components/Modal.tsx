@@ -65,6 +65,7 @@ const ReplyComponent = ({
   likedReplies,
   activeReplyTo,
   setActiveReplyTo,
+  onLoginClick,
 }: {
   reply: Reply;
   threadId: number;
@@ -84,6 +85,7 @@ const ReplyComponent = ({
   likedReplies?: Record<number, boolean>;
   activeReplyTo?: { threadId: number; replyId: number } | null;
   setActiveReplyTo?: (val: { threadId: number; replyId: number } | null) => void;
+  onLoginClick?: () => void;
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(reply.text);
@@ -102,6 +104,10 @@ const ReplyComponent = ({
   const handleSubmitNestedReply = async (e: FormEvent) => {
     e.preventDefault();
     if (isSubmittingNestedReply) return; // guard against double-click/double-Enter firing two replies
+    if (!currentUser) {
+      onLoginClick?.();
+      return;
+    }
     if (replyText.trim() && currentUser) {
       setIsSubmittingNestedReply(true);
       try {
@@ -217,6 +223,10 @@ const ReplyComponent = ({
             </button>
             <button
               onClick={() => {
+                if (!currentUser) {
+                  onLoginClick?.();
+                  return;
+                }
                 if (setActiveReplyTo) {
                   setActiveReplyTo({ threadId, replyId: reply.id });
                   setIsReplying(true);
@@ -338,6 +348,7 @@ const ReplyComponent = ({
               likedReplies={likedReplies}
               activeReplyTo={activeReplyTo}
               setActiveReplyTo={setActiveReplyTo}
+              onLoginClick={onLoginClick}
             />
           ))}
         </div>
@@ -882,6 +893,7 @@ export function Modal({
                     likedReplies={likedReplies}
                     activeReplyTo={activeReplyTo}
                     setActiveReplyTo={setActiveReplyTo}
+                    onLoginClick={onLoginClick}
                   />
                 ))}
                 {hiddenCount > 0 && (
@@ -901,6 +913,7 @@ export function Modal({
                           likedReplies={likedReplies}
                           activeReplyTo={activeReplyTo}
                           setActiveReplyTo={setActiveReplyTo}
+                          onLoginClick={onLoginClick}
                         />
                       ))}
                     </div>

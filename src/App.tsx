@@ -746,6 +746,16 @@ function AppContent() {
   // Counting distinct thread ids (not raw opens) so a guest can revisit the
   // same thread without eating into their quota. Reset on login.
   const GUEST_READ_LIMIT = 3;
+  // Soft nudge threshold: once a guest has read this many distinct threads,
+  // show the "join to get answers" banner instead of on every arrival.
+  const GUEST_NUDGE_THRESHOLD = 2;
+  const [guestReadCount, setGuestReadCount] = useState<number>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('tuco_guest_read_ids') || '[]').length;
+    } catch {
+      return 0;
+    }
+  });
 
   const handleThreadOpen = async (threadId: number) => {
     const updatedThread = conversations.find(c => c.id === threadId);
@@ -763,6 +773,7 @@ function AppContent() {
       if (!seen.includes(threadId)) {
         seen = [...seen, threadId].slice(-GUEST_READ_LIMIT * 2);
         try { localStorage.setItem('tuco_guest_read_ids', JSON.stringify(seen)); } catch { /* ignore quota */ }
+        setGuestReadCount(seen.length);
       }
     }
 
@@ -1636,7 +1647,7 @@ function AppContent() {
           </p>
         </div>
       </footer>
-      {!currentUser && (
+      {!currentUser && guestReadCount >= GUEST_NUDGE_THRESHOLD && (
         <GuestPromptBanner onSignIn={() => openAuth('signup')} onNewPost={openNewPost} />
       )}
       <Modal

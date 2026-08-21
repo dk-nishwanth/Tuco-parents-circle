@@ -16,11 +16,11 @@ export function GuestPromptBanner({ onSignIn, onNewPost }: GuestPromptBannerProp
         <div className="text-2xl shrink-0">💬</div>
         <div className="flex-1 min-w-0">
           <p className="font-display font-black text-sm text-neutral-800 mb-1">
-            Enjoying the discussions?
+            Join to get answers from parents like you
           </p>
           <p className="text-xs text-neutral-500 font-medium leading-relaxed mb-3">
-            You're browsing as a guest. Sign in to reply, vote, and share your own parenting
-            experience with the community.
+            You've been reading as a guest. Sign in free to ask your own question, reply, and vote
+            with the community.
           </p>
           <div className="flex flex-wrap gap-2">
             <button
