@@ -2172,6 +2172,20 @@ app.post('/api/votes', authenticate, async (req: AuthRequest, res, next) => {
     if (!conversationId && !replyId) {
       return res.status(400).json({ error: 'conversationId or replyId required' });
     }
+    if (type !== 'UP' && type !== 'DOWN') {
+      return res.status(400).json({ error: "type must be 'UP' or 'DOWN'" });
+    }
+    // Without this, voting on a deleted/nonexistent thread or reply reaches
+    // Prisma's create() below and fails with a raw foreign-key-constraint
+    // error, surfacing as an opaque 500 instead of a clean 404.
+    if (conversationId) {
+      const conv = await prisma.conversation.findUnique({ where: { id: conversationId }, select: { id: true } });
+      if (!conv) return res.status(404).json({ error: 'Conversation not found' });
+    }
+    if (replyId) {
+      const reply = await prisma.reply.findUnique({ where: { id: replyId }, select: { id: true } });
+      if (!reply) return res.status(404).json({ error: 'Reply not found' });
+    }
 
     const existingVote = await prisma.vote.findFirst({
       where: {
@@ -2597,6 +2611,12 @@ app.post('/api/users/me/saved', authenticate, async (req: AuthRequest, res, next
 app.post('/api/chat', optionalAuth, async (req: AuthRequest, res, next) => {
   try {
     const { messages } = req.body;
+    // Without this, a missing/empty messages array reaches
+    // messages[messages.length - 1] below and throws a raw TypeError
+    // instead of a clean validation error.
+    if (!Array.isArray(messages) || messages.length === 0) {
+      return res.status(400).json({ error: 'messages array is required' });
+    }
     const client = getAnthropicClient();
 
     // Persistence layer: every chat turn is written to ChatMessage so the
