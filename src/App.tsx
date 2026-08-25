@@ -266,6 +266,27 @@ function AppContent() {
     }
   }, []);
 
+  // Standalone deep-links for marketing/outreach — e.g. a WhatsApp/social
+  // link that should land straight on "sign up" or "ask a question"
+  // instead of the plain feed. Gated on isAppReady so this doesn't fire
+  // before the existing-session check resolves — otherwise an already
+  // logged-in user hitting ?action=ask would flash the sign-in modal
+  // anyway, since currentUser is still null at the very first render.
+  // ?action=ask reuses openNewPost(), which already gates through sign-in
+  // for a guest — same behavior as clicking "Ask a Question" in the app.
+  useEffect(() => {
+    if (!isAppReady) return;
+    const action = new URLSearchParams(window.location.search).get('action');
+    if (action === 'signup') {
+      openAuth('signup');
+      window.history.replaceState({}, '', window.location.pathname + window.location.hash);
+    } else if (action === 'ask') {
+      openNewPost();
+      window.history.replaceState({}, '', window.location.pathname + window.location.hash);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAppReady]);
+
   useEffect(() => {
     async function initData() {
       try {
