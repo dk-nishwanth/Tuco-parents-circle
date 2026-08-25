@@ -251,16 +251,19 @@ export function MemberProfile({
   return (
     <div className="bg-white border border-neutral-200 rounded-2xl p-6 shadow-sm">
       {}
-      {/* flex-wrap so the trust-level pill drops to its own line instead of
-          squeezing the name column down to a sliver — that's what forced
-          break-words to chop long usernames mid-letter ("De/mo/Pa/ren/t"). */}
-      <div className="flex items-start justify-between flex-wrap gap-y-2 mb-6">
-        <div className="flex items-center gap-4 flex-1 min-w-0">
+      {/* Trust-level pill used to sit beside the name in a flex row that
+          "wrapped" via flex-wrap — but min-w-0 flex-1 on the name column
+          lets it shrink indefinitely instead of ever triggering that wrap,
+          so a long username just got squeezed and visually overlapped the
+          pill instead. Putting the pill on its own line below removes the
+          competition for space entirely, regardless of name length. */}
+      <div className="mb-6">
+        <div className="flex items-center gap-4">
           <div className="w-16 h-16 rounded-full bg-tuco-cyan/10 border-2 border-tuco-cyan flex items-center justify-center text-2xl font-bold text-tuco-cyan shrink-0">
             {user.username.slice(0, 2).toUpperCase()}
           </div>
           <div className="min-w-0 flex-1">
-            <h2 className="font-display font-black text-lg text-neutral-800 break-normal">
+            <h2 className="font-display font-black text-lg text-neutral-800 break-words">
               {user.username}
             </h2>
             <div className="flex items-center gap-2 mt-1 text-xs text-neutral-500">
@@ -273,9 +276,8 @@ export function MemberProfile({
             </div>
           </div>
         </div>
-        {}
         <div
-          className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap shrink-0 ${
+          className={`inline-block mt-3 px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap ${
             user.role === 'tuco_team'
               ? 'bg-tuco-cyan/10 text-tuco-cyan border border-tuco-cyan'
               : user.role === 'moderator'
