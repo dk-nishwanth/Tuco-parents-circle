@@ -325,6 +325,26 @@ model Follow {
   @@index([targetConversationId])
 }
 
+// Ledger of every Nector points award actually made, keyed so the same
+// source (a signup email, a specific post, a specific reply) can only ever
+// award once — this is what makes the award idempotent against a
+// double-click/replayed request race (the same protection votes already
+// get from their own DB unique constraint), and lets delete handlers check
+// "was this ever awarded" before deciding whether a reversal is owed.
+// sourceId is a string so one column covers a normalized email (signup),
+// a conversation id, or a reply id.
+model NectorAward {
+  id         String   @id @default(uuid())
+  userId     String
+  sourceType String   // 'SIGNUP' | 'POST' | 'REPLY'
+  sourceId   String
+  triggerId  String
+  createdAt  DateTime @default(now())
+
+  @@unique([sourceType, sourceId])
+  @@index([userId])
+}
+
 // Password-reset tokens, persisted so they survive server restarts and work
 // across instances (previously an in-memory Map, lost on every deploy).
 model PasswordResetToken {

@@ -1517,19 +1517,80 @@ async function nectorCreateLead(user: { id: string; email: string; username: str
   }
 }
 
+// One retry after a short delay — Nector's own API caps at 60 requests/min
+// per workspace; a brief traffic spike (several signups/posts/replies
+// landing in the same second) can trip that and the award would otherwise
+// just silently vanish with only a console.error to show for it.
 async function nectorAwardPoints(customerId: string, triggerId: string | undefined): Promise<void> {
   if (!NECTOR_CONFIGURED || !triggerId) return;
-  try {
-    const res = await fetch('https://platform.nector.io/api/v2/merchant/activities', {
-      method: 'POST',
-      headers: nectorHeaders(),
-      body: JSON.stringify({ trigger_id: triggerId, customer_id: customerId }),
-    });
-    if (!res.ok) {
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const res = await fetch('https://platform.nector.io/api/v2/merchant/activities', {
+        method: 'POST',
+        headers: nectorHeaders(),
+        body: JSON.stringify({ trigger_id: triggerId, customer_id: customerId }),
+      });
+      if (res.ok) return;
       console.error('Nector award failed:', res.status, await res.text());
+    } catch (err) {
+      console.error('Nector award error:', err);
+    }
+    if (attempt === 0) await new Promise(r => setTimeout(r, 2000));
+  }
+}
+
+// Every award (signup/post/reply) goes through this instead of calling
+// nectorAwardPoints directly. The ledger row's unique (sourceType, sourceId)
+// constraint is what makes an award idempotent — a double-click or replayed
+// request that manages to create two DB rows for "the same" post/reply
+// still only gets credited once, the same protection votes already get
+// from their own DB unique constraint. Failing the ledger write closed
+// (skipping the award) rather than open is deliberate: an occasional
+// missed award is a much smaller problem than losing the dedup guarantee.
+async function nectorAwardOnce(
+  userId: string,
+  sourceType: 'SIGNUP' | 'POST' | 'REPLY',
+  sourceId: string,
+  triggerId: string | undefined
+): Promise<void> {
+  if (!NECTOR_CONFIGURED || !triggerId) return;
+  try {
+    await prisma.nectorAward.create({ data: { userId, sourceType, sourceId, triggerId } });
+  } catch (err: any) {
+    if (err?.code === 'P2002') return; // already awarded for this exact source — skip silently
+    console.error('Nector award-ledger write failed:', err);
+    return;
+  }
+  await nectorAwardPoints(userId, triggerId);
+}
+
+// Gmail/Outlook-style "+tag" addressing (test+1@gmail.com, test+2@gmail.com)
+// all deliver to the same inbox but look like distinct emails to a naive
+// uniqueness check — without collapsing this, the signup bonus could be
+// claimed indefinitely from one real mailbox. This is used ONLY to decide
+// "has this real person already claimed a signup bonus," never for
+// login/lookup — those intentionally keep the untouched, verbatim email.
+function baseEmailForAbuseCheck(email: string): string {
+  const [local, domain] = email.toLowerCase().split('@');
+  if (!domain) return email.toLowerCase();
+  return `${local.split('+')[0]}@${domain}`;
+}
+
+// Nector has no configured "debit"/adjustment trigger (every trigger we
+// have is a one-way credit), so there's no live API call that can actually
+// claw back points for deleted content right now — that needs one more
+// thing set up on Nector's dashboard side, same as the write-access API
+// key did earlier. Until then, this at least makes a delete-and-recreate
+// farming pattern visible and greppable in the logs instead of invisible.
+async function flagNectorClawbackIfAwarded(sourceType: 'POST' | 'REPLY', sourceId: string): Promise<void> {
+  if (!NECTOR_CONFIGURED) return;
+  try {
+    const award = await prisma.nectorAward.findUnique({ where: { sourceType_sourceId: { sourceType, sourceId } } });
+    if (award) {
+      console.error(`⚠️ NECTOR CLAWBACK OWED: user ${award.userId} earned points for ${sourceType} ${sourceId} (trigger ${award.triggerId}, awarded ${award.createdAt.toISOString()}), which was just deleted. No automated debit trigger configured — needs manual review.`);
     }
   } catch (err) {
-    console.error('Nector award error:', err);
+    console.error('Nector clawback check failed:', err);
   }
 }
 
@@ -1540,7 +1601,7 @@ async function nectorAwardPoints(customerId: string, triggerId: string | undefin
 async function nectorRewardSignup(user: { id: string; email: string; username: string }): Promise<void> {
   if (!NECTOR_CONFIGURED) return;
   await nectorCreateLead(user);
-  await nectorAwardPoints(user.id, NECTOR_TRIGGER_SIGNUP);
+  await nectorAwardOnce(user.id, 'SIGNUP', baseEmailForAbuseCheck(user.email), NECTOR_TRIGGER_SIGNUP);
 }
 
 // Separate from nectorRewardSignup's actual award call (which is
@@ -1688,7 +1749,7 @@ const createThreadSchema = z.object({
   reviewPriority: z.number().optional(),
 });
 
-app.post('/api/conversations', authenticate, async (req: AuthRequest, res, next) => {
+app.post('/api/conversations', authenticate, actionLimiter, async (req: AuthRequest, res, next) => {
   console.log('💬 Creating new conversation...');
   try {
     const parsed = createThreadSchema.safeParse(req.body);
@@ -1773,7 +1834,7 @@ app.post('/api/conversations', authenticate, async (req: AuthRequest, res, next)
         where: { id: req.userId },
         data: { postCount: { increment: 1 } },
       });
-      nectorAwardPoints(user.id, NECTOR_TRIGGER_POST).catch(err => console.warn('⚠️ Nector post reward failed:', err));
+      nectorAwardOnce(user.id, 'POST', String(conversation.id), NECTOR_TRIGGER_POST).catch(err => console.warn('⚠️ Nector post reward failed:', err));
     }
 
     // Log the auto-decision. Every new thread now leaves an audit trail
@@ -2069,6 +2130,7 @@ app.delete('/api/conversations/:id', authenticate, async (req: AuthRequest, res,
       return res.status(403).json({ error: 'Not authorized' });
     }
     await prisma.conversation.delete({ where: { id } });
+    flagNectorClawbackIfAwarded('POST', String(id)).catch(() => {});
     res.status(200).json({ success: true });
   } catch (error) {
     next(error);
@@ -2157,11 +2219,15 @@ app.post('/api/conversations/:id/replies', authenticate, actionLimiter, async (r
       where: { id: req.userId },
       data: { replyCount: { increment: 1 } },
     });
-    nectorAwardPoints(user.id, NECTOR_TRIGGER_REPLY).catch(err => console.warn('⚠️ Nector reply reward failed:', err));
-
     // Notify thread author
     console.log('🔍 Finding conversation...');
     const conversation = await prisma.conversation.findUnique({ where: { id: conversationId } });
+    // Points require the reply to be on someone else's thread — otherwise a
+    // user could create a thread and farm points by spam-replying to
+    // themselves, bounded only by the per-user rate limit on this route.
+    if (conversation && conversation.authorId !== req.userId) {
+      nectorAwardOnce(user.id, 'REPLY', String(reply.id), NECTOR_TRIGGER_REPLY).catch(err => console.warn('⚠️ Nector reply reward failed:', err));
+    }
     const threadUrl = `${SITE_URL}/thread/${conversationId}`;
     if (conversation && conversation.authorId !== req.userId) {
       console.log('🔔 Creating notification for thread author...');
@@ -2408,6 +2474,7 @@ app.delete('/api/replies/:id', authenticate, async (req: AuthRequest, res, next)
     }
 
     await prisma.reply.delete({ where: { id } });
+    flagNectorClawbackIfAwarded('REPLY', String(id)).catch(() => {});
     res.status(200).json({ success: true });
   } catch (error) {
     next(error);

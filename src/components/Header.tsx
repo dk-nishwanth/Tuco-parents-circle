@@ -166,6 +166,12 @@ export function Header({
 }: HeaderProps) {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotificationsDropdown, setShowNotificationsDropdown] = useState(false);
+  // A notification with no threadId (badge/points-earned, etc.) has nothing
+  // to navigate to — clicking it used to just close the dropdown with no
+  // visible effect, which read as "the notification doesn't open at all."
+  // This expands it inline in the dropdown instead. Thread notifications are
+  // unaffected — they still navigate immediately, same as before.
+  const [expandedNotificationId, setExpandedNotificationId] = useState<number | null>(null);
   const [showSearch, setShowSearch] = useState(false);
   // null = not loaded / Nector unreachable — badge stays hidden rather than
   // ever showing a wrong "0 points".
@@ -372,8 +378,12 @@ export function Header({
                           onClick={() => {
                             track('notification_clicked', { notification_type: notification.type, notification_id: notification.id });
                             onMarkAsRead?.(notification.id);
-                            if (notification.threadId) onThreadOpen?.(notification.threadId);
-                            setShowNotificationsDropdown(false);
+                            if (notification.threadId) {
+                              onThreadOpen?.(notification.threadId);
+                              setShowNotificationsDropdown(false);
+                            } else {
+                              setExpandedNotificationId(prev => prev === notification.id ? null : notification.id);
+                            }
                           }}
                           className={`px-4 py-3 flex gap-3 cursor-pointer hover:bg-neutral-50 transition-colors ${
                             !notification.read ? 'bg-tuco-cyan/[0.02]' : ''
@@ -389,7 +399,7 @@ export function Header({
                             <p className="text-xs text-[#4D4747] font-bold leading-snug">
                               {notification.title}
                             </p>
-                            <p className="text-[10px] text-neutral-500 mt-0.5 line-clamp-1">
+                            <p className={`text-[10px] text-neutral-500 mt-0.5 ${expandedNotificationId === notification.id ? '' : 'line-clamp-1'}`}>
                               {notification.description}
                             </p>
                             <p className="text-[10px] text-neutral-400 mt-1 font-medium">
