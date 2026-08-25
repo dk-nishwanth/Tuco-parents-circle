@@ -1386,9 +1386,10 @@ function nectorHeaders(): Record<string, string> {
     'content-type': 'application/json',
     'x-apikey': NECTOR_API_KEY!,
     'x-workspaceid': NECTOR_WORKSPACE_ID!,
-    // Server-to-server call, not a browser/app SDK — 'unix' is Nector's
-    // catch-all source value for that case.
-    'x-source': 'unix',
+    // Nector only accepts 'web' or 'mobile' here despite docs mentioning a
+    // 'unix' value too — confirmed by testing directly against their API
+    // ('unix' returns "Source is not valid").
+    'x-source': 'web',
   };
 }
 

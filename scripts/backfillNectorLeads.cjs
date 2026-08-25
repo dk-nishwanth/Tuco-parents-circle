@@ -38,7 +38,7 @@ async function createLead(user) {
         'content-type': 'application/json',
         'x-apikey': NECTOR_API_KEY,
         'x-workspaceid': NECTOR_WORKSPACE_ID,
-        'x-source': 'unix',
+        'x-source': 'web',
       },
       body: JSON.stringify({
         customer_id: user.id,
