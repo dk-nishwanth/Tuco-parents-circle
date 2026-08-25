@@ -1541,6 +1541,50 @@ async function nectorRewardSignup(user: { id: string; email: string; username: s
   await nectorAwardPoints(user.id, NECTOR_TRIGGER_SIGNUP);
 }
 
+// Points balance is displayed in the header on every page and in the
+// profile — without a short cache, that's a live third-party API call on
+// nearly every render. 60s is short enough that a fresh signup/post/reply
+// award shows up almost immediately, but long enough to absorb repeat
+// header/profile mounts within the same short browsing session.
+const nectorBalanceCache = new Map<string, { points: number; expiresAt: number }>();
+const NECTOR_BALANCE_CACHE_MS = 60 * 1000;
+
+async function nectorGetBalance(customerId: string): Promise<number | null> {
+  if (!NECTOR_CONFIGURED) return null;
+  const cached = nectorBalanceCache.get(customerId);
+  if (cached && cached.expiresAt > Date.now()) return cached.points;
+  try {
+    // Nector's lookup path requires SOME syntactically-valid UUID as {id},
+    // but customer_id as a query param takes search priority over it — so
+    // this resolves by our own User.id without ever needing Nector's
+    // internal lead _id.
+    const res = await fetch(
+      `https://platform.nector.io/api/v2/merchant/leads/${crypto.randomUUID()}?customer_id=${encodeURIComponent(customerId)}`,
+      { headers: nectorHeaders() }
+    );
+    if (!res.ok) return null;
+    const body = await res.json();
+    const available = body?.data?.item?.available;
+    const points = available != null ? Math.floor(Number(available)) : null;
+    if (points != null) nectorBalanceCache.set(customerId, { points, expiresAt: Date.now() + NECTOR_BALANCE_CACHE_MS });
+    return points;
+  } catch (err) {
+    console.error('Nector balance lookup failed:', err);
+    return null;
+  }
+}
+
+app.get('/api/users/me/nector-points', authenticate, async (req: AuthRequest, res, next) => {
+  try {
+    const points = await nectorGetBalance(req.userId!);
+    // null means "couldn't reach Nector / not configured", not "0 points" —
+    // the frontend should just hide the badge rather than show a wrong 0.
+    res.status(200).json({ points });
+  } catch (error) {
+    next(error);
+  }
+});
+
 // Allow-list of image mimetypes we sign for. Blocks direct upload of SVGs
 // (script vector) and non-images even if the client asks.
 const ALLOWED_UPLOAD_MIME = new Set([

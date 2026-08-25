@@ -368,6 +368,15 @@ export const api = {
     return handleResponse<Record<string, User>>(res);
   },
 
+  // points is null (not 0) when Nector can't be reached or isn't configured
+  // — callers should hide the badge in that case rather than show a wrong 0.
+  async getNectorPoints(): Promise<{ points: number | null }> {
+    const res = await fetch(`${API_BASE_URL}/users/me/nector-points`, {
+      headers: authHeaders(),
+    });
+    return handleResponse<{ points: number | null }>(res);
+  },
+
   async toggleSavedPost(threadId: number): Promise<{ savedPosts: number[] }> {
     const res = await fetch(`${API_BASE_URL}/users/me/saved`, {
       method: 'POST',

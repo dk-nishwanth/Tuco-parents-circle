@@ -150,6 +150,19 @@ export function MemberProfile({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isCurrentUser, user.id]);
 
+  // null = not loaded / Nector unreachable — the stat cell is hidden rather
+  // than ever showing a wrong "0 points". Only fetched for the profile's
+  // own owner; there's no product need to show this for other members yet.
+  const [nectorPoints, setNectorPoints] = useState<number | null>(null);
+  useEffect(() => {
+    if (!isCurrentUser) return;
+    let cancelled = false;
+    api.getNectorPoints()
+      .then(({ points }) => { if (!cancelled) setNectorPoints(points); })
+      .catch(() => { if (!cancelled) setNectorPoints(null); });
+    return () => { cancelled = true; };
+  }, [isCurrentUser, user.id]);
+
   return (
     <div className="bg-white border border-neutral-200 rounded-2xl p-6 shadow-sm">
       {}
@@ -235,7 +248,7 @@ export function MemberProfile({
         {isCurrentUser && <ChangePasswordSection hasPassword={user.hasPassword ?? true} />}
       </div>
       {}
-      <div className="grid grid-cols-3 gap-3 mb-6">
+      <div className={`grid gap-3 mb-6 ${nectorPoints !== null ? 'grid-cols-4' : 'grid-cols-3'}`}>
         <div className="bg-neutral-50 rounded-lg p-3 text-center">
           <div className="font-display font-black text-lg text-neutral-800">{user.postCount}</div>
           <div className="text-xs text-neutral-500 font-medium mt-1">Posts</div>
@@ -248,6 +261,12 @@ export function MemberProfile({
           <div className="font-display font-black text-lg text-tuco-cyan">{user.totalUpvotes}</div>
           <div className="text-xs text-neutral-500 font-medium mt-1">Upvotes</div>
         </div>
+        {nectorPoints !== null && (
+          <div className="bg-tuco-yellow/10 rounded-lg p-3 text-center">
+            <div className="font-display font-black text-lg text-neutral-800">⭐ {nectorPoints}</div>
+            <div className="text-xs text-neutral-500 font-medium mt-1">tuco Points</div>
+          </div>
+        )}
       </div>
       {}
       {user.badges.length > 0 && (

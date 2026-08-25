@@ -4,6 +4,7 @@ import tucoLogo from '../assets/tuco-logo.webp';
 import { Conversation, User as UserType, Notification } from '../types';
 import { searchThreadsWithRanking } from '../utils/helpers';
 import { track } from '../utils/analytics';
+import { api } from '../utils/api';
 interface HeaderProps {
   searchTerm: string;
   onSearch: (term: string) => void;
@@ -166,6 +167,17 @@ export function Header({
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotificationsDropdown, setShowNotificationsDropdown] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
+  // null = not loaded / Nector unreachable — badge stays hidden rather than
+  // ever showing a wrong "0 points".
+  const [nectorPoints, setNectorPoints] = useState<number | null>(null);
+  useEffect(() => {
+    if (!currentUser) { setNectorPoints(null); return; }
+    let cancelled = false;
+    api.getNectorPoints()
+      .then(({ points }) => { if (!cancelled) setNectorPoints(points); })
+      .catch(() => { if (!cancelled) setNectorPoints(null); });
+    return () => { cancelled = true; };
+  }, [currentUser?.id]);
   const unreadCount = notifications.filter(n => !n.read).length;
   const notificationsRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
@@ -232,7 +244,12 @@ export function Header({
               <Search className="w-5 h-5" strokeWidth={2} />
             </button>
             {showSearch && (
-              <div className="fixed md:absolute top-[58px] md:top-full left-3 right-3 md:left-auto md:right-0 md:mt-2 md:w-80 z-[60]">
+              // Same inset/positioning convention as the notifications dropdown
+              // right below (left-4 right-4, top-16, white card + shadow) —
+              // this used to be its own one-off (left-3 right-3, top-[58px],
+              // no card chrome), which is what made it look "unarranged" next
+              // to every other dropdown in the header.
+              <div className="fixed md:absolute top-16 md:top-full left-4 right-4 md:left-auto md:right-0 md:mt-2 md:w-80 z-[60] bg-white border border-neutral-200 rounded-2xl shadow-xl p-3 animate-in fade-in slide-in-from-top-2 duration-200">
                 <SearchInput
                   searchTerm={searchTerm}
                   onSearch={onSearch}
@@ -246,6 +263,18 @@ export function Header({
               </div>
             )}
           </div>
+
+          {/* Nector points — hidden entirely while loading/unreachable rather
+              than ever showing a stale or wrong number. */}
+          {currentUser && nectorPoints !== null && (
+            <div
+              className="hidden sm:flex items-center gap-1 bg-tuco-yellow/20 text-[#4D4747] font-display font-bold text-[12px] px-2.5 py-1 rounded-full mr-1"
+              title="tuco Points"
+            >
+              <span aria-hidden="true">⭐</span>
+              {nectorPoints}
+            </div>
+          )}
 
           {/* User */}
           {currentUser ? (
@@ -309,7 +338,7 @@ export function Header({
             </button>
 
             {showNotificationsDropdown && (
-              <div className="fixed md:absolute top-[58px] md:top-full left-4 right-4 md:left-auto md:right-0 md:mt-2 md:w-80 bg-white border border-neutral-200 rounded-2xl shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="fixed md:absolute top-16 md:top-full left-4 right-4 md:left-auto md:right-0 md:mt-2 md:w-80 bg-white border border-neutral-200 rounded-2xl shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
                 <div className="px-4 py-3 border-b border-neutral-50 bg-neutral-50/50 flex items-center justify-between">
                   <h3 className="font-display font-bold text-sm text-[#4D4747]">Notifications</h3>
                   <div className="flex items-center gap-2">
