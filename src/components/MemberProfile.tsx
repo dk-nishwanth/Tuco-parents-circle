@@ -166,13 +166,16 @@ export function MemberProfile({
   return (
     <div className="bg-white border border-neutral-200 rounded-2xl p-6 shadow-sm">
       {}
-      <div className="flex items-start justify-between mb-6">
+      {/* flex-wrap so the trust-level pill drops to its own line instead of
+          squeezing the name column down to a sliver — that's what forced
+          break-words to chop long usernames mid-letter ("De/mo/Pa/ren/t"). */}
+      <div className="flex items-start justify-between flex-wrap gap-y-2 mb-6">
         <div className="flex items-center gap-4 flex-1 min-w-0">
           <div className="w-16 h-16 rounded-full bg-tuco-cyan/10 border-2 border-tuco-cyan flex items-center justify-center text-2xl font-bold text-tuco-cyan shrink-0">
             {user.username.slice(0, 2).toUpperCase()}
           </div>
           <div className="min-w-0 flex-1">
-            <h2 className="font-display font-black text-lg text-neutral-800 break-words">
+            <h2 className="font-display font-black text-lg text-neutral-800 break-normal">
               {user.username}
             </h2>
             <div className="flex items-center gap-2 mt-1 text-xs text-neutral-500">
