@@ -1044,6 +1044,7 @@ app.post('/api/auth/signup', authLimiter, async (req: AuthRequest, res, next) =>
     }
     syncResendContact(user.email, user.username);
     nectorRewardSignup(user).catch(err => console.warn('⚠️ Nector signup reward failed:', err));
+    notifySignupPointsBonus(user.id).catch(err => console.warn('⚠️ Signup points notification failed:', err));
 
     console.log('✅ Signup successful');
     res.status(201).json({ token, user: formatUser(user) });
@@ -1375,6 +1376,7 @@ app.get('/api/auth/google/callback', authLimiter, async (req, res, next) => {
       ).catch(err => console.warn('⚠️ Google welcome email failed:', err));
       syncResendContact(user.email, user.username);
       nectorRewardSignup(user).catch(err => console.warn('⚠️ Nector signup reward failed:', err));
+      notifySignupPointsBonus(user.id).catch(err => console.warn('⚠️ Signup points notification failed:', err));
     }
 
     const token = jwt.sign({ userId: user.id, role: user.role, tokenVersion: user.tokenVersion }, JWT_SECRET as string, { expiresIn: '30d' });
@@ -1539,6 +1541,28 @@ async function nectorRewardSignup(user: { id: string; email: string; username: s
   if (!NECTOR_CONFIGURED) return;
   await nectorCreateLead(user);
   await nectorAwardPoints(user.id, NECTOR_TRIGGER_SIGNUP);
+}
+
+// Separate from nectorRewardSignup's actual award call (which is
+// fire-and-forget and best-effort against a third party) — this always
+// tells the new member about the points program, even in the rare case
+// the live Nector call above lags or fails, since the message is the same
+// either way and shouldn't depend on that request's timing.
+async function notifySignupPointsBonus(userId: string): Promise<void> {
+  if (!NECTOR_CONFIGURED) return;
+  try {
+    await prisma.notification.create({
+      data: {
+        userId,
+        type: 'BADGE',
+        title: 'You earned 20 tuco Points! 🎉',
+        description: 'Thanks for joining tuco Parents Circle! Keep earning: +10 points for asking a question, +5 points for every reply. Points show up next to your name in the header and on your profile.',
+        time: 'Just now',
+      },
+    });
+  } catch (err) {
+    console.error('Signup points-bonus notification failed:', err);
+  }
 }
 
 // Points balance is displayed in the header on every page and in the

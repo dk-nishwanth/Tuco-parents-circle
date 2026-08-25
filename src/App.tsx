@@ -1773,6 +1773,7 @@ function AppContent() {
           onThreadOpen={handleThreadOpen}
           loginEmail={sessionCredentials?.email ?? currentUser.email}
           onClose={() => setIsProfileOpen(false)}
+          onUserUpdate={newUsername => setCurrentUser(prev => prev ? { ...prev, username: newUsername } : prev)}
         />
       )}
       

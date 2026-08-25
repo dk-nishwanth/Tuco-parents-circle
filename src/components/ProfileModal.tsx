@@ -8,6 +8,7 @@ interface ProfileModalProps {
   loginEmail?: string;
   onClose: () => void;
   onThreadOpen?: (id: number) => void;
+  onUserUpdate?: (newUsername: string) => void;
 }
 export function ProfileModal({
   isOpen,
@@ -16,6 +17,7 @@ export function ProfileModal({
   loginEmail,
   onClose,
   onThreadOpen,
+  onUserUpdate,
 }: ProfileModalProps) {
   if (!isOpen) return null;
   return (
@@ -41,6 +43,7 @@ export function ProfileModal({
             isCurrentUser
             loginEmail={loginEmail}
             onThreadOpen={onThreadOpen}
+            onUserUpdate={onUserUpdate}
           />
         </div>
       </div>
