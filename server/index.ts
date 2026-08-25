@@ -961,6 +961,7 @@ app.post('/api/auth/signup', authLimiter, async (req: AuthRequest, res, next) =>
       console.warn('⚠️ Welcome email failed, but signup successful:', emailErr);
     }
     syncResendContact(user.email, user.username);
+    nectorRewardSignup(user).catch(err => console.warn('⚠️ Nector signup reward failed:', err));
 
     console.log('✅ Signup successful');
     res.status(201).json({ token, user: formatUser(user) });
@@ -1271,6 +1272,7 @@ app.get('/api/auth/google/callback', async (req, res, next) => {
         'WELCOME'
       ).catch(err => console.warn('⚠️ Google welcome email failed:', err));
       syncResendContact(user.email, user.username);
+      nectorRewardSignup(user).catch(err => console.warn('⚠️ Nector signup reward failed:', err));
     }
 
     const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET as string, { expiresIn: '30d' });
@@ -1364,6 +1366,77 @@ const s3Client = (S3_BUCKET && process.env.AWS_ACCESS_KEY_ID && process.env.AWS_
       },
     })
   : null;
+
+// ── Nector loyalty points (signup / post / reply) ───────────────────────────
+// Nector identifies people by their own "customer_id", which is ours to
+// choose — we use the existing User.id (already a UUID) so no new identity
+// mapping is needed. A person must exist there as a "lead" before any
+// activity/trigger call can award them points, which is why signup does two
+// calls (create lead, then award) while post/reply only need the second —
+// the lead was already created at signup time.
+const NECTOR_API_KEY = process.env.NECTOR_API_KEY;
+const NECTOR_WORKSPACE_ID = process.env.NECTOR_WORKSPACE_ID;
+const NECTOR_TRIGGER_SIGNUP = process.env.NECTOR_TRIGGER_SIGNUP;
+const NECTOR_TRIGGER_POST = process.env.NECTOR_TRIGGER_POST;
+const NECTOR_TRIGGER_REPLY = process.env.NECTOR_TRIGGER_REPLY;
+const NECTOR_CONFIGURED = !!(NECTOR_API_KEY && NECTOR_WORKSPACE_ID);
+
+function nectorHeaders(): Record<string, string> {
+  return {
+    'content-type': 'application/json',
+    'x-apikey': NECTOR_API_KEY!,
+    'x-workspaceid': NECTOR_WORKSPACE_ID!,
+    // Server-to-server call, not a browser/app SDK — 'unix' is Nector's
+    // catch-all source value for that case.
+    'x-source': 'unix',
+  };
+}
+
+async function nectorCreateLead(user: { id: string; email: string; username: string }): Promise<void> {
+  if (!NECTOR_CONFIGURED) return;
+  try {
+    const res = await fetch('https://platform.nector.io/api/v2/merchant/leads', {
+      method: 'POST',
+      headers: nectorHeaders(),
+      body: JSON.stringify({
+        customer_id: user.id,
+        name: user.username,
+        metadetail: { email: user.email },
+      }),
+    });
+    if (!res.ok) {
+      console.error('Nector lead creation failed:', res.status, await res.text());
+    }
+  } catch (err) {
+    console.error('Nector lead creation error:', err);
+  }
+}
+
+async function nectorAwardPoints(customerId: string, triggerId: string | undefined): Promise<void> {
+  if (!NECTOR_CONFIGURED || !triggerId) return;
+  try {
+    const res = await fetch('https://platform.nector.io/api/v2/merchant/activities', {
+      method: 'POST',
+      headers: nectorHeaders(),
+      body: JSON.stringify({ trigger_id: triggerId, customer_id: customerId }),
+    });
+    if (!res.ok) {
+      console.error('Nector award failed:', res.status, await res.text());
+    }
+  } catch (err) {
+    console.error('Nector award error:', err);
+  }
+}
+
+// New-signup reward: register the lead first (a person must exist in Nector
+// before any trigger can award them anything), then award the signup
+// trigger. Always fire-and-forget from call sites — a Nector hiccup must
+// never block or fail a signup/post/reply.
+async function nectorRewardSignup(user: { id: string; email: string; username: string }): Promise<void> {
+  if (!NECTOR_CONFIGURED) return;
+  await nectorCreateLead(user);
+  await nectorAwardPoints(user.id, NECTOR_TRIGGER_SIGNUP);
+}
 
 // Allow-list of image mimetypes we sign for. Blocks direct upload of SVGs
 // (script vector) and non-images even if the client asks.
@@ -1529,6 +1602,7 @@ app.post('/api/conversations', authenticate, async (req: AuthRequest, res, next)
         where: { id: req.userId },
         data: { postCount: { increment: 1 } },
       });
+      nectorAwardPoints(user.id, NECTOR_TRIGGER_POST).catch(err => console.warn('⚠️ Nector post reward failed:', err));
     }
 
     // Log the auto-decision. Every new thread now leaves an audit trail
@@ -1912,6 +1986,7 @@ app.post('/api/conversations/:id/replies', authenticate, async (req: AuthRequest
       where: { id: req.userId },
       data: { replyCount: { increment: 1 } },
     });
+    nectorAwardPoints(user.id, NECTOR_TRIGGER_REPLY).catch(err => console.warn('⚠️ Nector reply reward failed:', err));
 
     // Notify thread author
     console.log('🔍 Finding conversation...');
