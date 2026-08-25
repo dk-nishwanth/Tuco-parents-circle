@@ -3,7 +3,7 @@ import cors from 'cors';
 import crypto from 'crypto';
 import dotenv from 'dotenv';
 import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import pino from 'pino-http';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -360,7 +360,7 @@ const actionLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   validate: { xForwardedForHeader: false },
-  keyGenerator: (req: AuthRequest) => req.userId || req.ip || 'unknown',
+  keyGenerator: (req: AuthRequest) => req.userId || ipKeyGenerator(req.ip || 'unknown'),
   message: { error: 'Too many actions, please slow down.' },
   handler: (req: AuthRequest, res) => {
     console.warn('⚠️ Action rate limit hit for:', req.userId || req.ip);
