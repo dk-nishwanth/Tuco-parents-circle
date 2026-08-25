@@ -2184,8 +2184,14 @@ app.patch('/api/replies/:id', authenticate, async (req: AuthRequest, res, next) 
     if (!reply) return res.status(404).json({ error: 'Reply not found' });
 
     const isMod = req.userRole === 'MODERATOR' || req.userRole === 'TUCO_TEAM';
-    if (text && reply.authorId !== req.userId && !isMod) {
+    // Was `if (text && ...)` — a truthiness check, so text: '' (falsy) skipped
+    // the ownership check entirely while still reaching the update below,
+    // letting any authenticated user blank out anyone else's reply.
+    if (text !== undefined && reply.authorId !== req.userId && !isMod) {
       return res.status(403).json({ error: 'Not authorized' });
+    }
+    if (text !== undefined && (typeof text !== 'string' || text.trim().length === 0 || text.length > 5000)) {
+      return res.status(400).json({ error: 'Reply text must be 1-5000 characters' });
     }
 
     // likes are managed exclusively via /api/votes, never accepted here —
