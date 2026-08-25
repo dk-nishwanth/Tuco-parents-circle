@@ -276,14 +276,22 @@ function AppContent() {
   // for a guest — same behavior as clicking "Ask a Question" in the app.
   useEffect(() => {
     if (!isAppReady) return;
-    const action = new URLSearchParams(window.location.search).get('action');
-    if (action === 'signup') {
-      openAuth('signup');
-      window.history.replaceState({}, '', window.location.pathname + window.location.hash);
-    } else if (action === 'ask') {
+    const raw = new URLSearchParams(window.location.search).get('action');
+    if (!raw) return;
+    // Lenient matching — this link gets pasted into WhatsApp/social copy by
+    // hand, so tolerate case and hyphen/underscore variants rather than
+    // silently doing nothing on a typo'd param.
+    const action = raw.trim().toLowerCase().replace(/[-\s]/g, '_');
+    track('deep_link_action', { action });
+    if (action === 'signup' || action === 'sign_up') {
+      // A member who's already signed in doesn't need the signup modal —
+      // popping it anyway would read as the link being broken/confused
+      // about who they are. Just land them on the feed like normal.
+      if (!currentUser) openAuth('signup');
+    } else if (action === 'ask' || action === 'ask_question' || action === 'question') {
       openNewPost();
-      window.history.replaceState({}, '', window.location.pathname + window.location.hash);
     }
+    window.history.replaceState({}, '', window.location.pathname + window.location.hash);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAppReady]);
 
