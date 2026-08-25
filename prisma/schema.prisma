@@ -18,6 +18,13 @@ model User {
   // treating a real password as "none" would let a change-password request
   // skip verification entirely. Google flows explicitly set this false.
   hasPassword        Boolean        @default(true)
+  // Bumped on password change/reset so every previously-issued JWT
+  // (which embeds the version at sign time) is invalidated at once —
+  // otherwise a stolen token stays valid for its full 30-day life even
+  // after the owner changes their password. Missing/undefined on an
+  // older token is treated as 0, so this doesn't log out existing
+  // sessions the moment it ships.
+  tokenVersion       Int            @default(0)
   city               String
   childAge           String?
   role               UserRole       @default(MEMBER)

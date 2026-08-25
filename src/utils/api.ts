@@ -348,13 +348,19 @@ export const api = {
 
   // currentPassword is omitted for accounts with hasPassword === false
   // (Google-only) — the server only requires it when a real password exists.
-  async changePassword(data: { currentPassword?: string; newPassword: string }): Promise<{ message: string }> {
+  async changePassword(data: { currentPassword?: string; newPassword: string }): Promise<{ message: string; token?: string }> {
     const res = await fetch(`${API_BASE_URL}/users/me/password`, {
       method: 'POST',
       headers: authHeaders(),
       body: JSON.stringify(data),
     });
-    return handleResponse<{ message: string }>(res);
+    const result = await handleResponse<{ message: string; token?: string }>(res);
+    // Changing your password invalidates every previously-issued token,
+    // including the one this very request was authenticated with — without
+    // storing the fresh one the server returns, the next API call would
+    // 401 and silently boot the user right after they just changed it.
+    if (result.token) tokenStore.set(result.token);
+    return result;
   },
 
   async getUsers(): Promise<Record<string, User>> {

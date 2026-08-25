@@ -6,7 +6,6 @@ interface ProfileModalProps {
   user: User;
   conversations?: Conversation[];
   loginEmail?: string;
-  loginPassword?: string;
   onClose: () => void;
   onThreadOpen?: (id: number) => void;
 }
@@ -15,7 +14,6 @@ export function ProfileModal({
   user,
   conversations = [],
   loginEmail,
-  loginPassword,
   onClose,
   onThreadOpen,
 }: ProfileModalProps) {
@@ -42,7 +40,6 @@ export function ProfileModal({
             conversations={conversations}
             isCurrentUser
             loginEmail={loginEmail}
-            loginPassword={loginPassword}
             onThreadOpen={onThreadOpen}
           />
         </div>

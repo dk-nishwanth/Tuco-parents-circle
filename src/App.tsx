@@ -136,9 +136,12 @@ function AppContent() {
   // round-trip errors out), so the user isn't dumped on the homepage silently.
   const [authNotice, setAuthNotice] = useState<string | null>(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  // Email only — the plaintext password used to be kept here too, purely to
+  // decide whether MemberProfile shows a masked "••••••••" row. That's a
+  // real password sitting in memory for the whole session for no reason;
+  // user.hasPassword (already available) answers the same question safely.
   const [sessionCredentials, setSessionCredentials] = useState<{
     email: string;
-    password: string;
   } | null>(null);
   const [warningModal, setWarningModal] = useState<{
     isOpen: boolean;
@@ -643,7 +646,7 @@ function AppContent() {
       const updatedUsers = { ...users, [user.id]: user };
       setUsers(updatedUsers);
       setCurrentUser(user);
-      setSessionCredentials({ email: user.email, password });
+      setSessionCredentials({ email: user.email });
       track('sign_up', { method: 'email' });
 
       setIsAuthOpen(false);
@@ -676,7 +679,7 @@ function AppContent() {
       const updatedUsers = { ...users, [user.id]: user };
       setUsers(updatedUsers);
       setCurrentUser(user);
-      setSessionCredentials({ email, password });
+      setSessionCredentials({ email });
       track('login', { method: 'email' });
       
       // Load user's saved posts

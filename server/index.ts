@@ -23,8 +23,11 @@ const app = express();
 const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3002;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET) {
-  console.error('FATAL: JWT_SECRET environment variable is not set');
+// A short/guessable secret is brute-forceable regardless of the JWT
+// algorithm's strength, so a misconfigured deploy (e.g. JWT_SECRET=abc)
+// must fail loud at boot rather than sign tokens with it silently.
+if (!JWT_SECRET || JWT_SECRET.length < 32) {
+  console.error('FATAL: JWT_SECRET environment variable is not set or too short (must be at least 32 characters)');
   process.exit(1);
 }
 
@@ -345,6 +348,71 @@ const authLimiter = rateLimit({
   }
 });
 
+// Votes and replies only sat under the generic 3000/15min apiLimiter, which
+// (per the comment above) is deliberately loose to tolerate shared-NAT
+// traffic — loose enough that a single scripted account could cast/flip
+// thousands of votes or spam replies well beyond any real usage before
+// hitting it. Keyed per-user (falls back to IP pre-auth) so this doesn't
+// double-punish a whole NAT-shared IP for one abusive account.
+const actionLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
+  keyGenerator: (req: AuthRequest) => req.userId || req.ip || 'unknown',
+  message: { error: 'Too many actions, please slow down.' },
+  handler: (req: AuthRequest, res) => {
+    console.warn('⚠️ Action rate limit hit for:', req.userId || req.ip);
+    res.status(429).json({ error: 'Too many actions, please slow down.' });
+  }
+});
+
+// /api/chat is Anthropic-backed and reachable by unauthenticated visitors
+// (optionalAuth) — without a dedicated cap, the shared 3000/15min apiLimiter
+// lets an anonymous caller drive a large number of paid completions per IP.
+const chatLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: NODE_ENV === 'production' ? 30 : 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
+  message: { error: 'Too many chat requests, please try again later.' },
+  handler: (req, res) => {
+    console.warn('⚠️ Chat rate limit hit for IP:', req.ip);
+    res.status(429).json({ error: 'Too many chat requests, please try again later.' });
+  }
+});
+
+// Per-account login lockout, separate from authLimiter's per-IP cap above —
+// mitigates distributed credential stuffing (rotating IPs/residential
+// proxies against one target account), which a per-IP limiter alone can't
+// touch. In-memory and reset on restart is an accepted tradeoff here since
+// authLimiter already durably covers the per-IP case.
+const failedLoginAttempts = new Map<string, { count: number; lockedUntil: number }>();
+const LOGIN_LOCKOUT_THRESHOLD = 8;
+const LOGIN_LOCKOUT_MS = 15 * 60 * 1000;
+function isLoginLocked(email: string): boolean {
+  const entry = failedLoginAttempts.get(email);
+  if (!entry?.lockedUntil) return false;
+  if (entry.lockedUntil <= Date.now()) {
+    failedLoginAttempts.delete(email);
+    return false;
+  }
+  return true;
+}
+function recordFailedLogin(email: string): void {
+  const entry = failedLoginAttempts.get(email) || { count: 0, lockedUntil: 0 };
+  entry.count += 1;
+  if (entry.count >= LOGIN_LOCKOUT_THRESHOLD) {
+    entry.lockedUntil = Date.now() + LOGIN_LOCKOUT_MS;
+  }
+  failedLoginAttempts.set(email, entry);
+}
+function clearFailedLogins(email: string): void {
+  failedLoginAttempts.delete(email);
+}
+
 const corsOptions = {
   // Reuses the FRONTEND_URL constant (which already has a safe hardcoded
   // fallback) instead of falling back to `true` — reflecting any origin
@@ -396,14 +464,25 @@ interface AuthRequest extends express.Request {
   userRole?: string;
 }
 
-const authenticate = (req: AuthRequest, res: express.Response, next: express.NextFunction) => {
+// tokenVersion is embedded in the JWT at sign time and compared against the
+// user's current DB value on every request — this is what makes password
+// change/reset actually invalidate old tokens instead of leaving a stolen
+// token valid for its full 30-day life. A token signed before this shipped
+// has no tokenVersion claim at all; treating that as 0 means it stays valid
+// until the user's first password change/reset after this deploy, rather
+// than logging everyone out immediately.
+const authenticate = async (req: AuthRequest, res: express.Response, next: express.NextFunction) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Authentication required' });
   }
   const token = authHeader.slice(7);
   try {
-    const payload = jwt.verify(token, JWT_SECRET) as { userId: string; role: string };
+    const payload = jwt.verify(token, JWT_SECRET) as { userId: string; role: string; tokenVersion?: number };
+    const user = await prisma.user.findUnique({ where: { id: payload.userId }, select: { tokenVersion: true } });
+    if (!user || (payload.tokenVersion ?? 0) !== user.tokenVersion) {
+      return res.status(401).json({ error: 'Invalid or expired token' });
+    }
     req.userId = payload.userId;
     req.userRole = payload.role;
     next();
@@ -412,14 +491,17 @@ const authenticate = (req: AuthRequest, res: express.Response, next: express.Nex
   }
 };
 
-const optionalAuth = (req: AuthRequest, res: express.Response, next: express.NextFunction) => {
+const optionalAuth = async (req: AuthRequest, res: express.Response, next: express.NextFunction) => {
   const authHeader = req.headers.authorization;
   if (authHeader && authHeader.startsWith('Bearer ')) {
     const token = authHeader.slice(7);
     try {
-      const payload = jwt.verify(token, JWT_SECRET) as { userId: string; role: string };
-      req.userId = payload.userId;
-      req.userRole = payload.role;
+      const payload = jwt.verify(token, JWT_SECRET) as { userId: string; role: string; tokenVersion?: number };
+      const user = await prisma.user.findUnique({ where: { id: payload.userId }, select: { tokenVersion: true } });
+      if (user && (payload.tokenVersion ?? 0) === user.tokenVersion) {
+        req.userId = payload.userId;
+        req.userRole = payload.role;
+      }
     } catch {
       // ignore invalid token for optional auth
     }
@@ -947,7 +1029,7 @@ app.post('/api/auth/signup', authLimiter, async (req: AuthRequest, res, next) =>
       return res.status(500).json({ error: 'Server configuration error' });
     }
 
-    const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: '30d' });
+    const token = jwt.sign({ userId: user.id, role: user.role, tokenVersion: user.tokenVersion }, JWT_SECRET, { expiresIn: '30d' });
 
     // Send welcome email (don't fail signup if email fails)
     try {
@@ -1026,9 +1108,15 @@ app.post('/api/auth/login', authLimiter, async (req: AuthRequest, res, next) => 
     const normalEmail = email.trim().toLowerCase();
     console.log('👤 Looking up user:', normalEmail);
 
+    if (isLoginLocked(normalEmail)) {
+      console.log('🔒 Login locked for too many failed attempts:', normalEmail);
+      return res.status(429).json({ error: 'Too many failed attempts. Please try again in 15 minutes.' });
+    }
+
     const user = await prisma.user.findUnique({ where: { email: normalEmail } });
     if (!user) {
       console.log('❌ User not found');
+      recordFailedLogin(normalEmail);
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
@@ -1036,6 +1124,7 @@ app.post('/api/auth/login', authLimiter, async (req: AuthRequest, res, next) => 
     // would return false anyway, but skip it to avoid noisy warnings in logs.
     if (user.passwordHash.startsWith('UNCLAIMED_SEED_')) {
       console.log('❌ Login attempt on unclaimed seed account:', user.id);
+      recordFailedLogin(normalEmail);
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
@@ -1043,11 +1132,13 @@ app.post('/api/auth/login', authLimiter, async (req: AuthRequest, res, next) => 
     const valid = await bcrypt.compare(password, user.passwordHash);
     if (!valid) {
       console.log('❌ Invalid password');
+      recordFailedLogin(normalEmail);
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
+    clearFailedLogins(normalEmail);
     console.log('✅ Login successful for user:', user.id);
-    const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: '30d' });
+    const token = jwt.sign({ userId: user.id, role: user.role, tokenVersion: user.tokenVersion }, JWT_SECRET, { expiresIn: '30d' });
     maybeSendNewDeviceAlert(user.id, user.email, user.username, req.headers['user-agent'], req.ip)
       .catch(err => console.warn('⚠️ New-device alert check failed:', err));
     prisma.loginEvent.create({
@@ -1118,7 +1209,9 @@ app.post('/api/auth/reset-password', authLimiter, async (req, res, next) => {
     }
 
     const passwordHash = await bcrypt.hash(password, 12);
-    await prisma.user.update({ where: { id: record.userId }, data: { passwordHash, hasPassword: true } });
+    // tokenVersion bump invalidates every token issued before this reset —
+    // otherwise a stolen token would outlive the very reset meant to kill it.
+    await prisma.user.update({ where: { id: record.userId }, data: { passwordHash, hasPassword: true, tokenVersion: { increment: 1 } } });
     await prisma.passwordResetToken.delete({ where: { token } }).catch(() => {});
 
     res.status(200).json({ message: 'Password reset successfully. You can now log in.' });
@@ -1133,7 +1226,7 @@ app.post('/api/auth/reset-password', authLimiter, async (req, res, next) => {
 // owner out. Accounts that never had a password (Google-only signup or claim)
 // skip that check — the live session already proves identity — and this is
 // how they set one for the first time.
-app.post('/api/users/me/password', authenticate, async (req: AuthRequest, res, next) => {
+app.post('/api/users/me/password', authenticate, authLimiter, async (req: AuthRequest, res, next) => {
   try {
     const { currentPassword, newPassword } = req.body;
     if (!newPassword || typeof newPassword !== 'string' || newPassword.length < 6) {
@@ -1154,12 +1247,21 @@ app.post('/api/users/me/password', authenticate, async (req: AuthRequest, res, n
     }
 
     const passwordHash = await bcrypt.hash(newPassword, 12);
-    await prisma.user.update({
+    // tokenVersion bump invalidates every other token for this account (a
+    // stolen session, another device) — but the CURRENT request's own token
+    // would also go stale, logging the user out of the very action they just
+    // took, so a fresh token for this session is issued below.
+    const updated = await prisma.user.update({
       where: { id: user.id },
-      data: { passwordHash, hasPassword: true },
+      data: { passwordHash, hasPassword: true, tokenVersion: { increment: 1 } },
     });
+    const newToken = jwt.sign(
+      { userId: updated.id, role: updated.role, tokenVersion: updated.tokenVersion },
+      JWT_SECRET,
+      { expiresIn: '30d' }
+    );
 
-    res.status(200).json({ message: 'Password updated successfully.' });
+    res.status(200).json({ message: 'Password updated successfully.', token: newToken });
   } catch (error) {
     next(error);
   }
@@ -1182,7 +1284,7 @@ app.post('/api/auth/oauth-token', authLimiter, async (req, res, next) => {
 });
 
 // Google OAuth
-app.get('/api/auth/google', (req, res) => {
+app.get('/api/auth/google', authLimiter, (req, res) => {
   const url = googleClient.generateAuthUrl({
     access_type: 'offline',
     // 'openid' guarantees Google returns an id_token (which verifyIdToken needs);
@@ -1193,7 +1295,7 @@ app.get('/api/auth/google', (req, res) => {
   res.redirect(url);
 });
 
-app.get('/api/auth/google/callback', async (req, res, next) => {
+app.get('/api/auth/google/callback', authLimiter, async (req, res, next) => {
   try {
     const { code } = req.query as { code: string };
     if (!code) return res.redirect(`${FRONTEND_URL}?auth_error=no_code`);
@@ -1275,7 +1377,7 @@ app.get('/api/auth/google/callback', async (req, res, next) => {
       nectorRewardSignup(user).catch(err => console.warn('⚠️ Nector signup reward failed:', err));
     }
 
-    const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET as string, { expiresIn: '30d' });
+    const token = jwt.sign({ userId: user.id, role: user.role, tokenVersion: user.tokenVersion }, JWT_SECRET as string, { expiresIn: '30d' });
     maybeSendNewDeviceAlert(user.id, user.email, user.username, req.headers['user-agent'], req.ip)
       .catch(err => console.warn('⚠️ New-device alert check failed:', err));
     prisma.loginEvent.create({
@@ -1876,8 +1978,8 @@ app.patch('/api/conversations/:id', optionalAuth, async (req: AuthRequest, res, 
             ? `✅ Your post is live: ${conversation.title.slice(0, 40)}`
             : `❌ Your post was rejected: ${conversation.title.slice(0, 40)}`,
           moderationStatus?.toLowerCase() === 'approved'
-            ? `<h2>Great news, ${author.username}!</h2><p>Your post "<strong>${conversation.title}</strong>" has been approved and is now live on tuco Parents Circle.</p><p><a href="${process.env.FRONTEND_URL || ''}">View it in the community</a></p>`
-            : `<h2>Hi ${author.username},</h2><p>Your post "<strong>${conversation.title}</strong>" has been rejected.</p><p><strong>Reason:</strong> ${moderationReason || 'Not specified'}</p><p>If you have questions, please contact our moderation team.</p>`,
+            ? `<h2>Great news, ${escapeHtml(author.username)}!</h2><p>Your post "<strong>${escapeHtml(conversation.title)}</strong>" has been approved and is now live on tuco Parents Circle.</p><p><a href="${process.env.FRONTEND_URL || ''}">View it in the community</a></p>`
+            : `<h2>Hi ${escapeHtml(author.username)},</h2><p>Your post "<strong>${escapeHtml(conversation.title)}</strong>" has been rejected.</p><p><strong>Reason:</strong> ${escapeHtml(moderationReason || 'Not specified')}</p><p>If you have questions, please contact our moderation team.</p>`,
           'MODERATION'
         );
       }
@@ -1917,7 +2019,7 @@ const replySchema = z.object({
   parentId: z.number().optional(),
 });
 
-app.post('/api/conversations/:id/replies', authenticate, async (req: AuthRequest, res, next) => {
+app.post('/api/conversations/:id/replies', authenticate, actionLimiter, async (req: AuthRequest, res, next) => {
   console.log('💬 Adding reply to conversation:', req.params.id);
   try {
     const conversationId = parseInt(req.params.id);
@@ -2248,7 +2350,7 @@ app.delete('/api/replies/:id', authenticate, async (req: AuthRequest, res, next)
 // VOTES
 // ------------------------------
 
-app.post('/api/votes', authenticate, async (req: AuthRequest, res, next) => {
+app.post('/api/votes', authenticate, actionLimiter, async (req: AuthRequest, res, next) => {
   try {
     const { conversationId, replyId, type } = req.body;
     if (!conversationId && !replyId) {
@@ -2690,7 +2792,7 @@ app.post('/api/users/me/saved', authenticate, async (req: AuthRequest, res, next
 // AI CHAT
 // ------------------------------
 
-app.post('/api/chat', optionalAuth, async (req: AuthRequest, res, next) => {
+app.post('/api/chat', chatLimiter, optionalAuth, async (req: AuthRequest, res, next) => {
   try {
     const { messages } = req.body;
     // Without this, a missing/empty messages array reaches

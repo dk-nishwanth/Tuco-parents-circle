@@ -113,7 +113,6 @@ interface MemberProfileProps {
   conversations?: Conversation[];
   isCurrentUser?: boolean;
   loginEmail?: string;
-  loginPassword?: string;
   onThreadOpen?: (id: number) => void;
 }
 export function MemberProfile({
@@ -121,7 +120,6 @@ export function MemberProfile({
   conversations = [],
   isCurrentUser = false,
   loginEmail,
-  loginPassword,
   onThreadOpen,
 }: MemberProfileProps) {
   const userThreads = conversations.filter(
@@ -198,7 +196,7 @@ export function MemberProfile({
           <Mail className="w-4 h-4 text-neutral-400 shrink-0" />
           <span className="font-medium break-all">{loginEmail || user.email}</span>
         </div>
-        {loginPassword !== undefined && (
+        {(user.hasPassword ?? true) && (
           <div className="flex items-center gap-2 text-sm text-neutral-700">
             <Lock className="w-4 h-4 text-neutral-400 shrink-0" />
             <span className="font-mono font-medium tracking-widest">••••••••</span>
