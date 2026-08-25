@@ -232,28 +232,51 @@ const SOFT_WORDS = [
   'tit',
 ];
 
-const SOFT_WORD_PATTERNS = SOFT_WORDS.map(word => {
-  if (word.includes('the hell') || word.includes('what the') || word.includes('god damn')) {
-    return new RegExp(word.replace(/\s+/g, '\\s*'), 'gi');
-  }
-  return new RegExp(`\\b${word}\\b`, 'gi');
-});
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 
-const BAD_WORD_PATTERNS = BAD_WORDS.map(word => {
-  if (word.includes('the hell') || word.includes('what the') || word.includes('god damn')) {
-    return new RegExp(word.replace(/\s+/g, '\\s*'), 'gi');
-  }
-  if (word === 'the hell') {
-    return new RegExp(/the\s*hell/gi);
-  }
-  if (word === 'fuck') {
-    return new RegExp(/fuck|f\s*u\s*c\s*k/gi);
-  }
-  if (word === 'shit') {
-    return new RegExp(/shit|s\s*h\s*i\s*t/gi);
-  }
-  return new RegExp(`\\b${word}\\b`, 'gi');
-});
+// Was hand-special-cased for just 'fuck'/'shit'/a few phrases, so every other
+// word in these lists was still a bare `\bword\b` match — trivially dodged
+// with spacing ("f u c k"), punctuation ("f.u.c.k"), or a stray asterisk
+// ("fu*k"). This applies the same spacing/punctuation tolerance to every
+// word generically: letters within a word may have separators between them,
+// and (?<![a-zA-Z])/(?![a-zA-Z]) still requires the match to sit at a real
+// word edge, so it can't fire inside an unrelated longer word (e.g. the
+// 'arse' entry won't match inside 'arsenal').
+function buildEvasionTolerantPattern(phrase: string): RegExp {
+  const body = phrase
+    .split(/\s+/)
+    .map(word => word.split('').map(escapeRegExp).join('[\\s._\\-*]*'))
+    .join('[\\s._\\-*]+');
+  return new RegExp(`(?<![a-zA-Z])${body}(?![a-zA-Z])`, 'gi');
+}
+
+// Leetspeak/character-substitution evasion ("sh1t", "a$$hole", "fuuuuck")
+// is a separate axis from spacing — this normalizes a COPY of the content
+// (checked alongside the original, never replacing it) so digit/symbol
+// stand-ins and stretched-out repeated letters collapse back to the plain
+// word before the same patterns above are tested against it.
+const LEETSPEAK_MAP: Record<string, string> = {
+  '0': 'o', '1': 'i', '3': 'e', '4': 'a', '5': 's', '7': 't', '@': 'a', '$': 's', '!': 'i',
+};
+function deleetify(content: string): string {
+  const substituted = content.replace(/[013457@$!]/g, ch => LEETSPEAK_MAP[ch] ?? ch);
+  // Collapse 3+ identical consecutive letters to 1 — legitimate English
+  // words essentially never repeat a letter three times in a row, so this
+  // is safe against false positives while catching "fuuuuck"/"shiiiit".
+  return substituted.replace(/([a-zA-Z])\1{2,}/g, '$1');
+}
+
+function matchesAny(patterns: RegExp[], ...contents: string[]): boolean {
+  return patterns.some(p => contents.some(c => {
+    p.lastIndex = 0;
+    return p.test(c);
+  }));
+}
+
+const SOFT_WORD_PATTERNS = SOFT_WORDS.map(buildEvasionTolerantPattern);
+const BAD_WORD_PATTERNS = BAD_WORDS.map(buildEvasionTolerantPattern);
 
 const MEDICAL_PRESCRIPTION_PATTERNS = [
   /give\s+\d+\s*(mg|ml|tablets?|drops?|pills?|spoons?|tsp|tbsp)/gi,
@@ -474,15 +497,19 @@ export function aiModerationCheck(postContent: string, category: string): AIAppr
 export function analyzeContent(postContent: string, category: string): ModerationAnalysis {
   const greyAreaFlags = detectGreyAreas(postContent);
   const lowerContent = postContent.toLowerCase();
+  // Checked alongside (never instead of) the raw content, so leetspeak/
+  // repeated-letter evasion ("sh1t", "fuuuuck") is caught without weakening
+  // matching on content that isn't trying to evade anything.
+  const deleetedContent = deleetify(postContent);
 
   if (lowerContent.includes('fuck') || lowerContent.includes('shit')) {
     return { outcome: 'CLEAR_VIOLATION', greyAreaFlags };
   }
   // NOTE: removed the crude `includes('hell')` checks — they matched "hello",
   // "shell", etc. and wrongly rejected normal posts like "say hello!". Real
-  // profanity ("what the hell") is still caught by the /the\s*hell/ entry in
+  // profanity ("what the hell") is still caught by the 'the hell' entry in
   // BAD_WORD_PATTERNS below.
-  if (BAD_WORD_PATTERNS.some(p => { p.lastIndex = 0; return p.test(postContent); })) {
+  if (matchesAny(BAD_WORD_PATTERNS, postContent, deleetedContent)) {
     return { outcome: 'CLEAR_VIOLATION', greyAreaFlags };
   }
   if (MEDICAL_PRESCRIPTION_PATTERNS.some(p => { p.lastIndex = 0; return p.test(postContent); })) {
@@ -520,7 +547,7 @@ export function analyzeContent(postContent: string, category: string): Moderatio
       civilityReminder: getGreyAreaReminder(greyAreaFlags),
     };
   }
-  if (SOFT_WORD_PATTERNS.some(p => { p.lastIndex = 0; return p.test(postContent); })) {
+  if (matchesAny(SOFT_WORD_PATTERNS, postContent, deleetedContent)) {
     return {
       outcome: 'UNCERTAIN',
       greyAreaFlags,
