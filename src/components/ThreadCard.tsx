@@ -77,7 +77,7 @@ export function ThreadCard({
     // would only ever see the generic category page's tags. This route
     // server-renders the real question as Open Graph tags for crawlers,
     // and sends a real visitor straight into the thread modal.
-    const url = threadShareUrl(thread.id, thread.title);
+    const url = threadShareUrl(thread.id, thread.title, countAllReplies(thread.replies));
     if (navigator.share) {
       navigator.share({ title: thread.title, url }).catch(() => {});
     } else {

@@ -23,14 +23,31 @@ function threadIdSlug(id: number, title: string | undefined | null): string {
   return `${id}${slug ? `-${slug}` : ''}`;
 }
 
+// Cache-busting suffix for link-preview crawlers (WhatsApp etc.), which
+// cache a URL's preview data essentially forever once scraped. A thread's
+// preview image can genuinely change after that first scrape — most
+// commonly a tuco-team video reply landing on a thread that was originally
+// text-only — and without this, every future share of the same URL would
+// keep showing the stale (video-less) snapshot no matter what the server
+// now returns. replyCount is a reasonable proxy for "content that affects
+// the preview changed": it's cheap to compute identically on both sides
+// (server via Conversation._count.replies, client via countAllReplies) and
+// increments exactly when a new reply — including a video one — arrives.
+function cacheBustSuffix(replyCount: number | undefined): string {
+  return replyCount !== undefined ? `?v=${replyCount}` : '';
+}
+
 // The in-app "thread open" URL while browsing — a *query string* on the
 // current page (e.g. "?thread=425-my-thread-title"), not a #hash. Unlike a
 // hash, a query string DOES reach the server, so copying this straight out
 // of the address bar is just as crawlable/link-preview-able as the
 // dedicated share button — see the bot-detection branch on the /:category
 // routes in server/index.ts, which now recognizes this same param.
-export function threadQuery(id: number, title: string | undefined | null): string {
-  return `?thread=${threadIdSlug(id, title)}`;
+export function threadQuery(id: number, title: string | undefined | null, replyCount?: number): string {
+  // v goes on the very end since it's a second query param, not part of
+  // the thread= value itself — ?thread=425-slug&v=3.
+  const v = replyCount !== undefined ? `&v=${replyCount}` : '';
+  return `?thread=${threadIdSlug(id, title)}${v}`;
 }
 
 // Full external share URL — points at the server's /thread/:id[-slug]
@@ -38,6 +55,6 @@ export function threadQuery(id: number, title: string | undefined | null): strin
 // which is tied to whatever category page happened to be open). Both reach
 // the server, both work for previews; this one is just the nicer canonical
 // link for deliberate sharing.
-export function threadShareUrl(id: number, title: string | undefined | null): string {
-  return `${window.location.origin}/thread/${threadIdSlug(id, title)}`;
+export function threadShareUrl(id: number, title: string | undefined | null, replyCount?: number): string {
+  return `${window.location.origin}/thread/${threadIdSlug(id, title)}${cacheBustSuffix(replyCount)}`;
 }

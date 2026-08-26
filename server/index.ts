@@ -3701,7 +3701,10 @@ async function renderThreadSeoPage(res: express.Response, next: express.NextFunc
   try {
     const thread = await prisma.conversation.findUnique({
       where: { id },
-      include: { replies: { take: 20, orderBy: { id: 'asc' } } },
+      include: {
+        replies: { take: 20, orderBy: { id: 'asc' } },
+        _count: { select: { replies: true } },
+      },
     });
 
     if (!thread || thread.moderationStatus !== 'APPROVED') return false;
@@ -3712,7 +3715,13 @@ async function renderThreadSeoPage(res: express.Response, next: express.NextFunc
       .map(r => `<div class="reply"><p>${esc((r.text || '').replace(/<[^>]+>/g, '').slice(0, 500))}</p></div>`)
       .join('\n');
     const slug = slugifyServer(thread.title || '');
-    const canonical = `${FRONTEND_URL}/thread/${id}${slug ? `-${slug}` : ''}`;
+    // _count.replies (all replies, nested included — same total as the
+    // client's countAllReplies) doubles as a cache-bust version: link
+    // preview crawlers cache a URL's tags essentially forever once
+    // scraped, so a thread that gains a video/image reply after its first
+    // share would otherwise keep showing the stale text-only snapshot no
+    // matter what this route now returns — see threadShareUrl's comment.
+    const canonical = `${FRONTEND_URL}/thread/${id}${slug ? `-${slug}` : ''}?v=${thread._count.replies}`;
     const ogImage = resolveThreadOgImage(thread);
 
     res.setHeader('Content-Type', 'text/html; charset=utf-8');

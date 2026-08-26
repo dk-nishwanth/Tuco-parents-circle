@@ -46,6 +46,7 @@ import {
   searchThreadsWithRanking,
   getRelatedThreads,
   getFeaturedThreads,
+  countAllReplies,
 } from './utils/helpers';
 import {
   sendThreadApprovalEmail,
@@ -489,11 +490,16 @@ function AppContent() {
     if (matchedThread) {
       setSelectedThreadId(matchedThread.id);
       setIsModalOpen(true);
-      // Canonicalize (adds the slug if the incoming link didn't have one)
-      // without switching schemes — stays a query string, not a hash.
-      const canonical = threadQuery(matchedThread.id, matchedThread.title).slice('?thread='.length);
-      if (canonical !== threadParam) {
-        window.history.replaceState({ threadId: matchedThread.id }, '', `${window.location.pathname}${threadQuery(matchedThread.id, matchedThread.title)}`);
+      // Canonicalize (adds the slug/cache-bust version if the incoming
+      // link didn't have them) without switching schemes — stays a query
+      // string, not a hash. Compare against the actual "thread" param
+      // value only (not the whole query string) so an unrelated param
+      // (utm_source, etc.) never triggers a spurious rewrite here.
+      const replyCount = countAllReplies(matchedThread.replies);
+      const canonicalQuery = threadQuery(matchedThread.id, matchedThread.title, replyCount);
+      const canonicalThreadValue = new URLSearchParams(canonicalQuery).get('thread');
+      if (canonicalThreadValue !== threadParam) {
+        window.history.replaceState({ threadId: matchedThread.id }, '', `${window.location.pathname}${canonicalQuery}`);
       }
     } else {
       // Unknown/invalid id — just drop the query so we don't loop or 404.
@@ -883,7 +889,7 @@ function AppContent() {
     // src/utils/slug.ts for why: a hash fragment never reaches the server,
     // so copying it from the address bar could never carry link-preview
     // data no matter what the server does.
-    window.history.pushState({ threadId }, '', `${window.location.pathname}${threadQuery(threadId, updatedThread?.title)}`);
+    window.history.pushState({ threadId }, '', `${window.location.pathname}${threadQuery(threadId, updatedThread?.title, countAllReplies(updatedThread?.replies))}`);
   };
 
   // Listen for back button/history change to close modal

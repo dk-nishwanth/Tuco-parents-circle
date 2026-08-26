@@ -733,7 +733,7 @@ export function Modal({
                 // reaches the server, so WhatsApp/etc. would only ever see
                 // generic tags for a hash-only URL. The server route
                 // redirects a real visitor straight into this same modal.
-                const url = threadShareUrl(thread.id, thread.title);
+                const url = threadShareUrl(thread.id, thread.title, countAllReplies(thread.replies));
                 const shareData = {
                   title: thread.title,
                   text: `${thread.title} — tuco Parents Circle`,
