@@ -1688,6 +1688,30 @@ async function nectorCatchUpActivity(user: { id: string; email: string; username
   }
 }
 
+// Same anti-farming purpose as baseEmailForAbuseCheck, but for phone
+// numbers instead of email: we don't OTP-verify a phone number before
+// storing it (see the comment on the /users/me phone branch below for why),
+// so nothing stops someone from typing the same real number into several
+// different forum accounts. If Nector's phone-based wallet consolidation is
+// enabled, that would let each account's signup bonus stack onto one real
+// checkout wallet — a free, zero-effort multiplier, unlike post/reply
+// points which still have to pass moderation and rate limits to earn. This
+// only blocks the repeat SIGNUP bonus; the lead is still created normally,
+// so a phone genuinely shared within a household (e.g. two parents on one
+// number) still earns real points for their own posts/replies.
+async function phoneAlreadyEarnedSignupBonus(phone: string, excludeUserId: string): Promise<boolean> {
+  const sharers = await prisma.user.findMany({
+    where: { phone, id: { not: excludeUserId } },
+    select: { id: true },
+  });
+  if (sharers.length === 0) return false;
+  const existing = await prisma.nectorAward.findFirst({
+    where: { sourceType: 'SIGNUP', userId: { in: sharers.map(u => u.id) } },
+    select: { id: true },
+  });
+  return !!existing;
+}
+
 // New-signup reward: register the lead first (a person must exist in Nector
 // before any trigger can award them anything), then award the signup
 // trigger. Always fire-and-forget from call sites — a Nector hiccup must
@@ -1695,6 +1719,10 @@ async function nectorCatchUpActivity(user: { id: string; email: string; username
 async function nectorRewardSignup(user: { id: string; email: string; username: string; phone?: string | null }): Promise<void> {
   if (!NECTOR_CONFIGURED) return;
   await nectorCreateLead(user);
+  if (user.phone && await phoneAlreadyEarnedSignupBonus(user.phone, user.id)) {
+    console.warn(`⚠️ Nector signup bonus skipped for user ${user.id} — phone already claimed one on another account.`);
+    return;
+  }
   await nectorAwardOnce(user.id, 'SIGNUP', baseEmailForAbuseCheck(user.email), NECTOR_TRIGGER_SIGNUP);
 }
 
