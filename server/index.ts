@@ -1545,8 +1545,15 @@ function nectorHeaders(): Record<string, string> {
   };
 }
 
-async function nectorCreateLead(user: { id: string; email: string; username: string; phone?: string | null }): Promise<void> {
-  if (!NECTOR_CONFIGURED) return;
+// Returns whether a lead now genuinely exists for this user (created just
+// now, or already existed) — callers MUST check this before awarding
+// anything against it. Silently resolving success/failure the same way
+// (as this used to) let a failed lead creation still fall through to an
+// award attempt that was guaranteed to fail with "Lead does not exists",
+// permanently burning that award's dedup ledger slot for nothing (found
+// via live QA on the POST/REPLY award call sites — same bug, same fix).
+async function nectorCreateLead(user: { id: string; email: string; username: string; phone?: string | null }): Promise<boolean> {
+  if (!NECTOR_CONFIGURED) return false;
   try {
     // Nector's leads API creates a Nector-only record — it does NOT
     // automatically link to the person's real Shopify/checkout account.
@@ -1569,11 +1576,17 @@ async function nectorCreateLead(user: { id: string; email: string; username: str
         metadetail,
       }),
     });
-    if (!res.ok) {
-      console.error('Nector lead creation failed:', res.status, await res.text());
-    }
+    if (res.ok) return true;
+    const body = await res.text();
+    // "Lead already exists" means a lead genuinely does exist (just not
+    // created by this call) — that's a success for the caller's purposes,
+    // not a failure.
+    if (res.status === 422 && body.includes('Lead already exists')) return true;
+    console.error('Nector lead creation failed:', res.status, body);
+    return false;
   } catch (err) {
     console.error('Nector lead creation error:', err);
+    return false;
   }
 }
 
@@ -1664,7 +1677,18 @@ async function flagNectorClawbackIfAwarded(sourceType: 'POST' | 'REPLY', sourceI
 async function nectorCatchUpActivity(user: { id: string; email: string; username: string; phone?: string | null }): Promise<void> {
   if (!NECTOR_CONFIGURED) return;
   try {
-    await nectorRewardSignup(user);
+    const leadReady = await nectorRewardSignup(user);
+    if (!leadReady) {
+      // Lead creation itself failed (network blip, Nector outage) — bail
+      // out before attempting any POST/REPLY awards. Every one of those
+      // would also fail against a lead that doesn't exist, permanently
+      // burning each ledger slot for nothing. Nothing is lost: no ledger
+      // rows were written, so the next time this user's phone-add path
+      // runs (or a future retry mechanism), it'll see no SIGNUP award yet
+      // and try the whole catch-up again from scratch.
+      console.error(`⚠️ Nector catch-up aborted for user ${user.id} — lead creation failed, will retry on next phone-triggered attempt.`);
+      return;
+    }
     const posts = await prisma.conversation.findMany({
       where: { authorId: user.id, moderationStatus: 'APPROVED' },
       select: { id: true },
@@ -1716,14 +1740,21 @@ async function phoneAlreadyEarnedSignupBonus(phone: string, excludeUserId: strin
 // before any trigger can award them anything), then award the signup
 // trigger. Always fire-and-forget from call sites — a Nector hiccup must
 // never block or fail a signup/post/reply.
-async function nectorRewardSignup(user: { id: string; email: string; username: string; phone?: string | null }): Promise<void> {
-  if (!NECTOR_CONFIGURED) return;
-  await nectorCreateLead(user);
+// Returns whether the lead exists and is safe to award further activity
+// against — nectorCatchUpActivity uses this to decide whether it's safe to
+// proceed to the POST/REPLY back-award loop (same reasoning: attempting
+// those against a lead that doesn't exist would burn their ledger slots
+// for nothing, same as the bug this function itself now avoids).
+async function nectorRewardSignup(user: { id: string; email: string; username: string; phone?: string | null }): Promise<boolean> {
+  if (!NECTOR_CONFIGURED) return false;
+  const leadReady = await nectorCreateLead(user);
+  if (!leadReady) return false;
   if (user.phone && await phoneAlreadyEarnedSignupBonus(user.phone, user.id)) {
     console.warn(`⚠️ Nector signup bonus skipped for user ${user.id} — phone already claimed one on another account.`);
-    return;
+    return true;
   }
   await nectorAwardOnce(user.id, 'SIGNUP', baseEmailForAbuseCheck(user.email), NECTOR_TRIGGER_SIGNUP);
+  return true;
 }
 
 // Separate from nectorRewardSignup's actual award call (which is
