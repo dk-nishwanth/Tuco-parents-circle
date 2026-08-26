@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Routes, Route, useParams, useNavigate, useLocation } from 'react-router-dom';
 import { track, setAnalyticsUser, trackPageView } from './utils/analytics';
-import { threadSlugSuffix } from './utils/slug';
+import { threadHash, slugify } from './utils/slug';
 import { AdminPanel } from './components/AdminPanel';
 import { Header } from './components/Header';
 import { LeftSidebar } from './components/LeftSidebar';
@@ -412,14 +412,20 @@ function AppContent() {
     if (conversations.length === 0) return;
 
     const handleHash = () => {
-    // Trailing "-my-thread-title" is a cosmetic slug (see src/utils/slug.ts)
-    // — only the leading digits are ever used for lookup, so an old link
-    // with a stale/mismatched slug still resolves correctly.
-    const threadMatch = window.location.hash.match(/^#thread-(\d+)(?:-.*)?$/);
+    // New links are slug-only ("#thread-my-thread-title", built by
+    // threadHash in src/utils/slug.ts) so the numeric id never shows up in
+    // the URL. Older links (bare id, or "id-slug") still resolve via the
+    // leading-digits case for backward compatibility with anything already
+    // shared before this changed.
+    const threadMatch = window.location.hash.match(/^#thread-(.+)$/);
     if (threadMatch) {
-      const threadId = parseInt(threadMatch[1], 10);
-      if (conversations.some(c => c.id === threadId)) {
-        setSelectedThreadId(threadId);
+      const rest = threadMatch[1];
+      const idMatch = rest.match(/^(\d+)/);
+      const matched = idMatch
+        ? conversations.find(c => c.id === parseInt(idMatch[1], 10))
+        : conversations.find(c => slugify(c.title) === rest);
+      if (matched) {
+        setSelectedThreadId(matched.id);
         setIsModalOpen(true);
       }
       return;
@@ -480,7 +486,7 @@ function AppContent() {
       setIsModalOpen(true);
       // Normalize to the canonical /#thread-<id>-slug URL, dropping the
       // ?thread= query so closing the modal lands on a clean path.
-      window.history.replaceState({ threadId }, '', `${window.location.pathname}#thread-${threadId}${threadSlugSuffix(matchedThread.title)}`);
+      window.history.replaceState({ threadId }, '', `${window.location.pathname}${threadHash(threadId, matchedThread.title)}`);
     } else {
       // Unknown/invalid id — just drop the query so we don't loop or 404.
       window.history.replaceState({}, '', window.location.pathname);
@@ -865,7 +871,7 @@ function AppContent() {
     }
 
     // Push to browser history so back button closes modal
-    window.history.pushState({ threadId }, '', `#thread-${threadId}${threadSlugSuffix(updatedThread?.title)}`);
+    window.history.pushState({ threadId }, '', threadHash(threadId, updatedThread?.title));
   };
 
   // Listen for back button/history change to close modal
