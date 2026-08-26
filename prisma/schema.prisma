@@ -25,6 +25,14 @@ model User {
   // older token is treated as 0, so this doesn't log out existing
   // sessions the moment it ships.
   tokenVersion       Int            @default(0)
+  // Optional, collected at signup or later from the profile. Sent to Nector
+  // as metadetail.mobile on lead creation so a person's forum-earned points
+  // can be consolidated with their real Shopify/checkout account, which
+  // Nector links by phone number rather than email (confirmed with Nector
+  // support — the leads API creates a Nector-only record with no automatic
+  // Shopify-account link, but shared-phone-number consolidation is available
+  // as a workspace feature).
+  phone              String?
   city               String
   childAge           String?
   role               UserRole       @default(MEMBER)

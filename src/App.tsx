@@ -667,9 +667,9 @@ function AppContent() {
       });
     }
   };
-  const handleSignup = async (email: string, username: string, city: string, childAge: string, password: string) => {
+  const handleSignup = async (email: string, username: string, city: string, childAge: string, password: string, phone?: string) => {
     try {
-      const { user, token } = await api.signup(email, password, username, city, childAge);
+      const { user, token } = await api.signup(email, password, username, city, childAge, phone);
 
       // User is already logged in and token is stored by api.signup()
       const updatedUsers = { ...users, [user.id]: user };

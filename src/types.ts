@@ -91,6 +91,7 @@ export interface User {
   email: string;
   passwordHash?: string;
   city: string;
+  phone?: string;
   childAge?: string;
   role: UserRole;
   badges: Badge[];

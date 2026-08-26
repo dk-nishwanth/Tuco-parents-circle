@@ -556,6 +556,7 @@ const formatUser = (u: any) => ({
   username: u.username,
   email: u.email,
   city: u.city || '',
+  phone: u.phone || '',
   childAge: u.childAge || '',
   role: mapRole(u.role),
   badges: u.badges || [],
@@ -946,7 +947,22 @@ const signupSchema = z.object({
   username: z.string().trim().min(3).max(30).regex(/^[\p{L}\p{N}_\-.'’ ]+$/u, 'Username can only contain letters, numbers, spaces, and _ - . \''),
   city: z.string().max(100).optional(),
   childAge: z.string().max(50).optional(),
+  // Optional — only used to link forum-earned Nector points to a person's
+  // real Shopify checkout wallet (Nector consolidates by phone number).
+  // Loose format check; digits/spaces/+/- only, 7-15 chars once stripped.
+  phone: z.string().max(20).optional().refine(
+    v => !v || /^[0-9+\-\s]{7,20}$/.test(v),
+    'Enter a valid phone number'
+  ),
 });
+
+// Strips everything but digits, so "98765 43210" / "+91 98765-43210" all
+// normalize the same way before being sent to Nector or stored.
+function normalizePhone(phone: string | undefined | null): string | undefined {
+  if (!phone) return undefined;
+  const digits = phone.replace(/\D/g, '');
+  return digits.length >= 7 ? digits : undefined;
+}
 
 app.post('/api/auth/signup', authLimiter, async (req: AuthRequest, res, next) => {
   console.log('📝 Processing signup request...');
@@ -957,8 +973,9 @@ app.post('/api/auth/signup', authLimiter, async (req: AuthRequest, res, next) =>
       console.log('❌ Validation failed:', firstError);
       return res.status(400).json({ error: firstError?.message || 'Validation failed' });
     }
-    const { email, password, username, city, childAge } = parsed.data;
+    const { email, password, username, city, childAge, phone } = parsed.data;
     const normalEmail = email.trim().toLowerCase();
+    const normalPhone = normalizePhone(phone);
     console.log('👤 Checking if user exists:', normalEmail);
 
     const existing = await prisma.user.findUnique({ where: { email: normalEmail } });
@@ -998,6 +1015,7 @@ app.post('/api/auth/signup', authLimiter, async (req: AuthRequest, res, next) =>
           username: username.trim(),
           city: (city || '').trim() || existing.city || 'India',
           childAge: normalizeChildAge(childAge) || existing.childAge,
+          phone: normalPhone || existing.phone,
           isVerified: false,
           emailNotifications: true,
         },
@@ -1013,6 +1031,7 @@ app.post('/api/auth/signup', authLimiter, async (req: AuthRequest, res, next) =>
           username: username.trim(),
           city: (city || '').trim() || 'India',
           childAge: normalizeChildAge(childAge),
+          phone: normalPhone,
           role: 'MEMBER',
           isVerified: false,
           trustScore: 50, // 0.5 in frontend scale
@@ -1497,16 +1516,28 @@ function nectorHeaders(): Record<string, string> {
   };
 }
 
-async function nectorCreateLead(user: { id: string; email: string; username: string }): Promise<void> {
+async function nectorCreateLead(user: { id: string; email: string; username: string; phone?: string | null }): Promise<void> {
   if (!NECTOR_CONFIGURED) return;
   try {
+    // Nector's leads API creates a Nector-only record — it does NOT
+    // automatically link to the person's real Shopify/checkout account.
+    // Confirmed with Nector support: that link only happens via shared
+    // phone number ("consolidation") when the person also has mobile on
+    // file, hence sending metadetail.mobile whenever we have it. Without a
+    // phone, the lead still lets us award/track points, they just won't be
+    // redeemable at tucokids.com checkout under this same balance.
+    const metadetail: Record<string, string> = { email: user.email };
+    if (user.phone) {
+      metadetail.mobile = user.phone;
+      metadetail.country = 'ind';
+    }
     const res = await fetch('https://platform.nector.io/api/v2/merchant/leads', {
       method: 'POST',
       headers: nectorHeaders(),
       body: JSON.stringify({
         customer_id: user.id,
         name: user.username,
-        metadetail: { email: user.email },
+        metadetail,
       }),
     });
     if (!res.ok) {
@@ -1598,7 +1629,7 @@ async function flagNectorClawbackIfAwarded(sourceType: 'POST' | 'REPLY', sourceI
 // before any trigger can award them anything), then award the signup
 // trigger. Always fire-and-forget from call sites — a Nector hiccup must
 // never block or fail a signup/post/reply.
-async function nectorRewardSignup(user: { id: string; email: string; username: string }): Promise<void> {
+async function nectorRewardSignup(user: { id: string; email: string; username: string; phone?: string | null }): Promise<void> {
   if (!NECTOR_CONFIGURED) return;
   await nectorCreateLead(user);
   await nectorAwardOnce(user.id, 'SIGNUP', baseEmailForAbuseCheck(user.email), NECTOR_TRIGGER_SIGNUP);
@@ -2733,9 +2764,16 @@ app.delete('/api/notifications', authenticate, async (req: AuthRequest, res, nex
 
 app.patch('/api/users/me', authenticate, async (req: AuthRequest, res, next) => {
   try {
-    const { username, city, childAge, emailNotifications, savedPosts, role, interests } = req.body;
+    const { username, city, childAge, phone, emailNotifications, savedPosts, role, interests } = req.body;
 
     const updateData: any = {};
+    if (phone !== undefined) {
+      const trimmedPhone = String(phone).trim();
+      if (trimmedPhone && !/^[0-9+\-\s]{7,20}$/.test(trimmedPhone)) {
+        return res.status(400).json({ error: 'Enter a valid phone number' });
+      }
+      updateData.phone = normalizePhone(trimmedPhone) || null;
+    }
     if (username) {
       const trimmed = String(username).trim();
       // Keep pen-names unique (case-insensitive), ignoring the user's own row.
@@ -2774,6 +2812,13 @@ app.patch('/api/users/me', authenticate, async (req: AuthRequest, res, next) => 
       where: { id: req.userId },
       data: updateData,
     });
+
+    // A phone number just added/changed — re-send the lead so Nector has it
+    // on file for checkout consolidation. Fire-and-forget like every other
+    // Nector call: a hiccup here must never fail a profile update.
+    if (updateData.phone) {
+      nectorCreateLead(user).catch(err => console.warn('⚠️ Nector lead phone update failed:', err));
+    }
 
     res.status(200).json(formatUser(user));
   } catch (error) {

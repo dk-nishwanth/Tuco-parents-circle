@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { X, Mail, Lock, MapPin, User, AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react';
+import { X, Mail, Lock, MapPin, Phone, User, AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react';
 import { track } from '../utils/analytics';
 import { CHILD_AGE_OPTIONS } from '../data/childAgeOptions';
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSignup: (email: string, username: string, city: string, childAge: string, password: string) => void;
+  onSignup: (email: string, username: string, city: string, childAge: string, password: string, phone?: string) => void;
   onLogin: (email: string, password: string) => void;
   initialMode?: 'login' | 'signup' | 'forgot' | 'reset';
   initialResetToken?: string;
@@ -32,6 +32,7 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin, initialMode, ini
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
   const [city, setCity] = useState('');
+  const [phone, setPhone] = useState('');
   const [childAge, setChildAge] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -160,7 +161,13 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin, initialMode, ini
       setLoading(false);
       return;
     }
-    await onSignup(cleanEmail, cleanUsername, city.trim(), childAge, password);
+    const cleanPhone = phone.trim();
+    if (cleanPhone && !/^[0-9+\-\s]{7,20}$/.test(cleanPhone)) {
+      setError('Please enter a valid phone number, or leave it blank');
+      setLoading(false);
+      return;
+    }
+    await onSignup(cleanEmail, cleanUsername, city.trim(), childAge, password, cleanPhone || undefined);
     setLoading(false);
   };
   const handleLoginSubmit = async (e: React.FormEvent) => {
@@ -515,6 +522,23 @@ export function AuthModal({ isOpen, onClose, onSignup, onLogin, initialMode, ini
                     className="w-full pl-10 pr-4 py-2.5 border border-neutral-200 rounded-lg outline-none text-sm focus:border-tuco-cyan focus:ring-2 focus:ring-tuco-cyan/10"
                   />
                 </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-neutral-700 mb-1.5">
+                  Phone Number (Optional)
+                </label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-3 w-4 h-4 text-neutral-400" strokeWidth={1.5} />
+                  <input
+                    type="tel"
+                    autoComplete="tel"
+                    placeholder="e.g. 98765 43210"
+                    value={phone}
+                    onChange={e => { markSignupStarted(); setPhone(e.target.value); }}
+                    className="w-full pl-10 pr-4 py-2.5 border border-neutral-200 rounded-lg outline-none text-sm focus:border-tuco-cyan focus:ring-2 focus:ring-tuco-cyan/10"
+                  />
+                </div>
+                <p className="text-xs text-neutral-500 mt-1.5">Lets your tuco Points sync with tucokids.com</p>
               </div>
               <div>
                 <label className="block text-xs font-bold text-neutral-700 mb-1.5">

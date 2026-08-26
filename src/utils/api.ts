@@ -108,12 +108,13 @@ export const api = {
     password: string,
     username: string,
     city: string,
-    childAge: string
+    childAge: string,
+    phone?: string
   ): Promise<{ token: string; user: User }> {
     const res = await fetch(`${API_BASE_URL}/auth/signup`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password, username, city, childAge }),
+      body: JSON.stringify({ email, password, username, city, childAge, phone: phone || undefined }),
     });
     const data = await handleResponse<{ token: string; user: User }>(res);
     tokenStore.set(data.token);

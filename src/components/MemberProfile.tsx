@@ -191,6 +191,78 @@ function ChangeUsernameSection({
     </div>
   );
 }
+function ChangePhoneSection({ currentPhone }: { currentPhone?: string }) {
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState(currentPhone || '');
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    const trimmed = value.trim();
+    if (trimmed === (currentPhone || '')) {
+      setOpen(false);
+      return;
+    }
+    if (trimmed && !/^[0-9+\-\s]{7,20}$/.test(trimmed)) {
+      setError('Enter a valid phone number.');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await api.updateMe({ phone: trimmed });
+      setSuccess('Phone number updated!');
+      setTimeout(() => setOpen(false), 1200);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update phone number.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="border-t border-neutral-150 pt-4 mt-4">
+      <button
+        type="button"
+        onClick={() => {
+          setOpen(v => !v);
+          setValue(currentPhone || '');
+          setError('');
+          setSuccess('');
+        }}
+        className="flex items-center gap-2 text-sm font-bold text-tuco-cyan hover:text-tuco-cyan-hover"
+      >
+        <Pencil className="w-4 h-4" />
+        {currentPhone ? 'Change phone number' : 'Add phone number'}
+      </button>
+      {open && (
+        <form onSubmit={handleSubmit} className="mt-3 space-y-2.5 max-w-sm">
+          <input
+            type="tel"
+            value={value}
+            onChange={e => setValue(e.target.value)}
+            placeholder="e.g. 98765 43210"
+            maxLength={20}
+            className="w-full bg-neutral-50 border border-neutral-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-tuco-cyan"
+          />
+          <p className="text-xs text-neutral-500">Lets your tuco Points sync with tucokids.com</p>
+          {error && <p className="text-xs font-bold text-red-600">{error}</p>}
+          {success && <p className="text-xs font-bold text-emerald-600">{success}</p>}
+          <button
+            type="submit"
+            disabled={submitting}
+            className="bg-tuco-cyan hover:bg-tuco-cyan-hover disabled:opacity-60 text-white text-sm font-bold px-4 py-2 rounded-lg transition-colors"
+          >
+            {submitting ? 'Saving…' : 'Save phone number'}
+          </button>
+        </form>
+      )}
+    </div>
+  );
+}
 interface MemberProfileProps {
   user: User;
   conversations?: Conversation[];
@@ -338,6 +410,7 @@ export function MemberProfile({
         {isCurrentUser && onUserUpdate && (
           <ChangeUsernameSection currentUsername={user.username} onUpdated={onUserUpdate} />
         )}
+        {isCurrentUser && <ChangePhoneSection currentPhone={user.phone} />}
         {isCurrentUser && <ChangePasswordSection hasPassword={user.hasPassword ?? true} />}
       </div>
       {}
