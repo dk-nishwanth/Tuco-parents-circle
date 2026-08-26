@@ -1956,7 +1956,17 @@ app.post('/api/conversations', authenticate, actionLimiter, async (req: AuthRequ
         where: { id: req.userId },
         data: { postCount: { increment: 1 } },
       });
-      nectorAwardOnce(user.id, 'POST', String(conversation.id), NECTOR_TRIGGER_POST).catch(err => console.warn('⚠️ Nector post reward failed:', err));
+      // Only attempt this if a lead can actually exist yet (i.e. the user
+      // has a phone) — nectorAwardOnce writes its dedup ledger row BEFORE
+      // the Nector API call resolves, so an attempt against a phone-less
+      // user (no lead yet) would fail with "Lead does not exists" while
+      // still permanently burning that ledger slot, silently losing this
+      // post's points forever — nectorCatchUpActivity could never re-award
+      // it later once they do add a phone, since the ledger would already
+      // (incorrectly) claim it was handled.
+      if (user.phone) {
+        nectorAwardOnce(user.id, 'POST', String(conversation.id), NECTOR_TRIGGER_POST).catch(err => console.warn('⚠️ Nector post reward failed:', err));
+      }
     }
 
     // Log the auto-decision. Every new thread now leaves an audit trail
@@ -2347,7 +2357,11 @@ app.post('/api/conversations/:id/replies', authenticate, actionLimiter, async (r
     // Points require the reply to be on someone else's thread — otherwise a
     // user could create a thread and farm points by spam-replying to
     // themselves, bounded only by the per-user rate limit on this route.
-    if (conversation && conversation.authorId !== req.userId) {
+    // Same reasoning as the POST award site above: only attempt this if a
+    // lead can actually exist yet (user has a phone), so a phone-less
+    // attempt never burns the dedup ledger slot on a doomed-to-fail call —
+    // nectorCatchUpActivity back-awards it once they do add a phone.
+    if (conversation && conversation.authorId !== req.userId && user.phone) {
       nectorAwardOnce(user.id, 'REPLY', String(reply.id), NECTOR_TRIGGER_REPLY).catch(err => console.warn('⚠️ Nector reply reward failed:', err));
     }
     const threadUrlSlug = conversation ? slugifyServer(conversation.title || '') : '';
