@@ -2350,7 +2350,8 @@ app.post('/api/conversations/:id/replies', authenticate, actionLimiter, async (r
     if (conversation && conversation.authorId !== req.userId) {
       nectorAwardOnce(user.id, 'REPLY', String(reply.id), NECTOR_TRIGGER_REPLY).catch(err => console.warn('⚠️ Nector reply reward failed:', err));
     }
-    const threadUrl = `${SITE_URL}/thread/${conversationId}`;
+    const threadUrlSlug = conversation ? slugifyServer(conversation.title || '') : '';
+    const threadUrl = `${SITE_URL}/thread/${conversationId}${threadUrlSlug ? `-${threadUrlSlug}` : ''}`;
     if (conversation && conversation.authorId !== req.userId) {
       console.log('🔔 Creating notification for thread author...');
       await prisma.notification.create({
@@ -3683,7 +3684,10 @@ app.get('/', async (req, res, next) => {
     });
 
     const linksHtml = threads
-      .map(t => `<li><a href="${FRONTEND_URL}/thread/${t.id}">${esc(t.title || 'Discussion')}</a></li>`)
+      .map(t => {
+        const slug = slugifyServer(t.title || '');
+        return `<li><a href="${FRONTEND_URL}/thread/${t.id}${slug ? `-${slug}` : ''}">${esc(t.title || 'Discussion')}</a></li>`;
+      })
       .join('\n');
 
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
@@ -3769,7 +3773,10 @@ app.get(
       });
 
       const linksHtml = threads
-        .map(t => `<li><a href="${FRONTEND_URL}/thread/${t.id}">${esc(t.title || 'Discussion')}</a></li>`)
+        .map(t => {
+          const slug = slugifyServer(t.title || '');
+          return `<li><a href="${FRONTEND_URL}/thread/${t.id}${slug ? `-${slug}` : ''}">${esc(t.title || 'Discussion')}</a></li>`;
+        })
         .join('\n');
 
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
