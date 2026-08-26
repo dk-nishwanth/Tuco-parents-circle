@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Routes, Route, useParams, useNavigate, useLocation } from 'react-router-dom';
 import { track, setAnalyticsUser, trackPageView } from './utils/analytics';
-import { threadHash, slugify } from './utils/slug';
+import { threadQuery, slugify } from './utils/slug';
 import { AdminPanel } from './components/AdminPanel';
 import { Header } from './components/Header';
 import { LeftSidebar } from './components/LeftSidebar';
@@ -470,23 +470,31 @@ function AppContent() {
     return () => window.removeEventListener('hashchange', handleHash);
   }, [conversations]);
 
-  // Open a thread when arriving via /?thread=<id>. A member's profile page
-  // (/u/:username) is a separate route that can only navigate by URL, so its
-  // post links land here. We reuse the canonical modal-open path and then
-  // normalize the URL to the #thread-<id> hash everything else uses, so the
-  // back button, sharing, and close-handler all behave identically.
+  // Open a thread when arriving via /?thread=<id[-slug]>. This is the
+  // canonical "thread open while browsing" URL — a member's profile page
+  // (/u/:username) links here, and handleThreadOpen below writes the same
+  // format when a thread is opened from inside the app. Unlike the old
+  // #thread-<id> hash this replaced, a query string DOES reach the server
+  // (see the bot-detection branch on the /:category routes in
+  // server/index.ts), so copying this straight out of the address bar
+  // works for link previews exactly like the dedicated share button.
   useEffect(() => {
     if (conversations.length === 0) return;
     const threadParam = new URLSearchParams(location.search).get('thread');
     if (!threadParam) return;
-    const threadId = parseInt(threadParam, 10);
-    const matchedThread = conversations.find(c => c.id === threadId);
-    if (!Number.isNaN(threadId) && matchedThread) {
-      setSelectedThreadId(threadId);
+    const idMatch = threadParam.match(/^(\d+)/);
+    const matchedThread = idMatch
+      ? conversations.find(c => c.id === parseInt(idMatch[1], 10))
+      : conversations.find(c => slugify(c.title) === threadParam);
+    if (matchedThread) {
+      setSelectedThreadId(matchedThread.id);
       setIsModalOpen(true);
-      // Normalize to the canonical /#thread-<id>-slug URL, dropping the
-      // ?thread= query so closing the modal lands on a clean path.
-      window.history.replaceState({ threadId }, '', `${window.location.pathname}${threadHash(threadId, matchedThread.title)}`);
+      // Canonicalize (adds the slug if the incoming link didn't have one)
+      // without switching schemes — stays a query string, not a hash.
+      const canonical = threadQuery(matchedThread.id, matchedThread.title).slice('?thread='.length);
+      if (canonical !== threadParam) {
+        window.history.replaceState({ threadId: matchedThread.id }, '', `${window.location.pathname}${threadQuery(matchedThread.id, matchedThread.title)}`);
+      }
     } else {
       // Unknown/invalid id — just drop the query so we don't loop or 404.
       window.history.replaceState({}, '', window.location.pathname);
@@ -870,20 +878,29 @@ function AppContent() {
       console.error('Failed to update view count:', error);
     }
 
-    // Push to browser history so back button closes modal
-    window.history.pushState({ threadId }, '', threadHash(threadId, updatedThread?.title));
+    // Push to browser history so back button closes modal. Query string
+    // (?thread=…), not a #hash — see threadQuery's comment in
+    // src/utils/slug.ts for why: a hash fragment never reaches the server,
+    // so copying it from the address bar could never carry link-preview
+    // data no matter what the server does.
+    window.history.pushState({ threadId }, '', `${window.location.pathname}${threadQuery(threadId, updatedThread?.title)}`);
   };
 
   // Listen for back button/history change to close modal
   useEffect(() => {
     const handlePopState = () => {
-      // popstate can fire alongside hashchange when navigating between two
-      // #thread-<id> links in the same tab. If we closed unconditionally
-      // here, this handler would race the hash-deeplink effect and force
-      // the modal shut right after it just opened the new thread. Only
-      // treat this as "close" when the resulting hash no longer names a
-      // thread/reply — i.e. a real back-out of the modal.
-      const stillPointsAtThread = /^#(thread|reply)-\d+$/.test(window.location.hash);
+      // popstate can fire alongside hashchange/a query-string change when
+      // navigating between two thread links in the same tab. If we closed
+      // unconditionally here, this handler would race the deep-link effect
+      // and force the modal shut right after it just opened the new
+      // thread. Only treat this as "close" when the resulting URL no
+      // longer names a thread/reply — i.e. a real back-out of the modal.
+      // Checks both schemes: ?thread=… (current, reaches the server) and
+      // #thread-…/#reply-… (legacy, kept only so old links still close
+      // correctly on back-navigation).
+      const stillPointsAtThread =
+        /^#(thread|reply)-.+$/.test(window.location.hash) ||
+        new URLSearchParams(window.location.search).has('thread');
       if (isModalOpen && !stillPointsAtThread) {
         setIsModalOpen(false);
         setActiveReplyTo(null);
@@ -1254,8 +1271,11 @@ function AppContent() {
       setIsModalOpen(false);
       setSelectedThreadId(null);
       setActiveReplyTo(null);
-      if (window.location.hash.startsWith('#thread-')) {
-        window.history.replaceState({}, '', window.location.pathname + window.location.search);
+      if (window.location.hash.startsWith('#thread-') || new URLSearchParams(window.location.search).has('thread')) {
+        const params = new URLSearchParams(window.location.search);
+        params.delete('thread');
+        const qs = params.toString();
+        window.history.replaceState({}, '', window.location.pathname + (qs ? `?${qs}` : ''));
       }
       setWarningModal({
         isOpen: true,
@@ -1741,8 +1761,11 @@ function AppContent() {
           // history.back() would bounce the user to Google instead of the feed.
           // replaceState rewrites the URL in place and we close the modal via
           // state, which lands reliably on the home/category feed every time.
-          if (window.location.hash.startsWith('#thread-')) {
-            window.history.replaceState({}, '', window.location.pathname + window.location.search);
+          if (window.location.hash.startsWith('#thread-') || new URLSearchParams(window.location.search).has('thread')) {
+            const params = new URLSearchParams(window.location.search);
+            params.delete('thread');
+            const qs = params.toString();
+            window.history.replaceState({}, '', window.location.pathname + (qs ? `?${qs}` : ''));
           }
           setIsModalOpen(false);
           setSelectedThreadId(null);

@@ -15,24 +15,29 @@ export function slugify(text: string, maxLen = 60): string {
   return slug;
 }
 
-// Builds the URL hash for a thread — slug-only ("#thread-my-thread-title")
-// whenever the title yields a usable slug, so the numeric id never shows up
-// in a freshly-generated link. Falls back to the bare id only for the rare
-// title that slugifies to nothing (all-emoji, non-Latin script, etc.),
-// since a slug that collides with every other such title would be
-// unresolvable on the reading end.
-export function threadHash(id: number, title: string | undefined | null): string {
+// Raw "<id>[-slug]" value shared by every thread-URL scheme below — the
+// slug is cosmetic (only the leading digits are ever parsed back out), kept
+// mainly so a pasted/bookmarked link shows the actual question.
+function threadIdSlug(id: number, title: string | undefined | null): string {
   const slug = title ? slugify(title) : '';
-  return `#thread-${slug || id}`;
+  return `${id}${slug ? `-${slug}` : ''}`;
 }
 
-// Full external share URL — points at the server's /thread/:id[-slug] route
-// (not the #thread-… hash used for in-app navigation), because a hash
-// fragment never reaches the server at all, so WhatsApp/social link-preview
-// crawlers would only ever see the generic homepage tags. That route
-// server-renders real per-thread Open Graph tags for crawlers and redirects
-// a real visitor straight into the SPA's normal thread modal.
+// The in-app "thread open" URL while browsing — a *query string* on the
+// current page (e.g. "?thread=425-my-thread-title"), not a #hash. Unlike a
+// hash, a query string DOES reach the server, so copying this straight out
+// of the address bar is just as crawlable/link-preview-able as the
+// dedicated share button — see the bot-detection branch on the /:category
+// routes in server/index.ts, which now recognizes this same param.
+export function threadQuery(id: number, title: string | undefined | null): string {
+  return `?thread=${threadIdSlug(id, title)}`;
+}
+
+// Full external share URL — points at the server's /thread/:id[-slug]
+// permalink route (a clean, stable URL, unlike the query-string form above
+// which is tied to whatever category page happened to be open). Both reach
+// the server, both work for previews; this one is just the nicer canonical
+// link for deliberate sharing.
 export function threadShareUrl(id: number, title: string | undefined | null): string {
-  const slug = title ? slugify(title) : '';
-  return `${window.location.origin}/thread/${id}${slug ? `-${slug}` : ''}`;
+  return `${window.location.origin}/thread/${threadIdSlug(id, title)}`;
 }

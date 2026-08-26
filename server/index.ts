@@ -3678,17 +3678,33 @@ app.get('/thread/:idParam', async (req, res, next) => {
   // bare id after landing — falls back to the id itself only if the URL
   // they clicked had no slug on it in the first place.
   if (!isBot(ua)) {
-    const slugPart = idParam.slice(idDigitsMatch[1].length).replace(/^-/, '');
-    return res.redirect(`/community#thread-${slugPart || id}`);
+    // ?thread=<id>[-slug], not the old #thread-… hash — a query string
+    // reaches the server (the /:category bot-detection branch below reads
+    // it), so the address bar is immediately shareable/crawlable again
+    // right after landing here, not just via the dedicated share button.
+    return res.redirect(`/community?thread=${idParam}`);
   }
 
+  const rendered = await renderThreadSeoPage(res, next, id);
+  if (!rendered) next();
+});
+
+// Shared by /thread/:idParam above and the ?thread= query-param case on the
+// /:category bot-detection routes below — same per-thread SSR/OG output
+// either way, since both are just different URL schemes for "a bot is
+// looking at this thread" (path permalink vs. query string on a category
+// page). Returns true if it sent a response (thread rendered), false if
+// the caller should fall through to its own default (thread not found /
+// not approved — e.g. so the category route can fall back to its normal
+// category-listing page instead of a dead end).
+async function renderThreadSeoPage(res: express.Response, next: express.NextFunction, id: number): Promise<boolean> {
   try {
     const thread = await prisma.conversation.findUnique({
       where: { id },
       include: { replies: { take: 20, orderBy: { id: 'asc' } } },
     });
 
-    if (!thread || thread.moderationStatus !== 'APPROVED') return next();
+    if (!thread || thread.moderationStatus !== 'APPROVED') return false;
 
     const title = esc(thread.title || 'Discussion');
     const desc = esc((thread.opText || '').replace(/<[^>]+>/g, '').slice(0, 200).trim());
@@ -3721,10 +3737,12 @@ ${seoHead({
   </main>
 </body>
 </html>`);
+    return true;
   } catch {
     next();
+    return true; // next() already called — caller must not also fall through
   }
-});
+}
 
 // ── SEO: SSR-lite for bots on homepage ─────────────────────────────────────
 app.get('/', async (req, res, next) => {
@@ -3807,6 +3825,21 @@ app.get(
     const ua = req.headers['user-agent'] || '';
     if (!isBot(ua)) {
       return res.sendFile(path.join(distPath, 'index.html'));
+    }
+
+    // A thread open via ?thread=<id>[-slug] on this same category page — a
+    // real visitor's address bar shows exactly this (see the redirect in
+    // /thread/:idParam and handleThreadOpen client-side), and since a query
+    // string DOES reach the server, a bot re-scraping that same URL should
+    // see the actual thread's tags, not this category page's generic ones.
+    const threadParam = req.query.thread;
+    if (typeof threadParam === 'string') {
+      const idMatch = threadParam.match(/^(\d+)/);
+      if (idMatch) {
+        const rendered = await renderThreadSeoPage(res, next, parseInt(idMatch[1], 10));
+        if (rendered) return;
+        // Not found/not approved — fall through to the normal category page below.
+      }
     }
 
     try {
