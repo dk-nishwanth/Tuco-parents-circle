@@ -1073,8 +1073,18 @@ app.post('/api/auth/signup', authLimiter, async (req: AuthRequest, res, next) =>
       console.warn('⚠️ Welcome email failed, but signup successful:', emailErr);
     }
     syncResendContact(user.email, user.username);
-    nectorRewardSignup(user).catch(err => console.warn('⚠️ Nector signup reward failed:', err));
-    notifySignupPointsBonus(user.id).catch(err => console.warn('⚠️ Signup points notification failed:', err));
+    // Only create the Nector lead now if we already have a phone number —
+    // a lead created without one can NEVER be linked to a phone afterward
+    // (confirmed against Nector's live API: neither re-creating nor their
+    // documented update endpoint actually sets mobile on an existing lead).
+    // Without a phone yet, skip Nector entirely here; nectorCatchUpActivity
+    // creates the lead (with phone, so it's link-ready) and back-awards
+    // this signup once they add one via CompleteProfileModal or their
+    // profile — see the phone branch in PATCH /api/users/me.
+    if (user.phone) {
+      nectorRewardSignup(user).catch(err => console.warn('⚠️ Nector signup reward failed:', err));
+      notifySignupPointsBonus(user.id).catch(err => console.warn('⚠️ Signup points notification failed:', err));
+    }
 
     console.log('✅ Signup successful');
     res.status(201).json({ token, user: formatUser(user) });
@@ -1405,8 +1415,16 @@ app.get('/api/auth/google/callback', authLimiter, async (req, res, next) => {
         'WELCOME'
       ).catch(err => console.warn('⚠️ Google welcome email failed:', err));
       syncResendContact(user.email, user.username);
-      nectorRewardSignup(user).catch(err => console.warn('⚠️ Nector signup reward failed:', err));
-      notifySignupPointsBonus(user.id).catch(err => console.warn('⚠️ Signup points notification failed:', err));
+      // Google never gives us a phone number, so this is deferred until they
+      // add one — see the comment on the email-signup call site above for
+      // why a lead can't be created now and linked to a phone later.
+      // CompleteProfileModal's phone step (shown to every new user missing
+      // childAge, which covers all Google sign-ups) is what actually
+      // triggers this via the phone branch in PATCH /api/users/me.
+      if (user.phone) {
+        nectorRewardSignup(user).catch(err => console.warn('⚠️ Nector signup reward failed:', err));
+        notifySignupPointsBonus(user.id).catch(err => console.warn('⚠️ Signup points notification failed:', err));
+      }
     }
 
     const token = jwt.sign({ userId: user.id, role: user.role, tokenVersion: user.tokenVersion }, JWT_SECRET as string, { expiresIn: '30d' });
@@ -1633,6 +1651,40 @@ async function flagNectorClawbackIfAwarded(sourceType: 'POST' | 'REPLY', sourceI
     }
   } catch (err) {
     console.error('Nector clawback check failed:', err);
+  }
+}
+
+// Called the first time a user adds a phone number, for anyone whose
+// signup was deferred (no phone at signup — every Google sign-up, and any
+// email/password signup that left the phone field blank). Creates their
+// Nector lead now (with the phone, so it's link-ready from the start) and
+// back-awards the signup bonus plus every approved post/reply they've
+// racked up in the meantime, since none of that could be awarded to a
+// person who had no Nector lead yet.
+async function nectorCatchUpActivity(user: { id: string; email: string; username: string; phone?: string | null }): Promise<void> {
+  if (!NECTOR_CONFIGURED) return;
+  try {
+    await nectorRewardSignup(user);
+    const posts = await prisma.conversation.findMany({
+      where: { authorId: user.id, moderationStatus: 'APPROVED' },
+      select: { id: true },
+    });
+    for (const p of posts) {
+      await nectorAwardOnce(user.id, 'POST', String(p.id), NECTOR_TRIGGER_POST);
+    }
+    const replies = await prisma.reply.findMany({
+      where: { authorId: user.id, moderationStatus: 'APPROVED' },
+      select: { id: true, conversation: { select: { authorId: true } } },
+    });
+    for (const r of replies) {
+      // Same self-reply exclusion as the live award path — replying to
+      // your own thread never earns points.
+      if (r.conversation.authorId !== user.id) {
+        await nectorAwardOnce(user.id, 'REPLY', String(r.id), NECTOR_TRIGGER_REPLY);
+      }
+    }
+  } catch (err) {
+    console.error('Nector catch-up activity failed:', err);
   }
 }
 
@@ -2825,18 +2877,31 @@ app.patch('/api/users/me', authenticate, async (req: AuthRequest, res, next) => 
       data: updateData,
     });
 
-    // Best-effort only: re-sending the lead here does NOT actually update
-    // mobile on a lead Nector already has (confirmed directly against their
-    // API — both re-POST and their documented PUT /leads/:id update return
-    // 200/success but leave metadetail.mobile untouched). This only has a
-    // chance of working for the rare case where the original signup-time
-    // lead creation itself failed, so no lead exists yet. For everyone
-    // else, phone numbers added after signup need Nector's own "Import or
-    // Bulk Edit Data" CSV tool (Customer Data section) — see
-    // scripts/exportPhoneNumbersForNector.cjs, which generates that CSV
-    // from our DB for periodic manual upload.
     if (updateData.phone) {
-      nectorCreateLead(user).catch(err => console.warn('⚠️ Nector lead phone update failed:', err));
+      // A lead Nector already has can NEVER be updated with a phone
+      // afterward (confirmed live against their API — both re-POST and
+      // their documented PUT /leads/:id return 200/success but leave
+      // metadetail.mobile untouched). So the signup flow now defers ever
+      // creating a lead until this exact moment for anyone who had no
+      // phone yet — check whether that's the case here.
+      const hasSignupAward = await prisma.nectorAward.findFirst({
+        where: { userId: user.id, sourceType: 'SIGNUP' },
+        select: { id: true },
+      });
+      if (!hasSignupAward) {
+        // First phone this person has ever had on file — safe to create
+        // their lead now (with the phone, so it's link-ready) and
+        // back-award everything they've earned since signing up.
+        nectorCatchUpActivity(user).catch(err => console.warn('⚠️ Nector catch-up failed:', err));
+        notifySignupPointsBonus(user.id).catch(err => console.warn('⚠️ Signup points notification failed:', err));
+      } else {
+        // A lead already exists without a phone (pre-dates this feature).
+        // Best-effort only — known to be a no-op per the comment above,
+        // kept only for the rare case the original lead creation itself
+        // failed. Real fix for these is Nector's own "Import or Bulk Edit
+        // Data" CSV tool — see scripts/exportPhoneNumbersForNector.cjs.
+        nectorCreateLead(user).catch(err => console.warn('⚠️ Nector lead phone update failed:', err));
+      }
     }
 
     res.status(200).json(formatUser(user));

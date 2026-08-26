@@ -43,8 +43,10 @@ const INTERESTS: Interest[] = [
 const MAX_INTERESTS = 5;
 
 export function CompleteProfileModal({ user, onComplete, onSkip }: Props) {
-  const [step, setStep] = useState<'age' | 'interests'>('age');
+  const [step, setStep] = useState<'age' | 'phone' | 'interests'>('age');
   const [childAge, setChildAge] = useState<string>(user.childAge || '');
+  const [phone, setPhone] = useState<string>(user.phone || '');
+  const [phoneError, setPhoneError] = useState('');
   const [selectedInterests, setSelectedInterests] = useState<string[]>(user.interests || []);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -62,6 +64,17 @@ export function CompleteProfileModal({ user, onComplete, onSkip }: Props) {
       return;
     }
     setError('');
+    setStep('phone');
+  };
+
+  const handlePhoneNext = (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmed = phone.trim();
+    if (trimmed && !/^[0-9+\-\s]{7,20}$/.test(trimmed)) {
+      setPhoneError('Enter a valid phone number, or skip this step.');
+      return;
+    }
+    setPhoneError('');
     setStep('interests');
   };
 
@@ -77,13 +90,16 @@ export function CompleteProfileModal({ user, onComplete, onSkip }: Props) {
     setError('');
     setLoading(true);
     try {
+      const trimmedPhone = phone.trim();
       const updated = await api.updateMe({
         childAge,
         interests: selectedInterests,
+        ...(trimmedPhone ? { phone: trimmedPhone } : {}),
       });
       track('profile_completed', {
         child_age: childAge,
         interests_count: selectedInterests.length,
+        added_phone: !!trimmedPhone,
       });
       onComplete(updated);
     } catch (err) {
@@ -181,6 +197,60 @@ export function CompleteProfileModal({ user, onComplete, onSkip }: Props) {
               </button>
             </div>
           </form>
+        ) : step === 'phone' ? (
+          <form onSubmit={handlePhoneNext}>
+            <div className="text-center mb-5">
+              <h2 className="font-brand text-[22px] leading-tight text-[#4D4747]">
+                earn tuco Points ⭐
+              </h2>
+              <p className="font-sans text-sm text-neutral-500 mt-2">
+                Add your phone number so points you earn here sync with your
+                tucokids.com account, redeemable at checkout.
+              </p>
+            </div>
+            <label
+              htmlFor="phone-input"
+              className="block font-sans font-medium text-[16px] text-[#4D4747] mb-1.5"
+            >
+              phone number (optional)
+            </label>
+            <input
+              id="phone-input"
+              type="tel"
+              autoComplete="tel"
+              placeholder="e.g. 98765 43210"
+              value={phone}
+              onChange={e => setPhone(e.target.value)}
+              className="w-full px-4 py-2.5 border-2 border-tuco-cyan rounded-xl text-sm font-sans text-neutral-800 bg-white focus:outline-none focus:ring-2 focus:ring-tuco-cyan/30 transition-all"
+              autoFocus
+            />
+            {phoneError && (
+              <p className="text-xs text-red-500 font-medium text-center mt-3">{phoneError}</p>
+            )}
+            <div className="flex flex-col items-center gap-2 mt-6">
+              <button
+                type="submit"
+                className="bg-[#FFE259] hover:bg-[#FFD62E] text-[#4D4747] font-sans font-medium flex items-center justify-center transition-colors"
+                style={{
+                  width: '140px',
+                  height: '35px',
+                  borderRadius: '28px',
+                  fontSize: '16px',
+                  lineHeight: '1',
+                  letterSpacing: '-0.05em',
+                }}
+              >
+                next step →
+              </button>
+              <button
+                type="button"
+                onClick={() => { setPhone(''); setPhoneError(''); setStep('interests'); }}
+                className="text-[11px] text-neutral-400 hover:text-neutral-600"
+              >
+                Skip for now
+              </button>
+            </div>
+          </form>
         ) : (
           <div>
             <h2 className="font-brand text-[22px] leading-tight text-[#4D4747] text-center">
@@ -248,7 +318,7 @@ export function CompleteProfileModal({ user, onComplete, onSkip }: Props) {
 
             <button
               type="button"
-              onClick={() => setStep('age')}
+              onClick={() => setStep('phone')}
               className="block mx-auto mt-3 text-[11px] text-neutral-400 hover:text-neutral-600"
             >
               ← back
