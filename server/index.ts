@@ -1648,7 +1648,7 @@ async function notifySignupPointsBonus(userId: string): Promise<void> {
         userId,
         type: 'BADGE',
         title: 'You earned 20 tuco Points! 🎉',
-        description: 'Thanks for joining tuco Parents Circle! Keep earning: +10 points for asking a question, +5 points for every reply. Points show up next to your name in the header and on your profile.',
+        description: 'Thanks for joining tuco Parents Circle! Keep earning: +10 points for asking a question, +5 points for every reply. Add your phone number in your profile so these points sync with tucokids.com and you can redeem them at checkout.',
         time: 'Just now',
       },
     });
