@@ -3614,9 +3614,14 @@ app.get('/thread/:idParam', async (req, res, next) => {
   // Real users clicking a shared or Google-indexed /thread/<id>[-slug] URL
   // used to fall through to the SPA catch-all that redirects to /community
   // — losing the thread id and dropping them on the homepage. Preserve it
-  // by routing to the SPA's own hash-based deep-link handler.
+  // by routing to the SPA's own hash-based deep-link handler. Redirect to
+  // the slug-only hash (matching every other in-app thread link) when one
+  // is present in the incoming path, so the address bar doesn't show the
+  // bare id after landing — falls back to the id itself only if the URL
+  // they clicked had no slug on it in the first place.
   if (!isBot(ua)) {
-    return res.redirect(`/community#thread-${id}`);
+    const slugPart = idParam.slice(idDigitsMatch[1].length).replace(/^-/, '');
+    return res.redirect(`/community#thread-${slugPart || id}`);
   }
 
   try {
