@@ -3584,6 +3584,63 @@ ${items}
   } catch { next(); }
 });
 
+// Mirrors src/components/TucoVideo.tsx's YT_REGEXES/parseYouTubeId on the
+// frontend — same reasoning as slugifyServer below, separate build target.
+// Used so a shared thread's link preview shows the video thumbnail instead
+// of the generic logo when the OP or a tuco-team reply embeds a YouTube link.
+const YT_REGEXES_SERVER = [
+  /(?:https?:\/\/)?(?:www\.)?youtube\.com\/shorts\/([A-Za-z0-9_-]{6,20})/i,
+  /(?:https?:\/\/)?(?:www\.)?youtu\.be\/([A-Za-z0-9_-]{6,20})/i,
+  /(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?(?:[^\s&]*&)*v=([A-Za-z0-9_-]{6,20})/i,
+  /(?:https?:\/\/)?(?:www\.)?youtube\.com\/embed\/([A-Za-z0-9_-]{6,20})/i,
+];
+function parseYouTubeIdServer(text: string | null | undefined): string | null {
+  if (!text) return null;
+  for (const re of YT_REGEXES_SERVER) {
+    const m = text.match(re);
+    if (m && m[1]) return m[1];
+  }
+  return null;
+}
+
+// Preview image priority for a shared thread: its own video thumbnail, then
+// its own post image, then a tuco-team reply's video (the same "official
+// answer" video the app itself surfaces inline — see findTucoVideoReply),
+// falling back to undefined so seoHead's generic logo default applies.
+function resolveThreadOgImage(thread: {
+  opText: string | null;
+  opImage: string | null;
+  opImages: string[];
+  replies: { text: string | null; authorRole: string | null }[];
+}): string | undefined {
+  const ownVideoId = parseYouTubeIdServer(thread.opText);
+  if (ownVideoId) return `https://img.youtube.com/vi/${ownVideoId}/hqdefault.jpg`;
+  // Most user-uploaded images are stored as base64 data: URIs (S3 upload
+  // credentials are broken — see ONBOARDING.md's known-issues section),
+  // which crawlers can't use as og:image at all — it has to be a real
+  // fetchable URL, not inline data. A few older/curated posts instead store
+  // a site-relative path ("/thumbnails/…"), which IS usable once made
+  // absolute. Reject anything else (data: URIs included).
+  const resolvableImageUrl = (u: string | null | undefined): string | undefined => {
+    if (!u) return undefined;
+    if (/^https?:\/\//i.test(u)) return u;
+    if (u.startsWith('/')) return `${FRONTEND_URL}${u}`;
+    return undefined;
+  };
+  const firstImage = thread.opImages && thread.opImages.length > 0 ? resolvableImageUrl(thread.opImages[0]) : undefined;
+  if (firstImage) return firstImage;
+  const opImage = resolvableImageUrl(thread.opImage);
+  if (opImage) return opImage;
+  // Raw DB enum value — 'TUCO_TEAM', not the lowercase 'tuco_team' the
+  // frontend uses after mapRole() (this operates on unmapped Prisma rows).
+  const tucoReply = thread.replies.find(r => r.authorRole === 'TUCO_TEAM' && parseYouTubeIdServer(r.text));
+  if (tucoReply) {
+    const replyVideoId = parseYouTubeIdServer(tucoReply.text);
+    if (replyVideoId) return `https://img.youtube.com/vi/${replyVideoId}/hqdefault.jpg`;
+  }
+  return undefined;
+}
+
 // Mirrors src/utils/slug.ts on the frontend — kept as a small standalone
 // copy since the server and frontend are separate build targets. Used to
 // build the "-my-thread-title" suffix on /thread/<id>-<slug> links so a
@@ -3640,6 +3697,7 @@ app.get('/thread/:idParam', async (req, res, next) => {
       .join('\n');
     const slug = slugifyServer(thread.title || '');
     const canonical = `${FRONTEND_URL}/thread/${id}${slug ? `-${slug}` : ''}`;
+    const ogImage = resolveThreadOgImage(thread);
 
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.setHeader('Cache-Control', 'public, max-age=3600');
@@ -3651,6 +3709,7 @@ ${seoHead({
   title: `${title} — tuco Parents Circle`,
   description: desc,
   canonical,
+  ogImage,
 })}
 </head>
 <body>
