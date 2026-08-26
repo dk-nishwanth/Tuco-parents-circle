@@ -3512,19 +3512,22 @@ app.get('/sitemap.xml', async (req, res, next) => {
     const threads = await prisma.conversation.findMany({
       where: { moderationStatus: 'APPROVED' },
       orderBy: { createdAt: 'desc' },
-      select: { id: true, createdAt: true, category: true },
+      select: { id: true, title: true, createdAt: true, category: true },
     });
     const urls = [
       { loc: `${FRONTEND_URL}/`, priority: '1.0', changefreq: 'daily' },
       { loc: `${FRONTEND_URL}/community`, priority: '0.9', changefreq: 'daily' },
       ...['skincare', 'school', 'kids_growth', 'active_kids', 'parenting_hacks']
         .map(c => ({ loc: `${FRONTEND_URL}/${c}`, priority: '0.7', changefreq: 'weekly' })),
-      ...threads.map(t => ({
-        loc: `${FRONTEND_URL}/thread/${t.id}`,
-        priority: '0.6',
-        changefreq: 'weekly',
-        lastmod: t.createdAt.toISOString(),
-      })),
+      ...threads.map(t => {
+        const slug = slugifyServer(t.title || '');
+        return {
+          loc: `${FRONTEND_URL}/thread/${t.id}${slug ? `-${slug}` : ''}`,
+          priority: '0.6',
+          changefreq: 'weekly',
+          lastmod: t.createdAt.toISOString(),
+        };
+      }),
     ];
     const body = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -3550,15 +3553,19 @@ app.get('/rss.xml', async (req, res, next) => {
       take: 50,
       select: { id: true, title: true, opText: true, opAuthor: true, createdAt: true, category: true },
     });
-    const items = threads.map(t => `    <item>
+    const items = threads.map(t => {
+      const slug = slugifyServer(t.title || '');
+      const threadUrl = `${FRONTEND_URL}/thread/${t.id}${slug ? `-${slug}` : ''}`;
+      return `    <item>
       <title>${esc(t.title || 'Discussion')}</title>
-      <link>${FRONTEND_URL}/thread/${t.id}</link>
-      <guid isPermaLink="true">${FRONTEND_URL}/thread/${t.id}</guid>
+      <link>${threadUrl}</link>
+      <guid isPermaLink="true">${threadUrl}</guid>
       <pubDate>${t.createdAt.toUTCString()}</pubDate>
       <author>${esc(t.opAuthor || 'tuco Parent')}</author>
       <category>${esc(t.category || 'general')}</category>
       <description>${esc((t.opText || '').replace(/<[^>]+>/g, '').slice(0, 300))}</description>
-    </item>`).join('\n');
+    </item>`;
+    }).join('\n');
     const body = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
@@ -3576,25 +3583,43 @@ ${items}
   } catch { next(); }
 });
 
+// Mirrors src/utils/slug.ts on the frontend — kept as a small standalone
+// copy since the server and frontend are separate build targets. Used to
+// build the "-my-thread-title" suffix on /thread/<id>-<slug> links so a
+// pasted share link shows the actual question, not a bare id.
+function slugifyServer(text: string, maxLen = 60): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, maxLen)
+    .replace(/-+$/, '');
+}
+
 // ── SEO: SSR-lite for crawlers on thread pages ──────────────────────────────
-app.get('/thread/:id', async (req, res, next) => {
+// Accepts /thread/<id> or /thread/<id>-<slug> — only the leading digits are
+// ever parsed, the slug is cosmetic (it's what makes a pasted link show the
+// actual question instead of a bare number, in both the raw URL text and
+// the rich preview card WhatsApp/etc. generate from the tags below).
+app.get('/thread/:idParam', async (req, res, next) => {
   const ua = req.headers['user-agent'] || '';
-  // Real users clicking a shared or Google-indexed /thread/<id> URL used to
-  // fall through to the SPA catch-all that redirects to /community — losing
-  // the thread id and dropping them on the homepage. Preserve the id by
-  // routing to the SPA's own hash-based deep-link handler.
+  const idParam = req.params.idParam;
+  const idDigitsMatch = idParam.match(/^(\d+)/);
+  if (!idDigitsMatch) return next();
+  const id = parseInt(idDigitsMatch[1], 10);
+
+  // Real users clicking a shared or Google-indexed /thread/<id>[-slug] URL
+  // used to fall through to the SPA catch-all that redirects to /community
+  // — losing the thread id and dropping them on the homepage. Preserve it
+  // by routing to the SPA's own hash-based deep-link handler.
   if (!isBot(ua)) {
-    const idParam = req.params.id;
-    if (/^\d+$/.test(idParam)) {
-      return res.redirect(`/community#thread-${idParam}`);
-    }
-    return next();
+    return res.redirect(`/community#thread-${id}`);
   }
 
   try {
-    const id = parseInt(req.params.id);
-    if (isNaN(id)) return next();
-
     const thread = await prisma.conversation.findUnique({
       where: { id },
       include: { replies: { take: 20, orderBy: { id: 'asc' } } },
@@ -3607,6 +3632,8 @@ app.get('/thread/:id', async (req, res, next) => {
     const repliesHtml = thread.replies
       .map(r => `<div class="reply"><p>${esc((r.text || '').replace(/<[^>]+>/g, '').slice(0, 500))}</p></div>`)
       .join('\n');
+    const slug = slugifyServer(thread.title || '');
+    const canonical = `${FRONTEND_URL}/thread/${id}${slug ? `-${slug}` : ''}`;
 
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.setHeader('Cache-Control', 'public, max-age=3600');
@@ -3617,7 +3644,7 @@ app.get('/thread/:id', async (req, res, next) => {
 ${seoHead({
   title: `${title} — tuco Parents Circle`,
   description: desc,
-  canonical: `${FRONTEND_URL}/thread/${id}`,
+  canonical,
 })}
 </head>
 <body>

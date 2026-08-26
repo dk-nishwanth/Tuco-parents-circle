@@ -25,3 +25,14 @@ export function threadHash(id: number, title: string | undefined | null): string
   const slug = title ? slugify(title) : '';
   return `#thread-${slug || id}`;
 }
+
+// Full external share URL — points at the server's /thread/:id[-slug] route
+// (not the #thread-… hash used for in-app navigation), because a hash
+// fragment never reaches the server at all, so WhatsApp/social link-preview
+// crawlers would only ever see the generic homepage tags. That route
+// server-renders real per-thread Open Graph tags for crawlers and redirects
+// a real visitor straight into the SPA's normal thread modal.
+export function threadShareUrl(id: number, title: string | undefined | null): string {
+  const slug = title ? slugify(title) : '';
+  return `${window.location.origin}/thread/${id}${slug ? `-${slug}` : ''}`;
+}

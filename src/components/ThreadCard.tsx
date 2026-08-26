@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { CATEGORIES, CATEGORY_COLORS } from '../data/categories';
 import { Conversation, User } from '../types';
 import { getAvatarColor, getInitials, getAuthorMeta, countAllReplies } from '../utils/helpers';
+import { threadShareUrl } from '../utils/slug';
 import { AuthorBadges } from './AuthorBadges';
 import { TucoVideoCard, findTucoVideoReply, parseYouTubeId } from './TucoVideo';
 import {
@@ -71,8 +72,12 @@ export function ThreadCard({
 
   const handleShare = (e: React.MouseEvent) => {
     e.stopPropagation();
-    // #post-<id> scrolls to the card in the feed (not the modal, which keys off #thread-<id>).
-    const url = `${window.location.origin}/${thread.category}#post-${thread.id}`;
+    // /thread/:id-slug, not the #post-<id> feed-scroll anchor — a hash
+    // fragment never reaches the server, so link previews (WhatsApp/etc.)
+    // would only ever see the generic category page's tags. This route
+    // server-renders the real question as Open Graph tags for crawlers,
+    // and sends a real visitor straight into the thread modal.
+    const url = threadShareUrl(thread.id, thread.title);
     if (navigator.share) {
       navigator.share({ title: thread.title, url }).catch(() => {});
     } else {

@@ -4,7 +4,7 @@ import { Conversation, User as UserType, Notification, Reply } from '../types';
 import { getAvatarColor, getInitials, searchThreadsWithRanking, formatTimeAgo, countAllReplies } from '../utils/helpers';
 import { Heart, MessageSquare, X, Eye, Bookmark, ChevronDown, Search, Bell, ArrowLeft, Menu, User, LogOut, Users, Share2, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { track } from '../utils/analytics';
-import { threadHash } from '../utils/slug';
+import { threadShareUrl } from '../utils/slug';
 import tucoLogo from '../assets/tuco-logo.webp';
 import { FollowButton } from './FollowButton';
 import { TucoVideoCard, parseYouTubeId, stripYouTubeUrl, findTucoVideoReply } from './TucoVideo';
@@ -728,10 +728,12 @@ export function Modal({
               aria-label="Share this thread"
               title="Share"
               onClick={async () => {
-                // Deep-link scheme is a URL hash (#thread-<id>) that AppContent
-                // reads on load; the previous /thread/<id> path had no matching
-                // route and silently 404'd on the recipient's device.
-                const url = `${window.location.origin}/${threadHash(thread.id, thread.title)}`;
+                // /thread/:id-slug (not the in-app #thread-… hash) so a link
+                // preview actually shows the question — a hash fragment never
+                // reaches the server, so WhatsApp/etc. would only ever see
+                // generic tags for a hash-only URL. The server route
+                // redirects a real visitor straight into this same modal.
+                const url = threadShareUrl(thread.id, thread.title);
                 const shareData = {
                   title: thread.title,
                   text: `${thread.title} — tuco Parents Circle`,
