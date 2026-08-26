@@ -25,6 +25,24 @@ const SYSTEM_USER_EMAIL = 'seed@tucokids.internal';
 // process.env.RESEND_API_KEY.
 const resend = !DRY_RUN && process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
+// Mirrors src/utils/slug.ts's slugify — kept as a small standalone copy
+// since this is a plain Node script, not part of the frontend/backend TS
+// build. Used so digest links show the actual question, matching every
+// other thread link across the site (share button, address bar, sitemap,
+// RSS) — this one was still on the old bare-id #thread-<id> hash format
+// from before that scheme existed.
+function slugify(text, maxLen = 60) {
+  return (text || '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, maxLen)
+    .replace(/-+$/, '');
+}
+
 function emailShell(bodyHtml) {
   return `<!doctype html>
 <html>
@@ -49,7 +67,12 @@ function emailShell(bodyHtml) {
 }
 
 function threadRow(thread, newReplyCount) {
-  const url = `${FRONTEND_URL}/community#thread-${thread.id}`;
+  // /thread/:id-slug — the same real, crawlable permalink the share button
+  // and sitemap use, and the only scheme that survives being pasted
+  // somewhere else later (an email client's own preview, forwarding it,
+  // etc.) — the old #thread-<id> hash never reached a server at all.
+  const slug = slugify(thread.title);
+  const url = `${FRONTEND_URL}/thread/${thread.id}${slug ? `-${slug}` : ''}`;
   return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:14px;">
     <tr><td style="padding:14px 16px;background-color:#F9FAFB;border-radius:14px;">
       <a href="${url}" style="color:#4D4747;text-decoration:none;font-weight:700;font-size:14px;">${thread.title}</a>
