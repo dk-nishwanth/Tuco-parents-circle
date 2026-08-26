@@ -956,12 +956,20 @@ const signupSchema = z.object({
   ),
 });
 
-// Strips everything but digits, so "98765 43210" / "+91 98765-43210" all
-// normalize the same way before being sent to Nector or stored.
+// Strips everything but digits, then drops a leading '91' country code or
+// '0' trunk prefix, so "+91 98765 43210", "091-98765-43210", and
+// "9876543210" all normalize to the SAME 10-digit value. This matters
+// because Nector consolidates checkout wallets by an exact phone-number
+// match — two different formats for the same real number would otherwise
+// register as two different numbers and silently fail to link.
+// India-only (site only serves Indian mobile numbers) — anything that
+// doesn't reduce to exactly 10 digits is treated as invalid.
 function normalizePhone(phone: string | undefined | null): string | undefined {
   if (!phone) return undefined;
-  const digits = phone.replace(/\D/g, '');
-  return digits.length >= 7 ? digits : undefined;
+  let digits = phone.replace(/\D/g, '');
+  if (digits.length === 12 && digits.startsWith('91')) digits = digits.slice(2);
+  else if (digits.length === 11 && digits.startsWith('0')) digits = digits.slice(1);
+  return digits.length === 10 ? digits : undefined;
 }
 
 app.post('/api/auth/signup', authLimiter, async (req: AuthRequest, res, next) => {
@@ -976,6 +984,9 @@ app.post('/api/auth/signup', authLimiter, async (req: AuthRequest, res, next) =>
     const { email, password, username, city, childAge, phone } = parsed.data;
     const normalEmail = email.trim().toLowerCase();
     const normalPhone = normalizePhone(phone);
+    if (phone && phone.trim() && !normalPhone) {
+      return res.status(400).json({ error: 'Enter a valid 10-digit mobile number, or leave it blank.' });
+    }
     console.log('👤 Checking if user exists:', normalEmail);
 
     const existing = await prisma.user.findUnique({ where: { email: normalEmail } });
@@ -2769,10 +2780,11 @@ app.patch('/api/users/me', authenticate, async (req: AuthRequest, res, next) => 
     const updateData: any = {};
     if (phone !== undefined) {
       const trimmedPhone = String(phone).trim();
-      if (trimmedPhone && !/^[0-9+\-\s]{7,20}$/.test(trimmedPhone)) {
-        return res.status(400).json({ error: 'Enter a valid phone number' });
+      const normalized = normalizePhone(trimmedPhone);
+      if (trimmedPhone && !normalized) {
+        return res.status(400).json({ error: 'Enter a valid 10-digit mobile number, or leave it blank.' });
       }
-      updateData.phone = normalizePhone(trimmedPhone) || null;
+      updateData.phone = normalized || null;
     }
     if (username) {
       const trimmed = String(username).trim();
@@ -2813,9 +2825,16 @@ app.patch('/api/users/me', authenticate, async (req: AuthRequest, res, next) => 
       data: updateData,
     });
 
-    // A phone number just added/changed — re-send the lead so Nector has it
-    // on file for checkout consolidation. Fire-and-forget like every other
-    // Nector call: a hiccup here must never fail a profile update.
+    // Best-effort only: re-sending the lead here does NOT actually update
+    // mobile on a lead Nector already has (confirmed directly against their
+    // API — both re-POST and their documented PUT /leads/:id update return
+    // 200/success but leave metadetail.mobile untouched). This only has a
+    // chance of working for the rare case where the original signup-time
+    // lead creation itself failed, so no lead exists yet. For everyone
+    // else, phone numbers added after signup need Nector's own "Import or
+    // Bulk Edit Data" CSV tool (Customer Data section) — see
+    // scripts/exportPhoneNumbersForNector.cjs, which generates that CSV
+    // from our DB for periodic manual upload.
     if (updateData.phone) {
       nectorCreateLead(user).catch(err => console.warn('⚠️ Nector lead phone update failed:', err));
     }
