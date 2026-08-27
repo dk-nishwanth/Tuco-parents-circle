@@ -2,7 +2,7 @@ import React, { useState, FormEvent, useRef, useEffect } from 'react';
 import { CATEGORIES } from '../data/categories';
 import { Conversation, User as UserType, Notification, Reply } from '../types';
 import { getAvatarColor, getInitials, searchThreadsWithRanking, formatTimeAgo, countAllReplies } from '../utils/helpers';
-import { Heart, MessageSquare, X, Eye, Bookmark, ChevronDown, Search, Bell, ArrowLeft, Menu, User, LogOut, Users, Share2, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Heart, MessageSquare, X, Eye, Bookmark, ChevronDown, Search, Bell, ArrowLeft, Menu, User, LogOut, Users, Share2, Trash2, ChevronLeft, ChevronRight, Flag } from 'lucide-react';
 import { track } from '../utils/analytics';
 import { threadShareUrl } from '../utils/slug';
 import tucoLogo from '../assets/tuco-logo.webp';
@@ -24,6 +24,7 @@ interface ModalProps {
   ) => void | Promise<void>;
   onLikeReply?: (threadId: number, replyId: number) => void;
   onReportReply?: (threadId: number, replyId: number) => void;
+  onReportThread?: (threadId: number) => void;
   onEditReply?: (threadId: number, replyId: number, newText: string) => void;
   onDeleteReply?: (threadId: number, replyId: number) => void;
   onDeleteThread?: (threadId: number) => void;
@@ -295,6 +296,24 @@ const ReplyComponent = ({
                 {shareCopied ? 'Copied!' : 'Share'}
               </span>
             </button>
+            {!isOwnReply && onReportReply && (
+              <button
+                type="button"
+                aria-label="Report this reply"
+                title="Report"
+                onClick={() => {
+                  if (!currentUser) {
+                    onLoginClick?.();
+                    return;
+                  }
+                  onReportReply(threadId, reply.id);
+                }}
+                className="flex items-center gap-2 hover:scale-110 transition-transform text-[#4D4747] hover:text-red-500"
+              >
+                <Flag className="w-4 h-4" strokeWidth={1.5} />
+                <span className="text-[13px] font-medium">Report</span>
+              </button>
+            )}
           </>
         )}
       </div>
@@ -450,6 +469,7 @@ export function Modal({
   activeReplyTo,
   setActiveReplyTo,
   onReportReply,
+  onReportThread,
   onEditReply,
   onDeleteReply,
   onDeleteThread,
@@ -782,6 +802,23 @@ export function Modal({
               <Eye className="w-5 h-5 text-[#4D4747]" strokeWidth={1.5} />
               <span className="text-[13px] font-medium">{thread.views || 0} Views</span>
             </div>
+            {onReportThread && (!currentUser || currentUser.id !== thread.authorId) && (
+              <button
+                type="button"
+                aria-label="Report this thread"
+                title="Report"
+                onClick={() => {
+                  if (!currentUser) {
+                    onLoginClick?.();
+                    return;
+                  }
+                  onReportThread(thread.id);
+                }}
+                className="text-[#4D4747] hover:text-red-500 transition-colors"
+              >
+                <Flag className="w-5 h-5" strokeWidth={1.5} />
+              </button>
+            )}
           </div>
         </div>
 

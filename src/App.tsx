@@ -1164,6 +1164,14 @@ function AppContent() {
     setReportTarget({ type: 'reply', id: replyId });
     setIsReportOpen(true);
   };
+  const handleReportThread = (threadId: number) => {
+    if (!currentUser) {
+      openAuth('signup');
+      return;
+    }
+    setReportTarget({ type: 'thread', id: threadId });
+    setIsReportOpen(true);
+  };
   const handleSubmitReport = async (reason: string, details: string) => {
     if (!reportTarget) return;
     
@@ -1782,6 +1790,7 @@ function AppContent() {
         activeReplyTo={activeReplyTo}
         setActiveReplyTo={setActiveReplyTo}
         onReportReply={handleReportReply}
+        onReportThread={handleReportThread}
         onEditReply={handleEditReply}
         onDeleteReply={handleDeleteReply}
         onDeleteThread={handleDeleteThread}
