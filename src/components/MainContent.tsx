@@ -57,7 +57,7 @@ export function MainContent({
   // child's age (or they picked interests during onboarding), we rank threads
   // by relevance instead of pure recency. Guests and users who skipped the
   // welcome flow still get plain "new".
-  const hasPersonalSignal = Boolean(currentUser?.childAge) || (currentUser?.interests?.length ?? 0) > 0;
+  const hasPersonalSignal = Boolean(currentUser?.childAge) || (currentUser?.childAges?.length ?? 0) > 0 || (currentUser?.interests?.length ?? 0) > 0;
   const [sortType] = useState<string>(hasPersonalSignal ? 'for-you' : 'new');
   const [currentPage, setCurrentPage] = useState<number>(1);
 
@@ -113,7 +113,7 @@ export function MainContent({
     if (showHighlight && threadOfWeek) {
       filtered = filtered.filter(c => c.id !== threadOfWeek.id);
     }
-    const sorted = sortThreads(filtered, sortType, currentUser?.childAge, currentUser?.interests);
+    const sorted = sortThreads(filtered, sortType, currentUser?.childAge, currentUser?.interests, currentUser?.childAges);
     // Media-first, but MIX video and image threads instead of grouping all
     // videos then all images. Within each media type: pinned-first, then the
     // base sort order. Then interleave (video, image, video, image, …) so the
@@ -130,7 +130,7 @@ export function MainContent({
       if (ii < images.length) mixed.push(images[ii++]);
     }
     return [...mixed, ...textOnly];
-  }, [conversations, searchTerm, activeCategory, sortType, savedPosts, currentUser?.childAge, currentUser?.interests, showHighlight, threadOfWeek]);
+  }, [conversations, searchTerm, activeCategory, sortType, savedPosts, currentUser?.childAge, currentUser?.childAges, currentUser?.interests, showHighlight, threadOfWeek]);
 
   const totalPages = Math.ceil(processedThreads.length / THREADS_PER_PAGE);
   const startIndex = (currentPage - 1) * THREADS_PER_PAGE;

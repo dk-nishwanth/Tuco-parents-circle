@@ -95,6 +95,8 @@ export interface User {
   city: string;
   phone?: string;
   childAge?: string;
+  // Second+ kids, beyond the primary childAge above.
+  childAges?: string[];
   role: UserRole;
   badges: Badge[];
   createdAt: string;

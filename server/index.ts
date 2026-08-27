@@ -61,7 +61,7 @@ import { analyzeContent } from '../src/utils/moderation.js';
 import { BADGE_CRITERIA } from '../src/utils/badgeSystem.js';
 // Canonicalize the child-age field server-side so the column stays uniform no
 // matter what the client sends.
-import { normalizeChildAge } from '../src/data/childAgeOptions.js';
+import { normalizeChildAge, CHILD_AGE_OPTIONS, MILESTONE_TIPS } from '../src/data/childAgeOptions.js';
 
 async function seedOnStartup() {
   console.log('Checking database for seed data...');
@@ -558,6 +558,7 @@ const formatUser = (u: any) => ({
   city: u.city || '',
   phone: u.phone || '',
   childAge: u.childAge || '',
+  childAges: u.childAges || [],
   role: mapRole(u.role),
   badges: u.badges || [],
   createdAt: u.createdAt ? u.createdAt.toISOString() : new Date().toISOString(),
@@ -756,6 +757,40 @@ const RESEND_TEMPLATES = {
 // numeric suffix so emails greet "Aishvarya" instead of "Aishvarya533".
 function displayName(username: string): string {
   return username.replace(/\s*\d+$/, '').trim() || username;
+}
+
+// Closes the loop on a report: previously "our team will review this" was
+// the last thing a reporter ever heard — no notification when a mod
+// actually acted on it. Finds everyone who flagged this exact target
+// (there can be more than one — the dedup in POST /api/reports only
+// prevents the SAME person reporting twice) and tells each of them the
+// outcome. Fire-and-forget from call sites, same as every other
+// notification here — a failure here must never fail the moderation action
+// itself.
+async function notifyReportersOfOutcome(
+  targetType: 'CONVERSATION' | 'REPLY',
+  targetId: number,
+  outcome: 'removed' | 'kept'
+): Promise<void> {
+  try {
+    const reports = await prisma.moderationLog.findMany({
+      where: { targetType, targetId, action: 'FLAGGED' },
+      select: { moderatorId: true },
+    });
+    const reporterIds = [...new Set(reports.map(r => r.moderatorId).filter(id => id !== 'SYSTEM'))];
+    if (reporterIds.length === 0) return;
+    const title = outcome === 'removed'
+      ? 'Your report led to action ✓'
+      : 'Your report was reviewed';
+    const description = outcome === 'removed'
+      ? 'Thanks for flagging that — our moderation team reviewed it and removed the content.'
+      : 'Our moderation team reviewed the content you flagged and decided it can stay up. Thanks for helping keep the community safe.';
+    await prisma.notification.createMany({
+      data: reporterIds.map(userId => ({ userId, type: 'SYSTEM' as const, title, description, time: 'Just now' })),
+    });
+  } catch (err) {
+    console.error('notifyReportersOfOutcome failed:', err);
+  }
 }
 
 // "tuco Forum Members" segment — keeps the broadcast/newsletter contact
@@ -2366,6 +2401,13 @@ app.patch('/api/conversations/:id', optionalAuth, async (req: AuthRequest, res, 
       });
     }
 
+    // Close the loop with anyone who flagged this thread — the actual mod
+    // decision, not just "our team will review this."
+    if (moderationStatus?.toLowerCase() === 'approved' || moderationStatus?.toLowerCase() === 'rejected') {
+      notifyReportersOfOutcome('CONVERSATION', id, moderationStatus.toLowerCase() === 'rejected' ? 'removed' : 'kept')
+        .catch(err => console.error('notifyReportersOfOutcome (conversation) failed:', err));
+    }
+
     // If approved or rejected, send notification and email to author
     if (moderationStatus?.toLowerCase() === 'approved' || moderationStatus?.toLowerCase() === 'rejected') {
       const author = await prisma.user.findUnique({ where: { id: conversation.authorId } });
@@ -2745,6 +2787,10 @@ app.patch('/api/replies/:id', authenticate, async (req: AuthRequest, res, next) 
           reason: moderationReason || null,
         },
       });
+      if (action === 'APPROVED' || action === 'REJECTED') {
+        notifyReportersOfOutcome('REPLY', id, action === 'REJECTED' ? 'removed' : 'kept')
+          .catch(err => console.error('notifyReportersOfOutcome (reply) failed:', err));
+      }
     }
 
     res.status(200).json(updated);
@@ -3024,7 +3070,7 @@ app.delete('/api/notifications', authenticate, async (req: AuthRequest, res, nex
 
 app.patch('/api/users/me', authenticate, async (req: AuthRequest, res, next) => {
   try {
-    const { username, city, childAge, phone, emailNotifications, savedPosts, role, interests } = req.body;
+    const { username, city, childAge, childAges, phone, emailNotifications, savedPosts, role, interests } = req.body;
 
     const updateData: any = {};
     if (phone !== undefined) {
@@ -3047,7 +3093,19 @@ app.patch('/api/users/me', authenticate, async (req: AuthRequest, res, next) => 
       updateData.username = trimmed;
     }
     if (city) updateData.city = String(city).trim() || 'India';
-    if (childAge !== undefined) updateData.childAge = normalizeChildAge(childAge);
+    let previousChildAge: string | null = null;
+    if (childAge !== undefined) {
+      updateData.childAge = normalizeChildAge(childAge);
+      // Only needed to detect a forward milestone move below — skip the
+      // lookup entirely when childAge isn't part of this request.
+      const existing = await prisma.user.findUnique({ where: { id: req.userId }, select: { childAge: true } });
+      previousChildAge = existing?.childAge ?? null;
+    }
+    if (Array.isArray(childAges)) {
+      updateData.childAges = Array.from(new Set(
+        childAges.map((a: unknown) => normalizeChildAge(String(a))).filter((a): a is string => !!a)
+      )).slice(0, 10);
+    }
     if (emailNotifications !== undefined) updateData.emailNotifications = emailNotifications;
     if (savedPosts !== undefined) updateData.savedPosts = savedPosts;
     if (Array.isArray(interests)) {
@@ -3073,6 +3131,29 @@ app.patch('/api/users/me', authenticate, async (req: AuthRequest, res, next) => 
       where: { id: req.userId },
       data: updateData,
     });
+
+    // Milestone reminder: only fires when the update moves childAge FORWARD
+    // to a new bucket (not sideways corrections or a bucket going backward,
+    // e.g. fixing a typo or updating for a second child overwriting the
+    // first) — those aren't "your kid is growing," they're data cleanup.
+    if (updateData.childAge && previousChildAge !== updateData.childAge) {
+      const prevIdx = previousChildAge ? CHILD_AGE_OPTIONS.indexOf(previousChildAge as any) : -1;
+      const nextIdx = CHILD_AGE_OPTIONS.indexOf(updateData.childAge as any);
+      if (nextIdx > prevIdx) {
+        const tip = MILESTONE_TIPS[updateData.childAge];
+        if (tip) {
+          prisma.notification.create({
+            data: {
+              userId: user.id,
+              type: 'SYSTEM',
+              title: `Your little one is growing! 🎉 Now ${updateData.childAge}`,
+              description: tip,
+              time: 'Just now',
+            },
+          }).catch(err => console.error('Milestone notification failed:', err));
+        }
+      }
+    }
 
     if (updateData.phone) {
       // A lead Nector already has can NEVER be updated with a phone

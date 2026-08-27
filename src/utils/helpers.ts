@@ -110,6 +110,7 @@ export function sortThreads(
   sortType: string,
   viewerChildAge?: string | null,
   viewerInterests?: string[] | null,
+  viewerChildAges?: string[] | null,
 ): Conversation[] {
   const sorted = [...threads];
   const pinFirst = (list: Conversation[]) =>
@@ -144,14 +145,21 @@ export function sortThreads(
       // Score = age-proximity (0-5) + interest-match (0-3) + recency (0-5) +
       // small engagement kicker so popular threads don't get buried at 0.
       // Falls back to "new" if we know nothing personal about the viewer.
-      if (!viewerChildAge && (!viewerInterests || viewerInterests.length === 0)) {
+      const allViewerAges = [viewerChildAge, ...(viewerChildAges || [])].filter(
+        (a): a is string => !!a
+      );
+      if (allViewerAges.length === 0 && (!viewerInterests || viewerInterests.length === 0)) {
         return sortThreads(threads, 'new');
       }
       const interestSet = new Set(viewerInterests || []);
       const now = Date.now();
       const scored = sorted.map(c => {
         // Age proximity: exact bucket = 5, adjacent = 4, two away = 3, …
-        const d = ageBucketDistance(c.childAge, viewerChildAge);
+        // A parent with more than one kid matches on whichever kid is closest
+        // to this thread's bucket.
+        const d = allViewerAges.length === 0
+          ? Infinity
+          : Math.min(...allViewerAges.map(a => ageBucketDistance(c.childAge, a)));
         const ageScore = d === Infinity ? 0 : Math.max(0, 5 - d);
         // Interest bonus: full weight for a direct category match.
         const interestScore = interestSet.size > 0 && interestSet.has(c.category) ? 3 : 0;

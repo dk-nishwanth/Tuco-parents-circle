@@ -35,6 +35,11 @@ model User {
   phone              String?
   city               String
   childAge           String?
+  // Second+ kids. childAge above stays the "primary" one — it's what thread
+  // authorship tags a post with, what signup collects, and what old rows
+  // already have. This is purely additive, for parents with more than one
+  // child, so "For Your Age" personalization can match any of their kids.
+  childAges          String[]       @default([])
   role               UserRole       @default(MEMBER)
   badges             Json?
   createdAt          DateTime       @default(now())

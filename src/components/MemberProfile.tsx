@@ -3,7 +3,8 @@ import { User, Conversation } from '../types';
 import { BADGE_DISPLAY } from '../utils/badgeSystem';
 import { api } from '../utils/api';
 import { track } from '../utils/analytics';
-import { Mail, MapPin, Award, Lock, Baby, Shield, MessageSquare, KeyRound, Pencil } from 'lucide-react';
+import { CHILD_AGE_OPTIONS } from '../data/childAgeOptions';
+import { Mail, MapPin, Award, Lock, Baby, Shield, MessageSquare, KeyRound, Pencil, Plus, X } from 'lucide-react';
 
 // Self-contained change-password form. Accounts with hasPassword === false
 // (Google-only, never set a real password) skip the current-password field —
@@ -264,6 +265,108 @@ function ChangePhoneSection({ currentPhone }: { currentPhone?: string }) {
   );
 }
 
+// Lets a parent with more than one kid add extra child-age entries beyond
+// the primary childAge collected at signup. Feeds "For Your Age" matching —
+// see sortThreads in utils/helpers.ts, which now takes the closest of ALL
+// the viewer's kids' ages rather than just the one from signup.
+function ManageKidsSection({ initialAges }: { initialAges: string[] }) {
+  const [open, setOpen] = useState(false);
+  const [ages, setAges] = useState<string[]>(initialAges);
+  const [adding, setAdding] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  const save = async (next: string[]) => {
+    setSubmitting(true);
+    setError('');
+    setSuccess('');
+    try {
+      await api.updateMe({ childAges: next });
+      setAges(next);
+      setSuccess('Saved!');
+      setTimeout(() => setSuccess(''), 1500);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleAdd = () => {
+    if (!adding || ages.includes(adding)) { setAdding(''); return; }
+    save([...ages, adding]);
+    setAdding('');
+  };
+
+  const handleRemove = (age: string) => {
+    save(ages.filter(a => a !== age));
+  };
+
+  return (
+    <div className="border-t border-neutral-150 pt-4 mt-4">
+      <button
+        type="button"
+        onClick={() => setOpen(v => !v)}
+        className="flex items-center gap-2 text-sm font-bold text-tuco-cyan hover:text-tuco-cyan-hover"
+      >
+        <Baby className="w-4 h-4" />
+        {ages.length > 0 ? 'Manage my kids' : 'Add another child'}
+      </button>
+      {open && (
+        <div className="mt-3 max-w-sm space-y-2.5">
+          <p className="text-xs text-neutral-500">
+            Have more than one kid? Add their ages so "For You" shows threads relevant to any of them.
+          </p>
+          {ages.length > 0 && (
+            <ul className="flex flex-wrap gap-2">
+              {ages.map(age => (
+                <li
+                  key={age}
+                  className="flex items-center gap-1.5 bg-neutral-50 border border-neutral-200 rounded-full pl-3 pr-1.5 py-1 text-xs font-medium text-neutral-700"
+                >
+                  {age}
+                  <button
+                    type="button"
+                    onClick={() => handleRemove(age)}
+                    disabled={submitting}
+                    className="text-neutral-400 hover:text-red-600"
+                    aria-label={`Remove ${age}`}
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          <div className="flex items-center gap-2">
+            <select
+              value={adding}
+              onChange={e => setAdding(e.target.value)}
+              className="flex-1 bg-neutral-50 border border-neutral-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-tuco-cyan"
+            >
+              <option value="">Select age…</option>
+              {CHILD_AGE_OPTIONS.filter(o => !ages.includes(o)).map(o => (
+                <option key={o} value={o}>{o}</option>
+              ))}
+            </select>
+            <button
+              type="button"
+              onClick={handleAdd}
+              disabled={!adding || submitting}
+              className="shrink-0 flex items-center gap-1 bg-tuco-cyan hover:bg-tuco-cyan-hover disabled:opacity-60 text-white text-sm font-bold px-3 py-2 rounded-lg transition-colors"
+            >
+              <Plus className="w-4 h-4" /> Add
+            </button>
+          </div>
+          {error && <p className="text-xs font-bold text-red-600">{error}</p>}
+          {success && <p className="text-xs font-bold text-emerald-600">{success}</p>}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // Lists everyone the current user has blocked, with a one-click unblock.
 // Loads lazily on expand rather than on every profile view — most people
 // will never have blocked anyone, so this avoids an extra request on the
@@ -454,7 +557,10 @@ export function MemberProfile({
         {user.childAge && (
           <div className="flex items-center gap-2 text-sm text-neutral-700">
             <Baby className="w-4 h-4 text-neutral-400 shrink-0" />
-            <span className="font-medium">Child age: {user.childAge}</span>
+            <span className="font-medium">
+              Child age: {user.childAge}
+              {user.childAges && user.childAges.length > 0 && `, ${user.childAges.join(', ')}`}
+            </span>
           </div>
         )}
         <div className="flex flex-col gap-1">
@@ -486,6 +592,7 @@ export function MemberProfile({
         )}
         {isCurrentUser && <ChangePhoneSection currentPhone={user.phone} />}
         {isCurrentUser && <ChangePasswordSection hasPassword={user.hasPassword ?? true} />}
+        {isCurrentUser && <ManageKidsSection initialAges={user.childAges || []} />}
         {isCurrentUser && <BlockedUsersSection />}
       </div>
       {}

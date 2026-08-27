@@ -18,6 +18,7 @@ import { ThreadReviewConfirmation } from './components/ThreadReviewConfirmation'
 import { AdminToolsPanel } from './components/AdminToolsPanel';
 import { LoadingScreen } from './components/LoadingScreen';
 import { CompleteProfileModal } from './components/CompleteProfileModal';
+import { PointsExplainerModal } from './components/PointsExplainerModal';
 import { PublicProfilePage } from './components/PublicProfilePage';
 import { ProfileModal } from './components/ProfileModal';
 import { WarningModal } from './components/WarningModal';
@@ -156,10 +157,11 @@ function AppContent() {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState<boolean>(false);
   const [activeReplyTo, setActiveReplyTo] = useState<{ threadId: number; replyId: number } | null>(null);
   const [showCompleteProfile, setShowCompleteProfile] = useState<boolean>(false);
+  const [showPointsExplainer, setShowPointsExplainer] = useState<boolean>(false);
 
   // Prevent body scroll when any modal/overlay is open
   useEffect(() => {
-    const anyModalOpen = isModalOpen || isNewPostOpen || isAuthOpen || isModerationOpen || isAdminOpen || isReportOpen || isProfileOpen || isMobileLeftSidebarOpen || isRightSidebarOpen || showCompleteProfile;
+    const anyModalOpen = isModalOpen || isNewPostOpen || isAuthOpen || isModerationOpen || isAdminOpen || isReportOpen || isProfileOpen || isMobileLeftSidebarOpen || isRightSidebarOpen || showCompleteProfile || showPointsExplainer;
     if (anyModalOpen) {
       document.body.style.overflow = 'hidden';
     } else {
@@ -168,7 +170,7 @@ function AppContent() {
     return () => {
       document.body.style.overflow = 'auto';
     };
-  }, [isModalOpen, isNewPostOpen, isAuthOpen, isModerationOpen, isAdminOpen, isReportOpen, isProfileOpen, isMobileLeftSidebarOpen, isRightSidebarOpen, showCompleteProfile]);
+  }, [isModalOpen, isNewPostOpen, isAuthOpen, isModerationOpen, isAdminOpen, isReportOpen, isProfileOpen, isMobileLeftSidebarOpen, isRightSidebarOpen, showCompleteProfile, showPointsExplainer]);
 
   // Force profile completion for any logged-in user missing a child age
   // (covers Google signups, partial signups, and users created before childAge existed)
@@ -177,6 +179,20 @@ function AppContent() {
       setShowCompleteProfile(true);
     }
   }, [currentUser]);
+
+  // One-time "how tuco Points work" explainer — shown once per account,
+  // after profile completion (so it doesn't compete with that modal), never
+  // again after. Gated per-user (not just a single global flag) so a shared
+  // device or a second account on the same browser still sees it once.
+  useEffect(() => {
+    if (!currentUser || showCompleteProfile) return;
+    const key = `tuco_points_explainer_seen_${currentUser.id}`;
+    try {
+      if (!localStorage.getItem(key)) {
+        setShowPointsExplainer(true);
+      }
+    } catch { /* ignore storage access errors */ }
+  }, [currentUser, showCompleteProfile]);
 
   // Identify the logged-in user in GA4 (uses the opaque user id, not PII).
   useEffect(() => {
@@ -2020,6 +2036,14 @@ function AppContent() {
             setShowCompleteProfile(false);
           }}
           onSkip={() => setShowCompleteProfile(false)}
+        />
+      )}
+      {showPointsExplainer && currentUser && (
+        <PointsExplainerModal
+          onClose={() => {
+            setShowPointsExplainer(false);
+            try { localStorage.setItem(`tuco_points_explainer_seen_${currentUser.id}`, '1'); } catch { /* ignore quota */ }
+          }}
         />
       )}
     </div>
