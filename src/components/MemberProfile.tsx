@@ -263,6 +263,80 @@ function ChangePhoneSection({ currentPhone }: { currentPhone?: string }) {
     </div>
   );
 }
+
+// Lists everyone the current user has blocked, with a one-click unblock.
+// Loads lazily on expand rather than on every profile view — most people
+// will never have blocked anyone, so this avoids an extra request on the
+// common path.
+function BlockedUsersSection() {
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [blocked, setBlocked] = useState<Array<{ id: string; username: string }> | null>(null);
+  const [error, setError] = useState('');
+
+  const load = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      setBlocked(await api.getBlockedUsers());
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load blocked users.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUnblock = async (id: string) => {
+    try {
+      await api.unblockUser(id);
+      setBlocked(prev => (prev ? prev.filter(b => b.id !== id) : prev));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to unblock.');
+    }
+  };
+
+  return (
+    <div className="border-t border-neutral-150 pt-4 mt-4">
+      <button
+        type="button"
+        onClick={() => {
+          const next = !open;
+          setOpen(next);
+          if (next && blocked === null) load();
+        }}
+        className="flex items-center gap-2 text-sm font-bold text-tuco-cyan hover:text-tuco-cyan-hover"
+      >
+        <Shield className="w-4 h-4" />
+        Blocked Users
+      </button>
+      {open && (
+        <div className="mt-3 max-w-sm">
+          {loading && <p className="text-xs text-neutral-400">Loading…</p>}
+          {error && <p className="text-xs font-bold text-red-600">{error}</p>}
+          {!loading && blocked !== null && blocked.length === 0 && (
+            <p className="text-xs text-neutral-400">You haven't blocked anyone.</p>
+          )}
+          {blocked && blocked.length > 0 && (
+            <ul className="space-y-2">
+              {blocked.map(b => (
+                <li key={b.id} className="flex items-center justify-between bg-neutral-50 border border-neutral-200 rounded-lg px-3 py-2">
+                  <span className="text-sm font-medium text-neutral-700">{b.username}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleUnblock(b.id)}
+                    className="text-xs font-bold text-tuco-cyan hover:text-tuco-cyan-hover"
+                  >
+                    Unblock
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 interface MemberProfileProps {
   user: User;
   conversations?: Conversation[];
@@ -412,6 +486,7 @@ export function MemberProfile({
         )}
         {isCurrentUser && <ChangePhoneSection currentPhone={user.phone} />}
         {isCurrentUser && <ChangePasswordSection hasPassword={user.hasPassword ?? true} />}
+        {isCurrentUser && <BlockedUsersSection />}
       </div>
       {}
       <div className={`grid gap-3 mb-6 ${nectorPoints !== null ? 'grid-cols-4' : 'grid-cols-3'}`}>

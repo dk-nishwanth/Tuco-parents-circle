@@ -594,13 +594,17 @@ const formatReply = (r: any, allReplies: any[]): any => ({
 });
 
 // Convert Prisma conversation to frontend Conversation shape
-const formatConversation = (c: any) => {
+// blockedIds is the CALLER's own block list (who they don't want to see),
+// not anything about the thread's author — passed through from the
+// authenticated request, absent entirely for guests/other formatConversation
+// call sites that don't care about per-viewer filtering.
+const formatConversation = (c: any, blockedIds?: Set<string>) => {
   // Drop replies a moderator has REJECTED so they actually disappear for
   // everyone (reads previously returned all replies regardless of status, so
   // "reject" had no effect). PENDING/APPROVED stay visible as before, so no
   // existing content is hidden. Rejecting a reply also hides its child subtree.
   const allReplies = (c.replies || []).filter(
-    (r: any) => (r.moderationStatus || 'PENDING') !== 'REJECTED'
+    (r: any) => (r.moderationStatus || 'PENDING') !== 'REJECTED' && !(blockedIds && blockedIds.has(r.authorId))
   );
   // Root replies are those without parent
   const rootReplies = allReplies.filter((r: any) => !r.parentId);
@@ -1488,8 +1492,17 @@ app.get('/api/conversations', optionalAuth, async (req: AuthRequest, res, next) 
       );
     }
 
-    console.log('✅ Found', ordered.length, 'conversations');
-    res.status(200).json(ordered.map(formatConversation));
+    // Blocking only ever affects the blocker's own view — guests and users
+    // with no blocks pay nothing extra here (empty set, everything included).
+    let blockedIds = new Set<string>();
+    if (req.userId) {
+      const blocks = await prisma.block.findMany({ where: { blockerId: req.userId }, select: { blockedId: true } });
+      blockedIds = new Set(blocks.map(b => b.blockedId));
+    }
+    const visible = blockedIds.size > 0 ? ordered.filter(c => !blockedIds.has(c.authorId)) : ordered;
+
+    console.log('✅ Found', visible.length, 'conversations');
+    res.status(200).json(visible.map(c => formatConversation(c, blockedIds)));
   } catch (error) {
     console.error('❌ Error getting conversations:', error);
     next(error);
@@ -2142,6 +2155,51 @@ app.get('/api/follows/me', authenticate, async (req: AuthRequest, res, next) => 
       users: follows.map(f => f.targetUserId).filter(Boolean),
       threads: follows.map(f => f.targetConversationId).filter(x => x != null),
     });
+  } catch (error) { next(error); }
+});
+
+// Block a user — hides their threads/replies from the blocker's own feed
+// only (one-way, silent; see the Block model comment for why). Upsert so a
+// repeat block is a no-op rather than a 409.
+app.post('/api/blocks', authenticate, async (req: AuthRequest, res, next) => {
+  try {
+    const { userId } = req.body;
+    if (typeof userId !== 'string' || !userId) {
+      return res.status(400).json({ error: 'userId is required' });
+    }
+    if (userId === req.userId) {
+      return res.status(400).json({ error: "You can't block yourself." });
+    }
+    const target = await prisma.user.findUnique({ where: { id: userId }, select: { id: true } });
+    if (!target) return res.status(404).json({ error: 'User not found' });
+    await prisma.block.upsert({
+      where: { blockerId_blockedId: { blockerId: req.userId!, blockedId: userId } },
+      update: {},
+      create: { blockerId: req.userId!, blockedId: userId },
+    });
+    res.status(200).json({ success: true, blocked: true });
+  } catch (error) { next(error); }
+});
+
+app.delete('/api/blocks/:userId', authenticate, async (req: AuthRequest, res, next) => {
+  try {
+    await prisma.block.deleteMany({
+      where: { blockerId: req.userId!, blockedId: req.params.userId },
+    });
+    res.status(200).json({ success: true, blocked: false });
+  } catch (error) { next(error); }
+});
+
+// Who the caller has blocked — used both to render a filled "Blocked" state
+// and to populate the "Manage blocked users" list in their profile.
+app.get('/api/blocks', authenticate, async (req: AuthRequest, res, next) => {
+  try {
+    const blocks = await prisma.block.findMany({
+      where: { blockerId: req.userId! },
+      include: { blocked: { select: { id: true, username: true } } },
+      orderBy: { createdAt: 'desc' },
+    });
+    res.status(200).json(blocks.map(b => ({ id: b.blocked.id, username: b.blocked.username })));
   } catch (error) { next(error); }
 });
 

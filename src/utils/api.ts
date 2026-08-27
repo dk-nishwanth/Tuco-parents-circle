@@ -414,6 +414,28 @@ export const api = {
     await handleResponse<any>(res);
   },
 
+  async blockUser(userId: string): Promise<void> {
+    const res = await fetch(`${API_BASE_URL}/blocks`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ userId }),
+    });
+    await handleResponse<any>(res);
+  },
+
+  async unblockUser(userId: string): Promise<void> {
+    const res = await fetch(`${API_BASE_URL}/blocks/${userId}`, {
+      method: 'DELETE',
+      headers: authHeaders(),
+    });
+    await handleResponse<any>(res);
+  },
+
+  async getBlockedUsers(): Promise<Array<{ id: string; username: string }>> {
+    const res = await fetch(`${API_BASE_URL}/blocks`, { headers: authHeaders() });
+    return handleResponse<Array<{ id: string; username: string }>>(res);
+  },
+
   async getModerationLogs(): Promise<Array<{
     id: string;
     moderatorId: string;

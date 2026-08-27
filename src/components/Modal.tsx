@@ -2,7 +2,7 @@ import React, { useState, FormEvent, useRef, useEffect } from 'react';
 import { CATEGORIES } from '../data/categories';
 import { Conversation, User as UserType, Notification, Reply } from '../types';
 import { getAvatarColor, getInitials, searchThreadsWithRanking, formatTimeAgo, countAllReplies } from '../utils/helpers';
-import { Heart, MessageSquare, X, Eye, Bookmark, ChevronDown, Search, Bell, ArrowLeft, Menu, User, LogOut, Users, Share2, Trash2, ChevronLeft, ChevronRight, Flag, CheckCircle2 } from 'lucide-react';
+import { Heart, MessageSquare, X, Eye, Bookmark, ChevronDown, Search, Bell, ArrowLeft, Menu, User, LogOut, Users, Share2, Trash2, ChevronLeft, ChevronRight, Flag, CheckCircle2, Ban } from 'lucide-react';
 import { track } from '../utils/analytics';
 import { threadShareUrl } from '../utils/slug';
 import tucoLogo from '../assets/tuco-logo.webp';
@@ -26,6 +26,7 @@ interface ModalProps {
   onReportReply?: (threadId: number, replyId: number) => void;
   onReportThread?: (threadId: number) => void;
   onResolveThread?: (threadId: number, replyId: number | null) => void;
+  onBlockUser?: (userId: string, username: string) => void;
   onEditReply?: (threadId: number, replyId: number, newText: string) => void;
   onDeleteReply?: (threadId: number, replyId: number) => void;
   onDeleteThread?: (threadId: number) => void;
@@ -72,6 +73,7 @@ const ReplyComponent = ({
   resolvedReplyId,
   canResolve,
   onResolveThread,
+  onBlockUser,
 }: {
   reply: Reply;
   threadId: number;
@@ -99,6 +101,7 @@ const ReplyComponent = ({
   // reply is theirs.
   canResolve?: boolean;
   onResolveThread?: (threadId: number, replyId: number | null) => void;
+  onBlockUser?: (userId: string, username: string) => void;
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(reply.text);
@@ -337,6 +340,24 @@ const ReplyComponent = ({
                 <span className="text-[13px] font-medium">Report</span>
               </button>
             )}
+            {!isOwnReply && reply.authorId && onBlockUser && (
+              <button
+                type="button"
+                aria-label={`Block ${reply.author}`}
+                title="Block this person"
+                onClick={() => {
+                  if (!currentUser) {
+                    onLoginClick?.();
+                    return;
+                  }
+                  onBlockUser(reply.authorId!, reply.author);
+                }}
+                className="flex items-center gap-2 hover:scale-110 transition-transform text-[#4D4747] hover:text-red-500"
+              >
+                <Ban className="w-4 h-4" strokeWidth={1.5} />
+                <span className="text-[13px] font-medium">Block</span>
+              </button>
+            )}
             {canResolve && !isOwnReply && onResolveThread && (
               <button
                 type="button"
@@ -411,6 +432,7 @@ const ReplyComponent = ({
               resolvedReplyId={resolvedReplyId}
               canResolve={canResolve}
               onResolveThread={onResolveThread}
+              onBlockUser={onBlockUser}
             />
           ))}
         </div>
@@ -513,6 +535,7 @@ export function Modal({
   onReportReply,
   onReportThread,
   onResolveThread,
+  onBlockUser,
   onEditReply,
   onDeleteReply,
   onDeleteThread,
@@ -980,6 +1003,7 @@ export function Modal({
                     resolvedReplyId={thread.resolvedReplyId}
                     canResolve={!!currentUser && (currentUser.id === thread.authorId || currentUser.role === 'moderator' || currentUser.role === 'tuco_team')}
                     onResolveThread={onResolveThread}
+                    onBlockUser={onBlockUser}
                   />
                 ))}
                 {hiddenCount > 0 && (

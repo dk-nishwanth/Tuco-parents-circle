@@ -1172,6 +1172,44 @@ function AppContent() {
     setReportTarget({ type: 'thread', id: threadId });
     setIsReportOpen(true);
   };
+  // Recursively strips a blocked author's replies out of a nested reply
+  // tree — a straight top-level filter would leave their replies-to-replies
+  // still visible underneath.
+  const removeBlockedReplies = (replies: Reply[], blockedUserId: string): Reply[] =>
+    replies
+      .filter(r => r.authorId !== blockedUserId)
+      .map(r => (r.replies ? { ...r, replies: removeBlockedReplies(r.replies, blockedUserId) } : r));
+
+  const handleBlockUser = async (userId: string, username: string) => {
+    if (!currentUser) {
+      openAuth('signup');
+      return;
+    }
+    if (!window.confirm(`Block ${username}? You won't see their posts or replies anymore.`)) {
+      return;
+    }
+    try {
+      await api.blockUser(userId);
+      setConversations(prev =>
+        prev
+          .filter(c => c.authorId !== userId)
+          .map(c => ({ ...c, replies: removeBlockedReplies(c.replies, userId) }))
+      );
+      setWarningModal({
+        isOpen: true,
+        type: 'success',
+        title: 'User Blocked',
+        message: `You won't see ${username}'s posts or replies anymore.`,
+      });
+    } catch (error) {
+      setWarningModal({
+        isOpen: true,
+        type: 'error',
+        title: 'Failed to Block',
+        message: error instanceof Error ? error.message : 'Please try again.',
+      });
+    }
+  };
   const handleSubmitReport = async (reason: string, details: string) => {
     if (!reportTarget) return;
     
@@ -1809,6 +1847,7 @@ function AppContent() {
         onReportReply={handleReportReply}
         onReportThread={handleReportThread}
         onResolveThread={handleResolveThread}
+        onBlockUser={handleBlockUser}
         onEditReply={handleEditReply}
         onDeleteReply={handleDeleteReply}
         onDeleteThread={handleDeleteThread}

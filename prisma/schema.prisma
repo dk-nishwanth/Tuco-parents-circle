@@ -57,6 +57,26 @@ model User {
   follows            Follow[]       @relation("Follower")
   followers          Follow[]       @relation("FollowedUser")
   loginEvents        LoginEvent[]
+  blockedUsers       Block[]        @relation("Blocker")
+  blockedByUsers     Block[]        @relation("Blocked")
+}
+
+// A one-way "I don't want to see this person's content" relationship —
+// blocking isn't mutual, only hides the blocked user's threads/replies from
+// the blocker's own feed (nothing is deleted, and the blocked user isn't
+// told). Same NULL-treated-as-distinct trick as Vote/Follow's unique
+// constraints to keep one row per (blocker, blocked) pair.
+model Block {
+  id        String   @id @default(uuid())
+  blockerId String
+  blockedId String
+  createdAt DateTime @default(now())
+
+  blocker User @relation("Blocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked User @relation("Blocked", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  @@unique([blockerId, blockedId])
+  @@index([blockerId])
 }
 
 model Conversation {
