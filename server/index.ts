@@ -640,6 +640,7 @@ const formatConversation = (c: any) => {
     authorId: c.authorId,
     greyAreaFlags: c.greyAreaFlags || [],
     reviewPriority: c.reviewPriority,
+    resolvedReplyId: c.resolvedReplyId ?? null,
   };
 };
 
@@ -2151,6 +2152,70 @@ app.get('/api/follows/thread/:id/count', async (req, res, next) => {
     const count = await prisma.follow.count({ where: { targetConversationId: id } });
     res.status(200).json({ count });
   } catch (error) { next(error); }
+});
+
+// Marks (or clears) which reply the original poster says actually solved
+// their question — the same "which answer worked" signal any Q&A site
+// needs, previously missing entirely. Only the thread author or a
+// moderator may set it, and only to a reply that genuinely belongs to
+// this conversation (never a reply on some other thread).
+app.patch('/api/conversations/:id/resolve', authenticate, async (req: AuthRequest, res, next) => {
+  try {
+    const id = parseInt(req.params.id);
+    if (Number.isNaN(id)) {
+      return res.status(400).json({ error: 'Invalid conversation id' });
+    }
+    const { replyId } = req.body;
+
+    const conversation = await prisma.conversation.findUnique({ where: { id } });
+    if (!conversation) return res.status(404).json({ error: 'Thread not found' });
+
+    const isMod = req.userRole === 'MODERATOR' || req.userRole === 'TUCO_TEAM';
+    if (conversation.authorId !== req.userId && !isMod) {
+      return res.status(403).json({ error: 'Only the person who asked can mark an answer.' });
+    }
+
+    let resolvedReplyId: number | null = null;
+    if (replyId !== null && replyId !== undefined) {
+      const replyIdNum = parseInt(replyId);
+      if (Number.isNaN(replyIdNum)) {
+        return res.status(400).json({ error: 'Invalid reply id' });
+      }
+      const reply = await prisma.reply.findUnique({ where: { id: replyIdNum } });
+      if (!reply || reply.conversationId !== id) {
+        return res.status(400).json({ error: 'That reply is not on this thread.' });
+      }
+      resolvedReplyId = replyIdNum;
+    }
+
+    const updated = await prisma.conversation.update({
+      where: { id },
+      data: { resolvedReplyId },
+      include: { replies: true, author: { select: { childAge: true } } },
+    });
+
+    // Let the reply's author know their answer got marked — skip for a
+    // self-mark (thread author marking their own reply) and for clearing.
+    if (resolvedReplyId !== null) {
+      const markedReply = await prisma.reply.findUnique({ where: { id: resolvedReplyId } });
+      if (markedReply && markedReply.authorId !== req.userId) {
+        await prisma.notification.create({
+          data: {
+            userId: markedReply.authorId,
+            type: 'SYSTEM',
+            title: 'Your reply was marked as the answer! ⭐',
+            description: `${displayName(conversation.opAuthor)} marked your reply on "${conversation.title.slice(0, 40)}${conversation.title.length > 40 ? '...' : ''}" as the answer that worked.`,
+            time: 'Just now',
+            threadId: id,
+          },
+        }).catch(err => console.error('Resolve notification failed:', err));
+      }
+    }
+
+    res.status(200).json(formatConversation(updated));
+  } catch (error) {
+    next(error);
+  }
 });
 
 app.patch('/api/conversations/:id', optionalAuth, async (req: AuthRequest, res, next) => {

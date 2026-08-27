@@ -1270,6 +1270,23 @@ function AppContent() {
     }
   };
 
+  const handleResolveThread = async (threadId: number, replyId: number | null) => {
+    if (!currentUser) {
+      openAuth('signup');
+      return;
+    }
+    try {
+      const updated = await api.resolveThread(threadId, replyId);
+      setConversations(prev => prev.map(c => (c.id === threadId ? { ...c, resolvedReplyId: updated.resolvedReplyId } : c)));
+    } catch (error) {
+      setWarningModal({
+        isOpen: true,
+        type: 'error',
+        title: 'Failed to Update',
+        message: error instanceof Error ? error.message : 'Could not mark this answer. Please try again.',
+      });
+    }
+  };
   const handleDeleteThread = async (threadId: number) => {
     if (!currentUser) {
       openAuth('signup');
@@ -1791,6 +1808,7 @@ function AppContent() {
         setActiveReplyTo={setActiveReplyTo}
         onReportReply={handleReportReply}
         onReportThread={handleReportThread}
+        onResolveThread={handleResolveThread}
         onEditReply={handleEditReply}
         onDeleteReply={handleDeleteReply}
         onDeleteThread={handleDeleteThread}

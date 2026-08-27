@@ -95,6 +95,12 @@ model Conversation {
   authorId         String
   greyAreaFlags    String[]
   reviewPriority   Int?
+  // The reply the original poster marked as "this worked" — no formal
+  // relation object (Reply already has a differently-named relation back to
+  // Conversation via conversationId), just a plain id looked up manually
+  // where needed. Only the thread author (or a mod) may set this, and only
+  // to a reply that belongs to this same conversation.
+  resolvedReplyId  Int?
   // Restrict (not Cascade): deleting a user with conversations is blocked at the DB level.
   // This prevents accidental wipes (e.g. if the seed user is deleted via raw SQL).
   // To delete a user with content, their content must be reassigned or deleted first.

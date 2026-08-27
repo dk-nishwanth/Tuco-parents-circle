@@ -50,6 +50,8 @@ export interface Conversation {
   reviewPriority?: number;
   // Age-of-child bucket this thread is about. Powers the "For Your Age" feed.
   childAge?: string | null;
+  // The reply id the original poster marked as "this worked", or null.
+  resolvedReplyId?: number | null;
 }
 export type GreyAreaFlag =
   | 'religious_cultural'

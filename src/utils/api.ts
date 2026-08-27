@@ -214,6 +214,17 @@ export const api = {
     return handleResponse<Conversation>(res);
   },
 
+  // Marks (replyId set) or clears (replyId null) which reply the thread
+  // author says actually solved their question.
+  async resolveThread(id: number, replyId: number | null): Promise<Conversation> {
+    const res = await fetch(`${API_BASE_URL}/conversations/${id}/resolve`, {
+      method: 'PATCH',
+      headers: authHeaders(),
+      body: JSON.stringify({ replyId }),
+    });
+    return handleResponse<Conversation>(res);
+  },
+
   async deleteConversation(id: number): Promise<void> {
     const res = await fetch(`${API_BASE_URL}/conversations/${id}`, {
       method: 'DELETE',

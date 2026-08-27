@@ -2,7 +2,7 @@ import React, { useState, FormEvent, useRef, useEffect } from 'react';
 import { CATEGORIES } from '../data/categories';
 import { Conversation, User as UserType, Notification, Reply } from '../types';
 import { getAvatarColor, getInitials, searchThreadsWithRanking, formatTimeAgo, countAllReplies } from '../utils/helpers';
-import { Heart, MessageSquare, X, Eye, Bookmark, ChevronDown, Search, Bell, ArrowLeft, Menu, User, LogOut, Users, Share2, Trash2, ChevronLeft, ChevronRight, Flag } from 'lucide-react';
+import { Heart, MessageSquare, X, Eye, Bookmark, ChevronDown, Search, Bell, ArrowLeft, Menu, User, LogOut, Users, Share2, Trash2, ChevronLeft, ChevronRight, Flag, CheckCircle2 } from 'lucide-react';
 import { track } from '../utils/analytics';
 import { threadShareUrl } from '../utils/slug';
 import tucoLogo from '../assets/tuco-logo.webp';
@@ -25,6 +25,7 @@ interface ModalProps {
   onLikeReply?: (threadId: number, replyId: number) => void;
   onReportReply?: (threadId: number, replyId: number) => void;
   onReportThread?: (threadId: number) => void;
+  onResolveThread?: (threadId: number, replyId: number | null) => void;
   onEditReply?: (threadId: number, replyId: number, newText: string) => void;
   onDeleteReply?: (threadId: number, replyId: number) => void;
   onDeleteThread?: (threadId: number) => void;
@@ -68,6 +69,9 @@ const ReplyComponent = ({
   activeReplyTo,
   setActiveReplyTo,
   onLoginClick,
+  resolvedReplyId,
+  canResolve,
+  onResolveThread,
 }: {
   reply: Reply;
   threadId: number;
@@ -88,6 +92,13 @@ const ReplyComponent = ({
   activeReplyTo?: { threadId: number; replyId: number } | null;
   setActiveReplyTo?: (val: { threadId: number; replyId: number } | null) => void;
   onLoginClick?: () => void;
+  // The reply id the thread author has marked as "this worked", if any.
+  resolvedReplyId?: number | null;
+  // Whether the CURRENT viewer is allowed to mark/unmark an answer on this
+  // thread (the person who asked, or a mod) — not whether this specific
+  // reply is theirs.
+  canResolve?: boolean;
+  onResolveThread?: (threadId: number, replyId: number | null) => void;
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(reply.text);
@@ -137,9 +148,21 @@ const ReplyComponent = ({
     reply.authorId ? reply.authorId === currentUser.id : currentUser.username === reply.author
   );
   const isMod = currentUser && (currentUser.role === 'moderator' || currentUser.role === 'tuco_team');
+  const isBestAnswer = resolvedReplyId != null && resolvedReplyId === reply.id;
 
   return (
-    <div key={reply.id} id={`reply-${reply.id}`} className="bg-white border border-neutral-200 rounded-[24px] p-6 shadow-sm relative overflow-hidden scroll-mt-24">
+    <div
+      key={reply.id}
+      id={`reply-${reply.id}`}
+      className={`bg-white rounded-[24px] p-6 shadow-sm relative overflow-hidden scroll-mt-24 ${
+        isBestAnswer ? 'border-2 border-emerald-400' : 'border border-neutral-200'
+      }`}
+    >
+      {isBestAnswer && (
+        <div className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 text-[12px] font-bold px-3 py-1 rounded-full mb-4">
+          <span aria-hidden="true">⭐</span> This worked — marked as the answer
+        </div>
+      )}
       <div className="flex items-start justify-between mb-5">
         <div className="flex items-center gap-3">
           <div
@@ -314,6 +337,22 @@ const ReplyComponent = ({
                 <span className="text-[13px] font-medium">Report</span>
               </button>
             )}
+            {canResolve && !isOwnReply && onResolveThread && (
+              <button
+                type="button"
+                aria-label={isBestAnswer ? 'Unmark as the answer' : 'Mark as the answer'}
+                title={isBestAnswer ? 'Unmark as the answer' : 'Mark as the answer'}
+                onClick={() => onResolveThread(threadId, isBestAnswer ? null : reply.id)}
+                className={`flex items-center gap-2 hover:scale-110 transition-transform ${
+                  isBestAnswer ? 'text-emerald-600' : 'text-[#4D4747] hover:text-emerald-600'
+                }`}
+              >
+                <CheckCircle2 className="w-4 h-4" strokeWidth={1.5} />
+                <span className="text-[13px] font-medium">
+                  {isBestAnswer ? 'Unmark answer' : 'Mark as answer'}
+                </span>
+              </button>
+            )}
           </>
         )}
       </div>
@@ -369,6 +408,9 @@ const ReplyComponent = ({
               activeReplyTo={activeReplyTo}
               setActiveReplyTo={setActiveReplyTo}
               onLoginClick={onLoginClick}
+              resolvedReplyId={resolvedReplyId}
+              canResolve={canResolve}
+              onResolveThread={onResolveThread}
             />
           ))}
         </div>
@@ -470,6 +512,7 @@ export function Modal({
   setActiveReplyTo,
   onReportReply,
   onReportThread,
+  onResolveThread,
   onEditReply,
   onDeleteReply,
   onDeleteThread,
@@ -934,6 +977,9 @@ export function Modal({
                     activeReplyTo={activeReplyTo}
                     setActiveReplyTo={setActiveReplyTo}
                     onLoginClick={onLoginClick}
+                    resolvedReplyId={thread.resolvedReplyId}
+                    canResolve={!!currentUser && (currentUser.id === thread.authorId || currentUser.role === 'moderator' || currentUser.role === 'tuco_team')}
+                    onResolveThread={onResolveThread}
                   />
                 ))}
                 {hiddenCount > 0 && (
@@ -954,6 +1000,7 @@ export function Modal({
                           activeReplyTo={activeReplyTo}
                           setActiveReplyTo={setActiveReplyTo}
                           onLoginClick={onLoginClick}
+                          resolvedReplyId={thread.resolvedReplyId}
                         />
                       ))}
                     </div>
