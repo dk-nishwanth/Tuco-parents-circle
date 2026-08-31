@@ -16,6 +16,7 @@ import { parseYouTubeId, stripYouTubeUrl, TucoVideoCard } from './TucoVideo';
 interface Stats {
   users: number; conversations: number; replies: number;
   pending: number; votes: number; notifications: number; recentUsers: number;
+  weeklyLoginEvents: number; weeklyActiveUsers: number;
 }
 interface AdminUser {
   id: string; username: string; email: string; city: string;
@@ -171,12 +172,17 @@ function DashboardTab({ stats, error, onRetry }: { stats: Stats | null; error?: 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <StatCard label="Total Users" value={stats.users} sub={`+${stats.recentUsers} this week`} color="text-tuco-cyan" />
+        <StatCard label="Total Users" value={stats.users} sub={`+${stats.recentUsers} new signups this week`} color="text-tuco-cyan" />
         <StatCard label="Conversations" value={stats.conversations} color="text-emerald-600" />
         <StatCard label="Replies" value={stats.replies} color="text-blue-600" />
         <StatCard label="Pending Review" value={stats.pending} color="text-amber-600" />
       </div>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {/* Deliberately separate from "new signups" above — a returning
+            user logging in isn't a signup, and a new signup's first login
+            is only one data point among many, so conflating the two under
+            one "+X this week" number was misleading. */}
+        <StatCard label="Logins This Week" value={stats.weeklyLoginEvents} sub={`${stats.weeklyActiveUsers} distinct users`} color="text-tuco-cyan" />
         <StatCard label="Total Votes" value={stats.votes} color="text-purple-600" />
         <StatCard label="Notifications Sent" value={stats.notifications} color="text-neutral-600" />
       </div>

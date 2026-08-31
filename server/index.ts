@@ -3619,10 +3619,20 @@ app.get('/api/admin/stats', authenticate, requireAdmin, async (req, res, next) =
       prisma.vote.count(),
       prisma.notification.count(),
     ]);
-    const recentUsers = await prisma.user.count({
-      where: { createdAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } },
+    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const recentUsers = await prisma.user.count({ where: { createdAt: { gte: weekAgo } } });
+    // Signups and logins are genuinely different things (a returning user
+    // logging in isn't a new signup, and a new signup's first login is only
+    // one of theirs) — kept as two separate numbers rather than conflating
+    // them under one ambiguous "+X this week" label.
+    const [weeklyLoginEvents, weeklyActiveUserGroups] = await Promise.all([
+      prisma.loginEvent.count({ where: { createdAt: { gte: weekAgo } } }),
+      prisma.loginEvent.groupBy({ by: ['userId'], where: { createdAt: { gte: weekAgo } } }),
+    ]);
+    res.json({
+      users, conversations, replies, pending, votes, notifications, recentUsers,
+      weeklyLoginEvents, weeklyActiveUsers: weeklyActiveUserGroups.length,
     });
-    res.json({ users, conversations, replies, pending, votes, notifications, recentUsers });
   } catch (error) { next(error); }
 });
 
