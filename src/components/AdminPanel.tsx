@@ -886,7 +886,9 @@ function ComposePreview({ text, imageUrl, authorName }: { text: string; imageUrl
   );
 }
 
-function ComposeTab({ adminUser }: { adminUser: User }) {
+function ComposeTab({ adminUser, openThreadId, onThreadOpened }: {
+  adminUser: User; openThreadId?: number | null; onThreadOpened?: () => void;
+}) {
   const [queue, setQueue] = useState<NeedsReplyThread[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeThreadId, setActiveThreadId] = useState<number | null>(null);
@@ -914,12 +916,24 @@ function ComposeTab({ adminUser }: { adminUser: User }) {
   useEffect(() => { load(); }, [load]);
 
   useEffect(() => {
-    if (!pickerOpen || allConvs.length > 0) return;
+    if ((!pickerOpen && openThreadId == null) || allConvs.length > 0) return;
     setLoadingAllConvs(true);
     adminFetch('/api/admin/conversations')
       .then(setAllConvs)
       .finally(() => setLoadingAllConvs(false));
-  }, [pickerOpen, allConvs.length]);
+  }, [pickerOpen, openThreadId, allConvs.length]);
+
+  // Landed here from a click elsewhere (global search result, etc.) rather
+  // than picking from the queue or the in-tab search — jump straight to
+  // that thread's composer. allConvs may still be loading at this instant;
+  // activeThread below just won't resolve until it lands, then this
+  // re-renders correctly on its own.
+  useEffect(() => {
+    if (openThreadId == null) return;
+    setActiveThreadId(openThreadId);
+    setError('');
+    onThreadOpened?.();
+  }, [openThreadId, onThreadOpened]);
 
   const searchResults = threadSearch.trim().length < 2 ? [] : allConvs
     .filter(c =>
@@ -1060,7 +1074,7 @@ function ComposeTab({ adminUser }: { adminUser: User }) {
         <h3 className="text-xs font-bold text-neutral-500 uppercase tracking-wide mb-2">Reply as tuco team</h3>
         {!activeThread ? (
           <div className="text-center py-12 text-neutral-400 text-sm border border-dashed border-neutral-200 rounded-xl">
-            Pick a thread from the queue, or search for any thread, to reply to it
+            {activeThreadId != null && loadingAllConvs ? 'Loading thread…' : 'Pick a thread from the queue, or search for any thread, to reply to it'}
           </div>
         ) : (
           <div className="border border-neutral-200 rounded-xl p-4 space-y-3">
@@ -1528,6 +1542,16 @@ export function AdminPanel({ currentUserRole, currentUser, onLogout }: AdminPane
   const [reportCount, setReportCount] = useState(0);
   const [needsReplyCount, setNeedsReplyCount] = useState(0);
   const [globalQuery, setGlobalQuery] = useState('');
+  // Lets a thread found via global search (or anywhere else in future) jump
+  // straight into the Compose tab's reply box, instead of only being able
+  // to open it live on the site. ComposeTab clears this once it's consumed
+  // it so re-picking the same thread later still triggers the effect.
+  const [composeOpenThreadId, setComposeOpenThreadId] = useState<number | null>(null);
+  const openInCompose = (threadId: number) => {
+    setTab('compose');
+    setComposeOpenThreadId(threadId);
+    setGlobalQuery('');
+  };
   const [globalResults, setGlobalResults] = useState<{ users: any[]; conversations: any[]; replies: any[] } | null>(null);
 
   const loadStats = useCallback(() => {
@@ -1663,12 +1687,16 @@ export function AdminPanel({ currentUserRole, currentUser, onLogout }: AdminPane
                   <div>
                     <div className="text-[10px] font-bold text-neutral-400 uppercase px-1">Threads</div>
                     {globalResults.conversations.map((c: any) => (
-                      <a key={c.id} href={threadShareUrl(c.id, c.title)} target="_blank" rel="noopener noreferrer"
-                        onClick={() => setGlobalQuery('')}
-                        className="flex items-center justify-between gap-1 text-xs px-2 py-1.5 hover:bg-neutral-50 rounded">
+                      <div key={c.id} onClick={() => openInCompose(c.id)} role="button" tabIndex={0}
+                        title="Reply as tuco team"
+                        className="flex items-center justify-between gap-1 text-xs px-2 py-1.5 hover:bg-neutral-50 rounded cursor-pointer">
                         <span className="truncate min-w-0">#{c.id} {c.title}</span>
-                        <ExternalLink className="w-3 h-3 shrink-0 text-neutral-400" />
-                      </a>
+                        <a href={threadShareUrl(c.id, c.title)} target="_blank" rel="noopener noreferrer"
+                          onClick={e => e.stopPropagation()} title="Open live thread"
+                          className="text-neutral-400 hover:text-tuco-cyan shrink-0">
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+                      </div>
                     ))}
                   </div>
                 )}
@@ -1676,12 +1704,16 @@ export function AdminPanel({ currentUserRole, currentUser, onLogout }: AdminPane
                   <div>
                     <div className="text-[10px] font-bold text-neutral-400 uppercase px-1">Replies</div>
                     {globalResults.replies.map((r: any) => (
-                      <a key={r.id} href={threadShareUrl(r.conversationId, undefined)} target="_blank" rel="noopener noreferrer"
-                        onClick={() => setGlobalQuery('')}
-                        className="flex items-center justify-between gap-1 text-xs px-2 py-1.5 hover:bg-neutral-50 rounded">
+                      <div key={r.id} onClick={() => openInCompose(r.conversationId)} role="button" tabIndex={0}
+                        title="Reply as tuco team"
+                        className="flex items-center justify-between gap-1 text-xs px-2 py-1.5 hover:bg-neutral-50 rounded cursor-pointer">
                         <span className="truncate min-w-0">{r.author}: {r.text.slice(0, 60)}</span>
-                        <ExternalLink className="w-3 h-3 shrink-0 text-neutral-400" />
-                      </a>
+                        <a href={threadShareUrl(r.conversationId, undefined)} target="_blank" rel="noopener noreferrer"
+                          onClick={e => e.stopPropagation()} title="Open live thread"
+                          className="text-neutral-400 hover:text-tuco-cyan shrink-0">
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+                      </div>
                     ))}
                   </div>
                 )}
@@ -1691,7 +1723,9 @@ export function AdminPanel({ currentUserRole, currentUser, onLogout }: AdminPane
         </div>
         <p className="text-xs text-neutral-500 mb-4 max-w-3xl">{TAB_DESCRIPTIONS[tab]}</p>
         {tab === 'dashboard' && <DashboardTab stats={stats} error={statsError} onRetry={loadStats} />}
-        {tab === 'compose' && currentUser && <ComposeTab adminUser={currentUser} />}
+        {tab === 'compose' && currentUser && (
+          <ComposeTab adminUser={currentUser} openThreadId={composeOpenThreadId} onThreadOpened={() => setComposeOpenThreadId(null)} />
+        )}
         {tab === 'moderation' && <ModerationTab />}
         {tab === 'conversations' && <ConversationsTab />}
         {tab === 'replies' && <RepliesTab />}
