@@ -3583,15 +3583,27 @@ app.get('/apps/community', verifyShopifyProxy, (req, res) => {
 // ADMIN API
 // ------------------------------
 
-function requireAdmin(req: AuthRequest, res: any, next: any) {
-  // Admin endpoints include changing user roles and deleting users, so they are
-  // restricted to TUCO_TEAM only. Previously MODERATOR passed too, which let a
-  // moderator self-escalate to TUCO_TEAM or delete members. Moderators do
-  // content moderation via requireModerator, not user management.
-  if (req.userRole !== 'TUCO_TEAM') {
-    return res.status(403).json({ error: 'Admin access required' });
+async function requireAdmin(req: AuthRequest, res: any, next: any) {
+  // Deliberately re-checks the role from the DATABASE rather than trusting
+  // req.userRole (which comes from the JWT payload, stamped at login time).
+  // A promotion to TUCO_TEAM done via the admin panel or a direct DB update
+  // doesn't change any token that's already been issued — someone promoted
+  // this way stayed 403'd on every admin endpoint until they happened to
+  // log out and back in, with the failure silently swallowed client-side
+  // (looked like the dashboard was just stuck on "Loading stats…" forever,
+  // no error shown). Confirmed live: glucky421@gmail.com was TUCO_TEAM in
+  // the DB but still carrying an old MEMBER-role token. This fresh lookup
+  // means a promotion takes effect on the very next request, no re-login
+  // needed, and it can't recur for anyone promoted in the future.
+  try {
+    const user = await prisma.user.findUnique({ where: { id: req.userId }, select: { role: true } });
+    if (user?.role !== 'TUCO_TEAM') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+    next();
+  } catch (error) {
+    next(error);
   }
-  next();
 }
 
 // Stats dashboard

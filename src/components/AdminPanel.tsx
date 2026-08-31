@@ -155,7 +155,18 @@ function StatCard({ label, value, sub, color }: { label: string; value: number; 
   );
 }
 
-function DashboardTab({ stats }: { stats: Stats | null }) {
+function DashboardTab({ stats, error, onRetry }: { stats: Stats | null; error?: string; onRetry?: () => void }) {
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-sm font-bold text-red-600 mb-1">Couldn't load dashboard stats</p>
+        <p className="text-xs text-neutral-400 mb-3">{error}</p>
+        {onRetry && (
+          <button onClick={onRetry} className="text-xs font-bold text-tuco-cyan hover:underline">Try again</button>
+        )}
+      </div>
+    );
+  }
   if (!stats) return <div className="text-center py-12 text-neutral-400">Loading stats…</div>;
   return (
     <div className="space-y-6">
@@ -1431,21 +1442,30 @@ const TAB_DESCRIPTIONS: Record<Tab, string> = {
 export function AdminPanel({ currentUserRole, currentUser, onLogout }: AdminPanelProps) {
   const [tab, setTab] = useState<Tab>('dashboard');
   const [stats, setStats] = useState<Stats | null>(null);
+  const [statsError, setStatsError] = useState('');
   const [reportCount, setReportCount] = useState(0);
   const [needsReplyCount, setNeedsReplyCount] = useState(0);
   const [globalQuery, setGlobalQuery] = useState('');
   const [globalResults, setGlobalResults] = useState<{ users: any[]; conversations: any[]; replies: any[] } | null>(null);
 
-  useEffect(() => {
-    // These badge counts fetch once on mount with no retry — a transient
-    // failure (e.g. the API restarting mid-request during a deploy) used to
-    // silently leave a badge stuck at 0 with no way to notice short of a
-    // full page reload. Logging at least makes that visible in the console
-    // instead of looking like "there's nothing to do" when there actually is.
-    adminFetch('/api/admin/stats').then(setStats).catch(err => console.error('Failed to load admin stats:', err));
+  const loadStats = useCallback(() => {
+    setStatsError('');
+    // These badge counts fetch once on mount with no automatic retry — a
+    // transient failure (the API restarting mid-request during a deploy) or
+    // a real permission problem (e.g. a promoted account's existing token
+    // still carrying its pre-promotion role — see requireAdmin server-side,
+    // now fixed to re-check the DB fresh instead of trusting the token) used
+    // to leave the Dashboard stuck on "Loading stats…" forever with nothing
+    // to click and nothing in the UI explaining why.
+    adminFetch('/api/admin/stats').then(setStats).catch(err => {
+      console.error('Failed to load admin stats:', err);
+      setStatsError(err instanceof Error ? err.message : 'Failed to load.');
+    });
     adminFetch('/api/admin/reports').then(r => setReportCount(r.length)).catch(err => console.error('Failed to load report count:', err));
     adminFetch('/api/admin/needs-reply').then(r => setNeedsReplyCount(r.length)).catch(err => console.error('Failed to load needs-reply count:', err));
   }, []);
+
+  useEffect(() => { loadStats(); }, [loadStats]);
 
   useEffect(() => {
     if (globalQuery.trim().length < 2) { setGlobalResults(null); return; }
@@ -1574,7 +1594,7 @@ export function AdminPanel({ currentUserRole, currentUser, onLogout }: AdminPane
           </div>
         </div>
         <p className="text-xs text-neutral-500 mb-4 max-w-3xl">{TAB_DESCRIPTIONS[tab]}</p>
-        {tab === 'dashboard' && <DashboardTab stats={stats} />}
+        {tab === 'dashboard' && <DashboardTab stats={stats} error={statsError} onRetry={loadStats} />}
         {tab === 'compose' && currentUser && <ComposeTab adminUser={currentUser} />}
         {tab === 'moderation' && <ModerationTab />}
         {tab === 'conversations' && <ConversationsTab />}
