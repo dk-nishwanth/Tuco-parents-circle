@@ -8,6 +8,8 @@ import {
 import { User } from '../types';
 import { api, tokenStore } from '../utils/api';
 import { threadShareUrl } from '../utils/slug';
+import { getAvatarColor, getInitials } from '../utils/helpers';
+import { parseYouTubeId, stripYouTubeUrl, TucoVideoCard } from './TucoVideo';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -648,6 +650,59 @@ function LogsTab() {
 // no new backend endpoint, so this can never behave differently from a
 // real reply for any other part of the app (rendering, notifications,
 // Nector award, all of it already works because it's the same code path).
+// Mirrors the real reply bubble in Modal.tsx (avatar, name, video embed via
+// TucoVideoCard, image) as closely as reasonable outside the actual thread
+// view — so "what will this look like" doesn't require posting for real
+// first. Kept intentionally separate from Modal.tsx's ReplyComponent rather
+// than importing it directly: that component is wired to live thread state
+// (likes, edit, nested replies, voting) this preview has none of, and
+// forcing it to tolerate a fake reply object would risk it breaking in the
+// real thread view — a preview bug is a much smaller problem than that.
+function ComposePreview({ text, imageUrl, authorName }: { text: string; imageUrl: string; authorName: string }) {
+  const videoId = parseYouTubeId(text);
+  const bodyText = videoId ? stripYouTubeUrl(text) : text;
+  if (!text.trim() && !imageUrl.trim()) {
+    return (
+      <div className="text-center py-10 text-neutral-400 text-sm border border-dashed border-neutral-200 rounded-xl">
+        Nothing to preview yet — write a reply first
+      </div>
+    );
+  }
+  return (
+    <div className="bg-white rounded-[24px] p-6 shadow-sm border border-neutral-200">
+      <div className="flex items-start justify-between mb-5">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-[15px]"
+            style={{ backgroundColor: getAvatarColor(authorName), color: '#4D4747' }}>
+            {getInitials(authorName)}
+          </div>
+          <div>
+            <h4 className="font-bold text-[15px] text-[#4D4747] leading-none mb-1 flex items-center gap-1.5">
+              {authorName}
+              <span className="text-[9px] bg-tuco-cyan/10 text-tuco-cyan px-1.5 py-0.5 rounded-full font-black uppercase">tuco team</span>
+            </h4>
+            <p className="text-[12px] text-neutral-400 font-medium leading-none">Official reply</p>
+          </div>
+        </div>
+        <span className="text-[12px] text-neutral-400 font-medium">Just now</span>
+      </div>
+      <div className="mb-2">
+        {bodyText ? (
+          <p className="text-[14.5px] text-[#4D4747] leading-relaxed font-normal whitespace-pre-wrap">{bodyText}</p>
+        ) : null}
+        {videoId ? (
+          <div className="flex justify-center mt-3">
+            <TucoVideoCard videoId={videoId} variant="thread" />
+          </div>
+        ) : imageUrl.trim() ? (
+          <img src={imageUrl.trim()} alt="" className="mt-3 rounded-2xl max-h-80 w-full object-cover"
+            onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 function ComposeTab({ adminUser }: { adminUser: User }) {
   const [queue, setQueue] = useState<NeedsReplyThread[]>([]);
   const [loading, setLoading] = useState(true);
@@ -657,6 +712,7 @@ function ComposeTab({ adminUser }: { adminUser: User }) {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
   const [sentIds, setSentIds] = useState<Set<number>>(new Set());
+  const [composeView, setComposeView] = useState<'write' | 'preview'>('write');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -747,26 +803,45 @@ function ComposeTab({ adminUser }: { adminUser: User }) {
               <div className="font-bold text-sm text-neutral-800">{activeThread.title}</div>
               <p className="text-xs text-neutral-500 mt-1">{activeThread.preview}</p>
             </div>
-            <textarea
-              value={replyText}
-              onChange={e => setReplyText(e.target.value)}
-              rows={6}
-              placeholder="Write the tuco team's reply… (paste a YouTube link to embed a video answer)"
-              className="w-full text-sm border border-neutral-200 rounded-xl px-3 py-2 focus:outline-none focus:border-tuco-cyan resize-none"
-            />
-            <input
-              value={imageUrl}
-              onChange={e => setImageUrl(e.target.value)}
-              placeholder="Optional image URL"
-              className="w-full text-sm border border-neutral-200 rounded-xl px-3 py-2 focus:outline-none focus:border-tuco-cyan"
-            />
+
+            <div className="flex gap-1 bg-neutral-100 rounded-lg p-1 w-fit">
+              <button onClick={() => setComposeView('write')}
+                className={`px-3 py-1 text-xs font-bold rounded-md transition-colors ${composeView === 'write' ? 'bg-white text-tuco-cyan shadow-sm' : 'text-neutral-500'}`}>
+                Write
+              </button>
+              <button onClick={() => setComposeView('preview')}
+                className={`px-3 py-1 text-xs font-bold rounded-md transition-colors ${composeView === 'preview' ? 'bg-white text-tuco-cyan shadow-sm' : 'text-neutral-500'}`}>
+                Preview
+              </button>
+            </div>
+
+            {composeView === 'write' ? (
+              <>
+                <textarea
+                  value={replyText}
+                  onChange={e => setReplyText(e.target.value)}
+                  rows={6}
+                  placeholder="Write the tuco team's reply… (paste a YouTube link to embed a video answer)"
+                  className="w-full text-sm border border-neutral-200 rounded-xl px-3 py-2 focus:outline-none focus:border-tuco-cyan resize-none"
+                />
+                <input
+                  value={imageUrl}
+                  onChange={e => setImageUrl(e.target.value)}
+                  placeholder="Optional image URL"
+                  className="w-full text-sm border border-neutral-200 rounded-xl px-3 py-2 focus:outline-none focus:border-tuco-cyan"
+                />
+              </>
+            ) : (
+              <ComposePreview text={replyText} imageUrl={imageUrl} authorName="tuco Team" />
+            )}
+
             {error && <p className="text-xs font-bold text-red-600">{error}</p>}
             <div className="flex items-center gap-2">
               <button onClick={submit} disabled={sending || !replyText.trim()}
                 className="flex items-center gap-1.5 bg-tuco-cyan hover:bg-tuco-cyan-hover disabled:opacity-60 text-white text-sm font-bold px-4 py-2 rounded-lg transition-colors">
                 <Send className="w-3.5 h-3.5" /> {sending ? 'Posting…' : 'Post reply'}
               </button>
-              <button onClick={() => { setActiveThreadId(null); setReplyText(''); setImageUrl(''); }}
+              <button onClick={() => { setActiveThreadId(null); setReplyText(''); setImageUrl(''); setComposeView('write'); }}
                 className="text-sm text-neutral-500 hover:text-neutral-700 px-3 py-2">
                 Cancel
               </button>
@@ -1006,6 +1081,14 @@ function JobsTab() {
 
   return (
     <div className="space-y-4">
+      <p className="text-[11px] text-neutral-400 -mt-1">
+        These are the same two scripts that already run automatically every Monday via cron (rotate at 00:30, digest at
+        01:00) — this just lets you trigger one on demand instead of waiting, or check what it would do first.
+        "Dry run" only exists where the script actually supports one (it runs for real otherwise, no matter which
+        button you press) — <b>rotateWeeklyHighlight has no preview mode</b>, so "Run for real" is its only option
+        and it immediately changes the live homepage highlight. <b>sendWeeklyDigest</b> emails every user who has
+        something new to see, for real, once you use "Run for real" instead of "Dry run."
+      </p>
       {jobs.map(job => (
         <div key={job.name} className="border border-neutral-200 rounded-xl p-4">
           <div className="flex items-center justify-between mb-2">
