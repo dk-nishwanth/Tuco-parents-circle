@@ -3699,6 +3699,7 @@ app.get('/api/admin/conversations', authenticate, requireAdmin, async (req, res,
       authorId: c.authorId, opAuthor: c.opAuthor,
       replyCount: c._count.replies, voteCount: c._count.votesRelation,
       greyAreaFlags: c.greyAreaFlags, reviewPriority: c.reviewPriority,
+      preview: c.opText?.slice(0, 200) || '',
     })));
   } catch (error) { next(error); }
 });
