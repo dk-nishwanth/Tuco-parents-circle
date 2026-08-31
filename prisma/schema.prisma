@@ -49,6 +49,15 @@ model User {
   totalUpvotes       Int            @default(0)
   trustScore         Int            @default(0)
   emailNotifications Boolean        @default(true)
+  // Set from a Resend webhook (email.bounced / email.complained) when a
+  // send to this address hard-fails — "Recipient not found" etc. Once set,
+  // sendEmail() skips this address entirely: retrying a dead/mistyped
+  // address on every signup bonus, reply notification, and weekly digest
+  // does nothing but pile up bounces against our sender reputation, which
+  // can get transactional mail (password resets) throttled or spam-foldered
+  // for EVERY user, not just this one.
+  emailBounced       Boolean        @default(false)
+  emailBounceReason  String?
   savedPosts         Int[]
   // Categories the user picked during the welcome flow. Powers a "For you"
   // sort weighting and could seed personalised digests later. Empty = show

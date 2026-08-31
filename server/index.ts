@@ -439,6 +439,12 @@ app.use((req, res, next) => {
   }
 });
 
+// Resend signs webhook deliveries (bounce/complaint events) with Svix,
+// which verifies against the RAW request body — has to be registered
+// before express.json() below rewrites the body into a parsed object, or
+// signature verification would fail on every request.
+app.post('/api/webhooks/resend', express.raw({ type: '*/*', limit: '1mb' }), handleResendWebhook);
+
 // 25mb accommodates a multi-image post (up to 4 images × ~3mb base64).
 // If the app moves to S3-hosted uploads (client uploads direct, only URLs are
 // posted here), this can drop back to 1–2mb.
@@ -699,12 +705,88 @@ function emailShell(bodyHtml: string, ctaLabel?: string, ctaUrl?: string): strin
 </html>`;
 }
 
+// Verifies a Resend webhook delivery against the raw request body using
+// Svix's signing scheme (Resend delivers webhooks via Svix under the hood):
+// HMAC-SHA256 of "<svix-id>.<svix-timestamp>.<raw body>", keyed by the
+// base64 portion of the whsec_-prefixed signing secret from the Resend
+// dashboard's Webhooks tab. svix-signature can carry several "v1,<sig>"
+// candidates (key rotation) — valid if we match any of them.
+function verifyResendWebhookSignature(req: { headers: Record<string, any>; body: Buffer }): boolean {
+  const secret = process.env.RESEND_WEBHOOK_SECRET;
+  if (!secret) return false;
+  const svixId = req.headers['svix-id'];
+  const svixTimestamp = req.headers['svix-timestamp'];
+  const svixSignature = req.headers['svix-signature'];
+  if (!svixId || !svixTimestamp || !svixSignature) return false;
+  const secretKey = secret.startsWith('whsec_') ? secret.slice('whsec_'.length) : secret;
+  const signedContent = `${svixId}.${svixTimestamp}.${req.body.toString('utf8')}`;
+  const expected = crypto.createHmac('sha256', Buffer.from(secretKey, 'base64')).update(signedContent).digest('base64');
+  return String(svixSignature)
+    .split(' ')
+    .map(part => part.split(',')[1])
+    .filter(Boolean)
+    .some(sig => {
+      try {
+        return crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected));
+      } catch {
+        return false; // length mismatch — definitely not a match
+      }
+    });
+}
+
+// Handles bounce/complaint notifications from Resend so a dead or mistyped
+// address doesn't get retried on every future signup bonus, reply
+// notification, and weekly digest — see the emailBounced flag on User and
+// the skip-check at the top of sendEmail() below. Without RESEND_WEBHOOK_SECRET
+// set, this 501s rather than silently no-op-ing, so a misconfigured deploy
+// is visible instead of quietly never recording bounces.
+async function handleResendWebhook(req: express.Request, res: express.Response) {
+  if (!process.env.RESEND_WEBHOOK_SECRET) {
+    return res.status(501).json({ error: 'RESEND_WEBHOOK_SECRET not configured' });
+  }
+  if (!verifyResendWebhookSignature(req as any)) {
+    return res.status(401).json({ error: 'Invalid signature' });
+  }
+  let payload: any;
+  try {
+    payload = JSON.parse((req.body as Buffer).toString('utf8'));
+  } catch {
+    return res.status(400).json({ error: 'Invalid JSON' });
+  }
+  const eventType = payload?.type;
+  if (eventType === 'email.bounced' || eventType === 'email.complained') {
+    const to: string[] = Array.isArray(payload?.data?.to) ? payload.data.to : [payload?.data?.to].filter(Boolean);
+    const reason = eventType === 'email.bounced'
+      ? (payload?.data?.bounce?.message || 'Bounced')
+      : 'Marked as spam';
+    for (const address of to) {
+      await prisma.user.updateMany({
+        where: { email: address },
+        data: { emailBounced: true, emailBounceReason: String(reason).slice(0, 500) },
+      }).catch(err => console.error('Failed to record email bounce for', address, err));
+    }
+    console.warn(`📭 Resend ${eventType}:`, to.join(', '), '-', reason);
+  }
+  res.status(200).json({ received: true });
+}
+
 async function sendEmail(
   to: string,
   subject: string,
   html: string,
   type: EmailLogType = 'TRANSACTIONAL',
 ): Promise<boolean> {
+  // A previously-bounced/complained address gets skipped entirely rather
+  // than retried — repeatedly hammering a dead address is what gets
+  // transactional mail (password resets) throttled or spam-foldered for
+  // EVERY user, not just this one.
+  try {
+    const target = await prisma.user.findFirst({ where: { email: to }, select: { emailBounced: true } });
+    if (target?.emailBounced) {
+      console.warn(`📭 Email skipped (previously bounced) — "${subject}" to ${to}`);
+      return false;
+    }
+  } catch { /* lookup failure shouldn't block sending — fall through */ }
   if (!resend) {
     // In production this is a real outage: password-reset & welcome mails are
     // silently dropped while callers still see "sent". Log loudly so it shows
@@ -3521,7 +3603,7 @@ app.get('/api/admin/users', authenticate, requireAdmin, async (req, res, next) =
         id: true, username: true, email: true, city: true, role: true,
         createdAt: true, isVerified: true, postCount: true, replyCount: true,
         totalUpvotes: true, trustScore: true, badges: true, childAge: true,
-        emailNotifications: true,
+        emailNotifications: true, emailBounced: true, emailBounceReason: true,
         _count: { select: { conversations: true, replies: true, votes: true } },
       },
     });
