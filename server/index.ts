@@ -3625,7 +3625,14 @@ app.get('/api/admin/users', authenticate, requireAdmin, async (req, res, next) =
         _count: { select: { conversations: true, replies: true, votes: true } },
       },
     });
-    res.json(users.map(u => ({ ...u, trustScore: u.trustScore / 100 })));
+    // role must go through mapRole() (DB enum "TUCO_TEAM" -> UI value
+    // "tuco_team") — the dropdown's <option> values are lowercase, so a raw
+    // enum value never matches any of them and the browser silently falls
+    // back to showing the FIRST option ("member") no matter what the real
+    // role actually is. Purely a display bug: the role itself was always
+    // correct in the DB, and PATCH already round-trips through
+    // mapRoleToDb() correctly — only this GET was never mapped.
+    res.json(users.map(u => ({ ...u, role: mapRole(u.role), trustScore: u.trustScore / 100 })));
   } catch (error) { next(error); }
 });
 
