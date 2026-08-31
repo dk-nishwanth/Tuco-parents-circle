@@ -3758,16 +3758,22 @@ app.get('/api/admin/reports', authenticate, requireAdmin, async (req, res, next)
       let preview = '';
       let contentAuthorId: string | null = null;
       let contentAuthorName = '';
+      let threadId: number | null = null;
+      let threadTitle: string | null = null;
       if (flag.targetType === 'CONVERSATION') {
         const conv = await prisma.conversation.findUnique({ where: { id: flag.targetId }, select: { title: true, authorId: true, opAuthor: true } });
         preview = conv?.title || '(deleted thread)';
         contentAuthorId = conv?.authorId ?? null;
         contentAuthorName = conv?.opAuthor || '';
+        threadId = conv ? flag.targetId : null;
+        threadTitle = conv?.title ?? null;
       } else {
-        const reply = await prisma.reply.findUnique({ where: { id: flag.targetId }, select: { text: true, authorId: true, author: true } });
+        const reply = await prisma.reply.findUnique({ where: { id: flag.targetId }, select: { text: true, authorId: true, author: true, conversationId: true, conversation: { select: { title: true } } } });
         preview = reply?.text?.slice(0, 150) || '(deleted reply)';
         contentAuthorId = reply?.authorId ?? null;
         contentAuthorName = reply?.author || '';
+        threadId = reply?.conversationId ?? null;
+        threadTitle = reply?.conversation?.title ?? null;
       }
       // How many times THIS exact piece of content has been flagged (by one
       // or more reporters) — distinguishes "one person flagged this once"
@@ -3786,6 +3792,8 @@ app.get('/api/admin/reports', authenticate, requireAdmin, async (req, res, next)
         contentAuthorId,
         contentAuthorName,
         timesThisContentWasFlagged,
+        threadId,
+        threadTitle,
       };
     }));
     reports.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
@@ -3971,6 +3979,57 @@ app.get('/api/admin/search', authenticate, requireAdmin, async (req, res, next) 
       }),
     ]);
     res.json({ users, conversations, replies });
+  } catch (error) { next(error); }
+});
+
+// One field per CSV cell, quoted only when it contains something that would
+// otherwise break the format (comma, quote, or newline) — quoting every
+// field works too but this reads cleaner when opened in a spreadsheet.
+function csvCell(value: unknown): string {
+  const s = value === null || value === undefined ? '' : String(value);
+  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
+// Full user export: everything a growth/support review would want in one
+// sheet, pulled entirely from our own DB — no live Nector calls, since
+// hitting their API once per user (750+) would blow through its 60/min
+// rate limit. "Nector Awards" is a LOCAL count of what we attempted to
+// award, not a live points balance (that's per-user only, via the Nector
+// tab's live lookup).
+app.get('/api/admin/export/users.csv', authenticate, requireAdmin, async (req, res, next) => {
+  try {
+    const [users, lastLogins, awardCounts] = await Promise.all([
+      prisma.user.findMany({
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true, username: true, email: true, phone: true, city: true, role: true,
+          childAge: true, postCount: true, replyCount: true, totalUpvotes: true, trustScore: true,
+          createdAt: true, emailBounced: true, emailBounceReason: true,
+        },
+      }),
+      prisma.loginEvent.groupBy({ by: ['userId'], _max: { createdAt: true } }),
+      prisma.nectorAward.groupBy({ by: ['userId'], _count: { _all: true } }),
+    ]);
+    const lastLoginById = new Map(lastLogins.map(l => [l.userId, l._max.createdAt]));
+    const awardCountById = new Map(awardCounts.map(a => [a.userId, a._count._all]));
+
+    const header = [
+      'Username', 'Email', 'Phone', 'City', 'Role', 'Child Age',
+      'Posts', 'Replies', 'Total Upvotes', 'Trust Score',
+      'Nector Awards (local)', 'Email Bounced', 'Bounce Reason',
+      'Signed Up', 'Last Login',
+    ];
+    const rows = users.map(u => [
+      u.username, u.email, u.phone || '', u.city, mapRole(u.role), u.childAge || '',
+      u.postCount, u.replyCount, u.totalUpvotes, (u.trustScore / 100).toFixed(2),
+      awardCountById.get(u.id) || 0, u.emailBounced ? 'yes' : 'no', u.emailBounceReason || '',
+      u.createdAt.toISOString(), lastLoginById.get(u.id)?.toISOString() || 'never',
+    ]);
+    const csv = [header, ...rows].map(row => row.map(csvCell).join(',')).join('\n');
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="tuco-users-export-${new Date().toISOString().slice(0, 10)}.csv"`);
+    res.status(200).send(csv);
   } catch (error) { next(error); }
 });
 
