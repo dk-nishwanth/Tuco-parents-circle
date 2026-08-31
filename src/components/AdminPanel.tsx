@@ -169,6 +169,10 @@ function DashboardTab({ stats }: { stats: Stats | null }) {
         <StatCard label="Total Votes" value={stats.votes} color="text-purple-600" />
         <StatCard label="Notifications Sent" value={stats.notifications} color="text-neutral-600" />
       </div>
+      <div>
+        <h3 className="text-xs font-bold text-neutral-500 uppercase tracking-wide mb-2">All users</h3>
+        <UsersTab />
+      </div>
     </div>
   );
 }
@@ -1239,7 +1243,22 @@ interface AdminPanelProps {
   onLogout: () => void;
 }
 
-type Tab = 'dashboard' | 'compose' | 'moderation' | 'users' | 'conversations' | 'replies' | 'nector' | 'jobs' | 'activity' | 'logs';
+type Tab = 'dashboard' | 'compose' | 'moderation' | 'conversations' | 'replies' | 'nector' | 'jobs' | 'activity' | 'logs';
+
+// One-line, plain-English summary of what each tab actually does — shown
+// right under the page heading so a non-technical teammate doesn't need to
+// ask what a tab is for before using it.
+const TAB_DESCRIPTIONS: Record<Tab, string> = {
+  dashboard: 'Platform totals at a glance, plus the full user list below — search, change roles, and export to CSV.',
+  compose: 'Approved threads with zero replies, oldest first. Pick one and reply as the tuco team — posts exactly like a real member reply, including video/image support.',
+  moderation: 'Every open report (flagged post or reply nobody has acted on yet), with who reported it and why. "Keep up" or "Remove" resolves it the same way approving/rejecting from the Posts or Replies tab would.',
+  conversations: 'Every thread on the platform — approve/reject, pin, delete, or set which one is this week\'s featured highlight.',
+  replies: 'Every reply on the platform (most recent 500) — search and delete.',
+  nector: 'Look up any user\'s live tuco Points balance and award history, or browse recent awards across everyone. Counts here are local (what we attempted to award), not a live balance for everyone — that would need one API call per user and Nector limits those to 60/minute.',
+  jobs: 'Manually trigger the two scripts that otherwise only run on their Monday cron schedule, and see when they last ran.',
+  activity: 'A live feed of signups/posts/replies, plus a health check for the services this app depends on (database, Nector, Resend, bounce tracking, and whether the cron jobs are overdue).',
+  logs: 'The full moderation audit trail — every approve/reject/flag action ever taken, in order.',
+};
 
 export function AdminPanel({ currentUserRole, currentUser, onLogout }: AdminPanelProps) {
   const [tab, setTab] = useState<Tab>('dashboard');
@@ -1250,9 +1269,14 @@ export function AdminPanel({ currentUserRole, currentUser, onLogout }: AdminPane
   const [globalResults, setGlobalResults] = useState<{ users: any[]; conversations: any[]; replies: any[] } | null>(null);
 
   useEffect(() => {
-    adminFetch('/api/admin/stats').then(setStats).catch(() => {});
-    adminFetch('/api/admin/reports').then(r => setReportCount(r.length)).catch(() => {});
-    adminFetch('/api/admin/needs-reply').then(r => setNeedsReplyCount(r.length)).catch(() => {});
+    // These badge counts fetch once on mount with no retry — a transient
+    // failure (e.g. the API restarting mid-request during a deploy) used to
+    // silently leave a badge stuck at 0 with no way to notice short of a
+    // full page reload. Logging at least makes that visible in the console
+    // instead of looking like "there's nothing to do" when there actually is.
+    adminFetch('/api/admin/stats').then(setStats).catch(err => console.error('Failed to load admin stats:', err));
+    adminFetch('/api/admin/reports').then(r => setReportCount(r.length)).catch(err => console.error('Failed to load report count:', err));
+    adminFetch('/api/admin/needs-reply').then(r => setNeedsReplyCount(r.length)).catch(err => console.error('Failed to load needs-reply count:', err));
   }, []);
 
   useEffect(() => {
@@ -1282,7 +1306,6 @@ export function AdminPanel({ currentUserRole, currentUser, onLogout }: AdminPane
     { key: 'dashboard', label: 'Dashboard', icon: BarChart3 },
     { key: 'compose', label: 'Compose', icon: Send, badge: needsReplyCount, badgeKey: 'compose' },
     { key: 'moderation', label: 'Moderation', icon: Flag, badge: reportCount, badgeKey: 'moderation' },
-    { key: 'users', label: 'Users', icon: Users },
     { key: 'conversations', label: 'Posts', icon: MessageSquare, badge: stats?.pending, badgeKey: 'conversations' },
     { key: 'replies', label: 'Replies', icon: MessageCircle },
     { key: 'nector', label: 'Nector', icon: Coins },
@@ -1340,7 +1363,7 @@ export function AdminPanel({ currentUserRole, currentUser, onLogout }: AdminPane
 
       {/* Content */}
       <main className="flex-1 p-4 max-w-7xl mx-auto w-full">
-        <div className="mb-4 flex items-center justify-between gap-3 flex-wrap">
+        <div className="mb-1 flex items-center justify-between gap-3 flex-wrap">
           <h1 className="font-display font-black text-lg text-neutral-800">
             {tabs.find(t => t.key === tab)?.label}
           </h1>
@@ -1382,10 +1405,10 @@ export function AdminPanel({ currentUserRole, currentUser, onLogout }: AdminPane
             )}
           </div>
         </div>
+        <p className="text-xs text-neutral-500 mb-4 max-w-3xl">{TAB_DESCRIPTIONS[tab]}</p>
         {tab === 'dashboard' && <DashboardTab stats={stats} />}
         {tab === 'compose' && currentUser && <ComposeTab adminUser={currentUser} />}
         {tab === 'moderation' && <ModerationTab />}
-        {tab === 'users' && <UsersTab />}
         {tab === 'conversations' && <ConversationsTab />}
         {tab === 'replies' && <RepliesTab />}
         {tab === 'nector' && <NectorTab />}
