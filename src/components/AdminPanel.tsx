@@ -1651,7 +1651,11 @@ export function AdminPanel({ currentUserRole, currentUser, onLogout }: AdminPane
                   <div>
                     <div className="text-[10px] font-bold text-neutral-400 uppercase px-1">Users</div>
                     {globalResults.users.map((u: any) => (
-                      <div key={u.id} className="text-xs px-2 py-1 hover:bg-neutral-50 rounded"><b>{u.username}</b> · {u.email}</div>
+                      <a key={u.id} href={`/u/${encodeURIComponent(u.username)}`} target="_blank" rel="noopener noreferrer"
+                        onClick={() => setGlobalQuery('')}
+                        className="block text-xs px-2 py-1.5 hover:bg-neutral-50 rounded truncate">
+                        <b>{u.username}</b> · {u.email}
+                      </a>
                     ))}
                   </div>
                 )}
@@ -1659,7 +1663,12 @@ export function AdminPanel({ currentUserRole, currentUser, onLogout }: AdminPane
                   <div>
                     <div className="text-[10px] font-bold text-neutral-400 uppercase px-1">Threads</div>
                     {globalResults.conversations.map((c: any) => (
-                      <div key={c.id} className="text-xs px-2 py-1 hover:bg-neutral-50 rounded truncate">#{c.id} {c.title}</div>
+                      <a key={c.id} href={threadShareUrl(c.id, c.title)} target="_blank" rel="noopener noreferrer"
+                        onClick={() => setGlobalQuery('')}
+                        className="flex items-center justify-between gap-1 text-xs px-2 py-1.5 hover:bg-neutral-50 rounded">
+                        <span className="truncate min-w-0">#{c.id} {c.title}</span>
+                        <ExternalLink className="w-3 h-3 shrink-0 text-neutral-400" />
+                      </a>
                     ))}
                   </div>
                 )}
@@ -1667,7 +1676,12 @@ export function AdminPanel({ currentUserRole, currentUser, onLogout }: AdminPane
                   <div>
                     <div className="text-[10px] font-bold text-neutral-400 uppercase px-1">Replies</div>
                     {globalResults.replies.map((r: any) => (
-                      <div key={r.id} className="text-xs px-2 py-1 hover:bg-neutral-50 rounded truncate">{r.author}: {r.text.slice(0, 60)}</div>
+                      <a key={r.id} href={threadShareUrl(r.conversationId, undefined)} target="_blank" rel="noopener noreferrer"
+                        onClick={() => setGlobalQuery('')}
+                        className="flex items-center justify-between gap-1 text-xs px-2 py-1.5 hover:bg-neutral-50 rounded">
+                        <span className="truncate min-w-0">{r.author}: {r.text.slice(0, 60)}</span>
+                        <ExternalLink className="w-3 h-3 shrink-0 text-neutral-400" />
+                      </a>
                     ))}
                   </div>
                 )}
