@@ -489,7 +489,7 @@ function ConversationsTab() {
               <div className="flex items-start justify-between gap-2 mb-1.5">
                 <a href={threadShareUrl(c.id, c.title)} target="_blank" rel="noopener noreferrer"
                   className="font-bold text-neutral-800 text-sm flex items-center gap-1 hover:text-tuco-cyan min-w-0">
-                  <span className="truncate">{c.title}</span>
+                  <span className="truncate min-w-0">{c.title}</span>
                   <ExternalLink className="w-3 h-3 shrink-0 text-neutral-400" />
                 </a>
                 {statusBadge(c.moderationStatus)}
@@ -685,8 +685,8 @@ function RepliesTab() {
               <p className="text-neutral-600 text-sm line-clamp-2 mb-1.5">{r.text}</p>
               <div className="flex items-center justify-between gap-2 text-[11px] text-neutral-400">
                 <a href={threadShareUrl(r.conversationId, r.conversationTitle)} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-1 hover:text-tuco-cyan truncate">
-                  <span className="truncate">{r.conversationTitle || `Thread #${r.conversationId}`}</span>
+                  className="flex items-center gap-1 hover:text-tuco-cyan min-w-0">
+                  <span className="truncate min-w-0">{r.conversationTitle || `Thread #${r.conversationId}`}</span>
                   <ExternalLink className="w-3 h-3 shrink-0" />
                 </a>
                 <span className="flex items-center gap-1 shrink-0"><ThumbsUp className="w-2.5 h-2.5" />{r.likes}</span>
@@ -912,8 +912,14 @@ function ComposeTab({ adminUser }: { adminUser: User }) {
   };
 
   return (
+    // min-w-0 on both grid children below is load-bearing, not decorative:
+    // a grid item's default min-width is "auto" (fit its content), so a
+    // truncating flex child deeper inside (the thread title span) refuses
+    // to actually shrink and forces this whole column — and with it the
+    // page — wider than the viewport on mobile. Same fix applied to every
+    // other grid md:grid-cols-2 tab below (Nector, Activity).
     <div className="grid md:grid-cols-2 gap-4">
-      <div className="space-y-2">
+      <div className="space-y-2 min-w-0">
         <div className="flex items-center justify-between">
           <h3 className="text-xs font-bold text-neutral-500 uppercase tracking-wide">Needs a reply ({queue.length})</h3>
           <button onClick={load} className="p-1.5 border border-neutral-200 rounded-lg hover:bg-neutral-50">
@@ -934,7 +940,7 @@ function ComposeTab({ adminUser }: { adminUser: User }) {
                   activeThreadId === t.id ? 'border-tuco-cyan bg-tuco-cyan/5' : 'border-neutral-200 hover:bg-neutral-50'
                 } ${sentIds.has(t.id) ? 'opacity-50' : ''}`}>
                 <div className="flex items-center justify-between gap-2">
-                  <span className="font-bold text-sm text-neutral-800 truncate">{t.title}</span>
+                  <span className="font-bold text-sm text-neutral-800 truncate min-w-0">{t.title}</span>
                   <div className="flex items-center gap-1.5 shrink-0">
                     <a href={threadShareUrl(t.id, t.title)} target="_blank" rel="noopener noreferrer"
                       onClick={e => e.stopPropagation()} title="Open thread"
@@ -957,7 +963,7 @@ function ComposeTab({ adminUser }: { adminUser: User }) {
         )}
       </div>
 
-      <div>
+      <div className="min-w-0">
         <h3 className="text-xs font-bold text-neutral-500 uppercase tracking-wide mb-2">Reply as tuco team</h3>
         {!activeThread ? (
           <div className="text-center py-12 text-neutral-400 text-sm border border-dashed border-neutral-200 rounded-xl">
@@ -1136,7 +1142,7 @@ function NectorTab() {
 
   return (
     <div className="grid md:grid-cols-2 gap-4">
-      <div className="space-y-3">
+      <div className="space-y-3 min-w-0">
         <h3 className="text-xs font-bold text-neutral-500 uppercase tracking-wide">Look up a user</h3>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
@@ -1187,7 +1193,7 @@ function NectorTab() {
         )}
       </div>
 
-      <div>
+      <div className="min-w-0">
         <h3 className="text-xs font-bold text-neutral-500 uppercase tracking-wide mb-2">Recent awards (all users)</h3>
         {loadingAwards ? <div className="text-center py-8 text-neutral-400 text-sm">Loading…</div> : (
           <div className="space-y-1.5 max-h-[600px] overflow-y-auto pr-1">
@@ -1280,10 +1286,10 @@ function JobsTab() {
             </div>
           </div>
           {job.lastOutput && (
-            <pre className="text-[10px] text-neutral-500 bg-neutral-50 rounded-lg p-2 max-h-32 overflow-y-auto whitespace-pre-wrap">{job.lastOutput}</pre>
+            <pre className="text-[10px] text-neutral-500 bg-neutral-50 rounded-lg p-2 max-h-32 overflow-y-auto whitespace-pre-wrap break-words">{job.lastOutput}</pre>
           )}
           {output[job.name] && (
-            <pre className="text-[10px] text-neutral-700 bg-tuco-cyan/5 border border-tuco-cyan/20 rounded-lg p-2 mt-2 max-h-32 overflow-y-auto whitespace-pre-wrap">{output[job.name]}</pre>
+            <pre className="text-[10px] text-neutral-700 bg-tuco-cyan/5 border border-tuco-cyan/20 rounded-lg p-2 mt-2 max-h-32 overflow-y-auto whitespace-pre-wrap break-words">{output[job.name]}</pre>
           )}
         </div>
       ))}
@@ -1325,7 +1331,7 @@ function ActivityTab() {
 
   return (
     <div className="grid md:grid-cols-2 gap-4">
-      <div className="space-y-3">
+      <div className="space-y-3 min-w-0">
         <div className="flex items-center justify-between">
           <h3 className="text-xs font-bold text-neutral-500 uppercase tracking-wide">System health</h3>
           <button onClick={load} className="p-1.5 border border-neutral-200 rounded-lg hover:bg-neutral-50">
@@ -1369,7 +1375,7 @@ function ActivityTab() {
         )}
       </div>
 
-      <div>
+      <div className="min-w-0">
         <h3 className="text-xs font-bold text-neutral-500 uppercase tracking-wide mb-1">Recent activity</h3>
         <p className="text-[11px] text-neutral-400 mb-2">
           The 20 newest signups + 20 newest posts + 20 newest replies, merged and re-sorted by time — the 40 most recent shown.
@@ -1380,7 +1386,7 @@ function ActivityTab() {
             return (
               <div key={i} className="flex items-center gap-2 text-xs bg-neutral-50 border border-neutral-100 rounded-lg px-2.5 py-2">
                 {iconFor(item.type)}
-                <span className="flex-1 text-neutral-700 truncate">{item.summary}</span>
+                <span className="flex-1 min-w-0 text-neutral-700 truncate">{item.summary}</span>
                 {threadId != null && (
                   <a href={threadShareUrl(threadId, item.type === 'post' ? item.meta.title : undefined)}
                     target="_blank" rel="noopener noreferrer" title="Open thread" className="text-neutral-400 hover:text-tuco-cyan shrink-0">
