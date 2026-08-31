@@ -898,14 +898,15 @@ function ComposeTab({ adminUser, openThreadId, onThreadOpened }: {
   const [error, setError] = useState('');
   const [sentIds, setSentIds] = useState<Set<number>>(new Set());
   const [composeView, setComposeView] = useState<'write' | 'preview'>('write');
-  // "Any thread" search — separate from the needs-reply queue, since a
-  // tuco-team reply is sometimes wanted on a thread that already has
-  // replies (following up, correcting something, adding a video) not just
-  // the zero-reply ones the queue surfaces.
-  const [pickerOpen, setPickerOpen] = useState(false);
+  // One search box covers every thread (not just the zero-reply queue) —
+  // a reply is sometimes wanted on a thread that already has one (following
+  // up, correcting something, adding a video later). Typing anything
+  // replaces the queue view below with matches; clearing it goes back to
+  // the queue. Two separate search UIs here (a buried toggle plus the
+  // queue) is what made this confusing before.
   const [threadSearch, setThreadSearch] = useState('');
   const [allConvs, setAllConvs] = useState<NeedsReplyThread[]>([]);
-  const [loadingAllConvs, setLoadingAllConvs] = useState(false);
+  const [loadingAllConvs, setLoadingAllConvs] = useState(true);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -915,13 +916,15 @@ function ComposeTab({ adminUser, openThreadId, onThreadOpened }: {
 
   useEffect(() => { load(); }, [load]);
 
+  // Both lists are small (a couple hundred threads at most) — loading the
+  // full set once up front is simpler and cheaper than gating it behind a
+  // toggle the way the old "reply to any thread" picker did.
   useEffect(() => {
-    if ((!pickerOpen && openThreadId == null) || allConvs.length > 0) return;
     setLoadingAllConvs(true);
     adminFetch('/api/admin/conversations')
       .then(setAllConvs)
       .finally(() => setLoadingAllConvs(false));
-  }, [pickerOpen, openThreadId, allConvs.length]);
+  }, []);
 
   // Landed here from a click elsewhere (global search result, etc.) rather
   // than picking from the queue or the in-tab search — jump straight to
@@ -976,105 +979,106 @@ function ComposeTab({ adminUser, openThreadId, onThreadOpened }: {
     // other grid md:grid-cols-2 tab below (Nector, Activity).
     <div className="grid md:grid-cols-2 gap-4">
       <div className="space-y-2 min-w-0">
-        <div className="flex items-center justify-between">
-          <h3 className="text-xs font-bold text-neutral-500 uppercase tracking-wide">Needs a reply ({queue.length})</h3>
-          <button onClick={load} className="p-1.5 border border-neutral-200 rounded-lg hover:bg-neutral-50">
-            <RefreshCw className="w-3.5 h-3.5 text-neutral-500" />
-          </button>
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-400" />
+          <input value={threadSearch} onChange={e => setThreadSearch(e.target.value)}
+            placeholder="Search any thread to reply to…"
+            className="w-full pl-8 pr-3 py-2.5 text-sm border border-neutral-200 rounded-xl focus:outline-none focus:border-tuco-cyan" />
         </div>
-        <p className="text-[11px] text-neutral-400 -mt-1">
-          Every APPROVED thread with zero replies, oldest first. A thread drops off this list the moment ANY reply lands
-          — from a parent or the tuco team — it doesn't mean tuco team specifically has replied.
-        </p>
-        {loading ? <div className="text-center py-8 text-neutral-400 text-sm">Loading…</div> : queue.length === 0 ? (
-          <div className="text-center py-8 text-neutral-400 text-sm">Every approved thread has at least one reply 🎉</div>
-        ) : (
-          <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
-            {queue.map(t => (
-              <div key={t.id} onClick={() => { setActiveThreadId(t.id); setError(''); }} role="button" tabIndex={0}
-                className={`w-full text-left p-3 rounded-xl border transition-colors cursor-pointer ${
-                  activeThreadId === t.id ? 'border-tuco-cyan bg-tuco-cyan/5' : 'border-neutral-200 hover:bg-neutral-50'
-                } ${sentIds.has(t.id) ? 'opacity-50' : ''}`}>
-                <div className="flex items-center justify-between gap-2">
-                  <span className="font-bold text-sm text-neutral-800 truncate min-w-0">{t.title}</span>
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <a href={threadShareUrl(t.id, t.title)} target="_blank" rel="noopener noreferrer"
-                      onClick={e => e.stopPropagation()} title="Open thread"
-                      className="text-neutral-400 hover:text-tuco-cyan">
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </a>
-                    {sentIds.has(t.id) && <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />}
-                  </div>
-                </div>
-                <p className="text-xs text-neutral-500 line-clamp-2 mt-0.5">{t.preview}</p>
-                <div className="flex items-center gap-2 mt-1.5 text-[10px] text-neutral-400">
-                  <span className="bg-neutral-100 px-1.5 rounded capitalize">{t.category}</span>
-                  <span>by {t.opAuthor}</span>
-                  <span>·</span>
-                  <span>{ago(t.createdAt)}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
 
-        <div className="border-t border-neutral-200 pt-3 mt-1">
-          <button onClick={() => setPickerOpen(v => !v)}
-            className="flex items-center gap-1.5 text-xs font-bold text-tuco-cyan hover:text-tuco-cyan-hover">
-            <Search className="w-3.5 h-3.5" />
-            {pickerOpen ? 'Hide thread search' : 'Or reply to any thread…'}
-          </button>
-          <p className="text-[11px] text-neutral-400 mt-1">
-            Not limited to the queue above — search every thread, including ones that already have replies
-            (following up, correcting something, adding a video answer later).
-          </p>
-          {pickerOpen && (
-            <div className="mt-2 space-y-2">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-400" />
-                <input value={threadSearch} onChange={e => setThreadSearch(e.target.value)}
-                  placeholder="Search by title or author…"
-                  className="w-full pl-8 pr-3 py-2 text-sm border border-neutral-200 rounded-xl focus:outline-none focus:border-tuco-cyan" />
+        {threadSearch.trim().length >= 2 ? (
+          // Searching — this covers EVERY thread, not just the queue below,
+          // including ones that already have replies (following up,
+          // correcting something, adding a video answer later).
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold text-neutral-500 uppercase tracking-wide">
+                {loadingAllConvs ? 'Searching…' : `${searchResults.length} match${searchResults.length === 1 ? '' : 'es'}`}
+              </h3>
+              <button onClick={() => setThreadSearch('')} className="text-xs text-neutral-400 hover:text-neutral-600">Clear</button>
+            </div>
+            {loadingAllConvs ? (
+              <p className="text-xs text-neutral-400 text-center py-8">Loading every thread…</p>
+            ) : searchResults.length === 0 ? (
+              <p className="text-xs text-neutral-400 text-center py-8">No matches.</p>
+            ) : (
+              <div className="space-y-2 max-h-[560px] overflow-y-auto pr-1">
+                {searchResults.map(t => (
+                  <div key={t.id} onClick={() => { setActiveThreadId(t.id); setError(''); }} role="button" tabIndex={0}
+                    className={`w-full text-left p-3 rounded-xl border cursor-pointer ${
+                      activeThreadId === t.id ? 'border-tuco-cyan bg-tuco-cyan/5' : 'border-neutral-200 hover:bg-neutral-50'
+                    }`}>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-bold text-sm text-neutral-800 truncate min-w-0">{t.title}</span>
+                      <a href={threadShareUrl(t.id, t.title)} target="_blank" rel="noopener noreferrer"
+                        onClick={e => e.stopPropagation()} title="Open live thread"
+                        className="text-neutral-400 hover:text-tuco-cyan shrink-0">
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </a>
+                    </div>
+                    <p className="text-xs text-neutral-500 line-clamp-2 mt-0.5">{t.preview}</p>
+                    <div className="text-[10px] text-neutral-400 mt-1">by {t.opAuthor} · {ago(t.createdAt)}</div>
+                  </div>
+                ))}
               </div>
-              {loadingAllConvs ? (
-                <p className="text-xs text-neutral-400 text-center py-2">Loading every thread…</p>
-              ) : threadSearch.trim().length < 2 ? (
-                <p className="text-xs text-neutral-400 text-center py-2">Type at least 2 characters…</p>
-              ) : searchResults.length === 0 ? (
-                <p className="text-xs text-neutral-400 text-center py-2">No matches.</p>
-              ) : (
-                <div className="space-y-1.5 max-h-72 overflow-y-auto pr-1">
-                  {searchResults.map(t => (
-                    <div key={t.id} onClick={() => { setActiveThreadId(t.id); setError(''); setPickerOpen(false); }}
-                      role="button" tabIndex={0}
-                      className={`w-full text-left p-2.5 rounded-lg border cursor-pointer ${
-                        activeThreadId === t.id ? 'border-tuco-cyan bg-tuco-cyan/5' : 'border-neutral-200 hover:bg-neutral-50'
-                      }`}>
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="font-bold text-sm text-neutral-800 truncate min-w-0">{t.title}</span>
+            )}
+          </div>
+        ) : (
+          // Not searching — default view is the needs-a-reply queue, since
+          // that's the common case: nothing specific in mind, just work
+          // through what's waiting.
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold text-neutral-500 uppercase tracking-wide">Needs a reply ({queue.length})</h3>
+              <button onClick={load} className="p-1.5 border border-neutral-200 rounded-lg hover:bg-neutral-50">
+                <RefreshCw className="w-3.5 h-3.5 text-neutral-500" />
+              </button>
+            </div>
+            <p className="text-[11px] text-neutral-400 -mt-1">
+              Every APPROVED thread with zero replies, oldest first. A thread drops off this list the moment ANY reply
+              lands — from a parent or the tuco team — it doesn't mean tuco team specifically has replied. Search
+              above for a thread that already has replies.
+            </p>
+            {loading ? <div className="text-center py-8 text-neutral-400 text-sm">Loading…</div> : queue.length === 0 ? (
+              <div className="text-center py-8 text-neutral-400 text-sm">Every approved thread has at least one reply 🎉</div>
+            ) : (
+              <div className="space-y-2 max-h-[520px] overflow-y-auto pr-1">
+                {queue.map(t => (
+                  <div key={t.id} onClick={() => { setActiveThreadId(t.id); setError(''); }} role="button" tabIndex={0}
+                    className={`w-full text-left p-3 rounded-xl border transition-colors cursor-pointer ${
+                      activeThreadId === t.id ? 'border-tuco-cyan bg-tuco-cyan/5' : 'border-neutral-200 hover:bg-neutral-50'
+                    } ${sentIds.has(t.id) ? 'opacity-50' : ''}`}>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-bold text-sm text-neutral-800 truncate min-w-0">{t.title}</span>
+                      <div className="flex items-center gap-1.5 shrink-0">
                         <a href={threadShareUrl(t.id, t.title)} target="_blank" rel="noopener noreferrer"
                           onClick={e => e.stopPropagation()} title="Open thread"
-                          className="text-neutral-400 hover:text-tuco-cyan shrink-0">
+                          className="text-neutral-400 hover:text-tuco-cyan">
                           <ExternalLink className="w-3.5 h-3.5" />
                         </a>
-                      </div>
-                      <div className="text-[10px] text-neutral-400 mt-0.5">
-                        by {t.opAuthor} · {ago(t.createdAt)}
+                        {sentIds.has(t.id) && <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />}
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+                    <p className="text-xs text-neutral-500 line-clamp-2 mt-0.5">{t.preview}</p>
+                    <div className="flex items-center gap-2 mt-1.5 text-[10px] text-neutral-400">
+                      <span className="bg-neutral-100 px-1.5 rounded capitalize">{t.category}</span>
+                      <span>by {t.opAuthor}</span>
+                      <span>·</span>
+                      <span>{ago(t.createdAt)}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="min-w-0">
         <h3 className="text-xs font-bold text-neutral-500 uppercase tracking-wide mb-2">Reply as tuco team</h3>
         {!activeThread ? (
           <div className="text-center py-12 text-neutral-400 text-sm border border-dashed border-neutral-200 rounded-xl">
-            {activeThreadId != null && loadingAllConvs ? 'Loading thread…' : 'Pick a thread from the queue, or search for any thread, to reply to it'}
+            {activeThreadId != null && loadingAllConvs ? 'Loading thread…' : 'Search for a thread, or pick one from the queue, to reply to it'}
           </div>
         ) : (
           <div className="border border-neutral-200 rounded-xl p-4 space-y-3">
