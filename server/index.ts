@@ -759,11 +759,27 @@ async function handleResendWebhook(req: express.Request, res: express.Response) 
     const reason = eventType === 'email.bounced'
       ? (payload?.data?.bounce?.message || 'Bounced')
       : 'Marked as spam';
-    for (const address of to) {
-      await prisma.user.updateMany({
-        where: { email: address },
-        data: { emailBounced: true, emailBounceReason: String(reason).slice(0, 500) },
-      }).catch(err => console.error('Failed to record email bounce for', address, err));
+    const affected = await prisma.user.findMany({ where: { email: { in: to } }, select: { id: true } });
+    await prisma.user.updateMany({
+      where: { email: { in: to } },
+      data: { emailBounced: true, emailBounceReason: String(reason).slice(0, 500) },
+    }).catch(err => console.error('Failed to record email bounce for', to.join(', '), err));
+    // Only surface this in-app for an actual bounce — a spam complaint means
+    // they don't want mail from us, so messaging them about it (which would
+    // itself be an email... or a notification about their own spam action)
+    // isn't useful and could read as pushy.
+    if (eventType === 'email.bounced' && affected.length > 0) {
+      // "Inbox full" is temporary and resolves itself once they clear space
+      // — worth telling them so, versus a genuinely dead/mistyped address
+      // where the fix is updating their email instead.
+      const isFullInbox = /inbox|storage|quota|space/i.test(String(reason));
+      const title = isFullInbox ? "We couldn't email you — your inbox is full" : "We couldn't email you";
+      const description = isFullInbox
+        ? 'Your email inbox has no available space, so our messages (including any tuco Points updates) are bouncing back. Clear some space and you’ll start receiving them again.'
+        : 'Our emails to your account address are bouncing back, so you may be missing updates. Double-check the email on file in your profile.';
+      await prisma.notification.createMany({
+        data: affected.map(u => ({ userId: u.id, type: 'SYSTEM' as const, title, description, time: 'Just now' })),
+      }).catch(err => console.error('Failed to create bounce notification:', err));
     }
     console.warn(`📭 Resend ${eventType}:`, to.join(', '), '-', reason);
   }
