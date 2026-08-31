@@ -245,8 +245,8 @@ function UsersTab() {
 
   return (
     <div className="space-y-3">
-      <div className="flex gap-2">
-        <div className="relative flex-1">
+      <div className="flex gap-2 flex-wrap">
+        <div className="relative flex-1 min-w-[180px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
           <input value={search} onChange={e => setSearch(e.target.value)}
             placeholder="Search by username or email…"
@@ -269,7 +269,56 @@ function UsersTab() {
       </div>
 
       {loading ? <div className="text-center py-8 text-neutral-400">Loading users…</div> : (
-        <div className="overflow-x-auto rounded-xl border border-neutral-200">
+        <>
+        {/* Card list below md — a 5-column table forces horizontal scroll
+            on a phone; a stacked card per user reads far better there.
+            Same data, same actions, just a different layout. */}
+        <div className="md:hidden space-y-2">
+          {filtered.map(u => (
+            <div key={u.id} className={`border border-neutral-200 rounded-xl p-3 ${updating === u.id ? 'opacity-50' : ''}`}>
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <div className="min-w-0">
+                  <div className="font-bold text-neutral-800 text-sm">{u.username}</div>
+                  <div className="text-neutral-400 text-[11px] truncate">{u.email}</div>
+                  <div className="text-neutral-400 text-[11px]">{u.city}{u.childAge ? ` · child: ${u.childAge}` : ''}</div>
+                  {u.emailBounced && (
+                    <span title={u.emailBounceReason || 'Bounced'} className="inline-flex items-center gap-0.5 text-red-500 bg-red-50 px-1 rounded font-bold text-[10px] mt-1">
+                      <MailWarning className="w-2.5 h-2.5" /> bounced
+                    </span>
+                  )}
+                </div>
+                <button onClick={() => deleteUser(u.id, u.username)} disabled={updating === u.id}
+                  className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors shrink-0">
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="flex items-center justify-between gap-2 text-xs text-neutral-600 mb-2">
+                <span>{u.postCount} posts · {u.replyCount} replies</span>
+                <span className="text-neutral-400">{ago(u.createdAt)}</span>
+              </div>
+              <div className="flex items-center justify-between gap-2">
+                <select
+                  value={u.role}
+                  disabled={updating === u.id}
+                  onChange={e => changeRole(u.id, e.target.value)}
+                  className="text-xs border border-neutral-200 rounded-lg px-2 py-1 bg-white"
+                >
+                  {['member', 'trusted', 'moderator', 'tuco_team', 'guest'].map(r => (
+                    <option key={r} value={r}>{r.replace('_', ' ')}</option>
+                  ))}
+                </select>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-12 bg-neutral-200 rounded-full h-1.5">
+                    <div className="h-1.5 rounded-full bg-tuco-cyan" style={{ width: `${Math.round(u.trustScore * 100)}%` }} />
+                  </div>
+                  <span className="text-xs text-neutral-600">{Math.round(u.trustScore * 100)}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+          <div className="text-[10px] text-neutral-400 text-center py-1">{filtered.length} of {users.length} users</div>
+        </div>
+        <div className="hidden md:block overflow-x-auto rounded-xl border border-neutral-200">
           <table className="w-full text-xs">
             <thead className="bg-neutral-50 border-b border-neutral-200">
               <tr>
@@ -342,6 +391,7 @@ function UsersTab() {
             {filtered.length} of {users.length} users
           </div>
         </div>
+        </>
       )}
     </div>
   );
@@ -432,7 +482,71 @@ function ConversationsTab() {
       </div>
 
       {loading ? <div className="text-center py-8 text-neutral-400">Loading conversations…</div> : (
-        <div className="overflow-x-auto rounded-xl border border-neutral-200">
+        <>
+        <div className="md:hidden space-y-2">
+          {filtered.map(c => (
+            <div key={c.id} className={`border border-neutral-200 rounded-xl p-3 ${updating === c.id ? 'opacity-50' : ''}`}>
+              <div className="flex items-start justify-between gap-2 mb-1.5">
+                <a href={threadShareUrl(c.id, c.title)} target="_blank" rel="noopener noreferrer"
+                  className="font-bold text-neutral-800 text-sm flex items-center gap-1 hover:text-tuco-cyan min-w-0">
+                  <span className="truncate">{c.title}</span>
+                  <ExternalLink className="w-3 h-3 shrink-0 text-neutral-400" />
+                </a>
+                {statusBadge(c.moderationStatus)}
+              </div>
+              <div className="text-neutral-400 text-[11px] flex gap-2 flex-wrap mb-1.5">
+                <span>by {c.opAuthor}</span>
+                <span className="capitalize bg-neutral-100 px-1.5 rounded">{c.category}</span>
+                {c.isPinned && <span className="text-orange-500">📌 pinned</span>}
+                {c.isFeatured && <span className="text-purple-500">⭐ featured</span>}
+              </div>
+              {c.greyAreaFlags?.length > 0 && (
+                <div className="flex gap-1 mb-1.5 flex-wrap">
+                  {c.greyAreaFlags.map(f => (
+                    <span key={f} className="bg-amber-50 text-amber-600 text-[9px] px-1 rounded">{f}</span>
+                  ))}
+                </div>
+              )}
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 text-xs text-neutral-600">
+                  <span className="flex items-center gap-0.5"><ThumbsUp className="w-3 h-3" />{c.votes}</span>
+                  <span className="flex items-center gap-0.5"><Eye className="w-3 h-3" />{c.views}</span>
+                  <span className="flex items-center gap-0.5"><MessageCircle className="w-3 h-3" />{c.replyCount}</span>
+                  <span className="text-neutral-400">· {ago(c.createdAt)}</span>
+                </div>
+                <div className="flex items-center gap-0.5">
+                  {c.moderationStatus !== 'approved' && (
+                    <button onClick={() => moderate(c.id, 'approved')} title="Approve"
+                      className="p-1.5 text-emerald-500 hover:bg-emerald-50 rounded-lg">
+                      <CheckCircle className="w-4 h-4" />
+                    </button>
+                  )}
+                  {c.moderationStatus !== 'rejected' && (
+                    <button onClick={() => moderate(c.id, 'rejected')} title="Reject"
+                      className="p-1.5 text-red-400 hover:bg-red-50 rounded-lg">
+                      <XCircle className="w-4 h-4" />
+                    </button>
+                  )}
+                  <button onClick={() => togglePin(c.id, !c.isPinned)} title={c.isPinned ? 'Unpin' : 'Pin'}
+                    className={`p-1.5 rounded-lg ${c.isPinned ? 'text-orange-500 bg-orange-50' : 'text-neutral-400 hover:bg-neutral-100'}`}>
+                    <Pin className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => setWeeklyHighlight(c.id)}
+                    title={c.isWeeklyHighlight ? 'Current Thread of the Week' : 'Make Thread of the Week'}
+                    className={`p-1.5 rounded-lg ${c.isWeeklyHighlight ? 'text-purple-500 bg-purple-50' : 'text-neutral-400 hover:bg-neutral-100'}`}>
+                    <Star className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => deleteConv(c.id, c.title)} title="Delete"
+                    className="p-1.5 text-red-400 hover:bg-red-50 rounded-lg">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+          <div className="text-[10px] text-neutral-400 text-center py-1">{filtered.length} of {convs.length} conversations</div>
+        </div>
+        <div className="hidden md:block overflow-x-auto rounded-xl border border-neutral-200">
           <table className="w-full text-xs">
             <thead className="bg-neutral-50 border-b border-neutral-200">
               <tr>
@@ -511,6 +625,7 @@ function ConversationsTab() {
             {filtered.length} of {convs.length} conversations
           </div>
         </div>
+        </>
       )}
     </div>
   );
@@ -559,7 +674,35 @@ function RepliesTab() {
       </div>
 
       {loading ? <div className="text-center py-8 text-neutral-400">Loading replies…</div> : (
-        <div className="overflow-x-auto rounded-xl border border-neutral-200">
+        <>
+        <div className="md:hidden space-y-2">
+          {filtered.map(r => (
+            <div key={r.id} className="border border-neutral-200 rounded-xl p-3">
+              <div className="flex items-center justify-between gap-2 mb-1">
+                <span className="font-bold text-neutral-700 text-sm">{r.author}</span>
+                {statusBadge(r.moderationStatus)}
+              </div>
+              <p className="text-neutral-600 text-sm line-clamp-2 mb-1.5">{r.text}</p>
+              <div className="flex items-center justify-between gap-2 text-[11px] text-neutral-400">
+                <a href={threadShareUrl(r.conversationId, r.conversationTitle)} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-1 hover:text-tuco-cyan truncate">
+                  <span className="truncate">{r.conversationTitle || `Thread #${r.conversationId}`}</span>
+                  <ExternalLink className="w-3 h-3 shrink-0" />
+                </a>
+                <span className="flex items-center gap-1 shrink-0"><ThumbsUp className="w-2.5 h-2.5" />{r.likes}</span>
+              </div>
+              <div className="flex items-center justify-between mt-1.5">
+                <span className="text-[11px] text-neutral-400">{ago(r.createdAt)}</span>
+                <button onClick={() => deleteReply(r.id)} disabled={deleting === r.id}
+                  className="p-1.5 text-red-400 hover:bg-red-50 rounded-lg">
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          ))}
+          <div className="text-[10px] text-neutral-400 text-center py-1">{filtered.length} of {replies.length} replies (latest 500)</div>
+        </div>
+        <div className="hidden md:block overflow-x-auto rounded-xl border border-neutral-200">
           <table className="w-full text-xs">
             <thead className="bg-neutral-50 border-b border-neutral-200">
               <tr>
@@ -600,6 +743,7 @@ function RepliesTab() {
             {filtered.length} of {replies.length} replies (latest 500)
           </div>
         </div>
+        </>
       )}
     </div>
   );
@@ -614,7 +758,24 @@ function LogsTab() {
   }, []);
 
   return loading ? <div className="text-center py-8 text-neutral-400">Loading logs…</div> : (
-    <div className="overflow-x-auto rounded-xl border border-neutral-200">
+    <>
+    <div className="md:hidden space-y-2">
+      {logs.map(l => (
+        <div key={l.id} className="border border-neutral-200 rounded-xl p-3">
+          <div className="flex items-center justify-between gap-2 mb-1">
+            <span className={`font-bold uppercase text-xs ${
+              l.action === 'APPROVED' ? 'text-emerald-600' :
+              l.action === 'REJECTED' ? 'text-red-500' : 'text-amber-600'
+            }`}>{l.action}</span>
+            <span className="text-[11px] text-neutral-400">{ago(l.timestamp)}</span>
+          </div>
+          <div className="text-xs text-neutral-600 mb-1">{l.targetType} #{l.targetId}</div>
+          <p className="text-xs text-neutral-500">{l.reason || '—'}</p>
+        </div>
+      ))}
+      <div className="text-[10px] text-neutral-400 text-center py-1">{logs.length} entries (latest 200)</div>
+    </div>
+    <div className="hidden md:block overflow-x-auto rounded-xl border border-neutral-200">
       <table className="w-full text-xs">
         <thead className="bg-neutral-50 border-b border-neutral-200">
           <tr>
@@ -646,6 +807,7 @@ function LogsTab() {
         {logs.length} entries (latest 200)
       </div>
     </div>
+    </>
   );
 }
 
@@ -1095,16 +1257,16 @@ function JobsTab() {
       </p>
       {jobs.map(job => (
         <div key={job.name} className="border border-neutral-200 rounded-xl p-4">
-          <div className="flex items-center justify-between mb-2">
-            <div>
-              <div className="font-bold text-neutral-800 flex items-center gap-2">
+          <div className="flex items-center justify-between gap-3 mb-2 flex-wrap">
+            <div className="min-w-0">
+              <div className="font-bold text-neutral-800 flex items-center gap-2 flex-wrap">
                 {job.name}
                 {job.sendsRealEmail && <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-bold uppercase">sends email</span>}
                 {!job.supportsDryRun && <span className="text-[10px] bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full font-bold uppercase">no preview mode</span>}
               </div>
               <div className="text-xs text-neutral-400">Last run: {job.lastRun ? ago(job.lastRun) : 'never (on this server)'}</div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               {job.supportsDryRun && (
                 <button onClick={() => run(job.name, true, job)} disabled={running === job.name}
                   className="flex items-center gap-1 text-xs font-bold text-neutral-600 border border-neutral-200 hover:bg-neutral-50 px-3 py-1.5 rounded-lg">
@@ -1317,27 +1479,27 @@ export function AdminPanel({ currentUserRole, currentUser, onLogout }: AdminPane
   return (
     <div className="min-h-screen bg-neutral-50 flex flex-col">
       {/* Header */}
-      <header className="bg-white border-b border-neutral-200 px-4 py-3 flex items-center justify-between sticky top-0 z-10">
-        <div className="flex items-center gap-3">
-          <div className="w-7 h-7 bg-tuco-cyan rounded-lg flex items-center justify-center">
+      <header className="bg-white border-b border-neutral-200 px-3 sm:px-4 py-3 flex items-center justify-between gap-2 flex-wrap sticky top-0 z-10">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <div className="w-7 h-7 bg-tuco-cyan rounded-lg flex items-center justify-center shrink-0">
             <Shield className="w-4 h-4 text-white" />
           </div>
-          <div>
+          <div className="min-w-0">
             <span className="font-display font-black text-neutral-800 text-sm">tuco Admin</span>
             <span className="ml-2 text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full font-bold uppercase">
               {currentUserRole.replace('_', ' ')}
             </span>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {stats?.pending ? (
-            <div className="flex items-center gap-1 text-xs text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full font-bold">
+            <div className="flex items-center gap-1 text-xs text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full font-bold whitespace-nowrap">
               <AlertTriangle className="w-3 h-3" />
               {stats.pending} pending
             </div>
           ) : null}
           <button onClick={onLogout}
-            className="flex items-center gap-1.5 text-xs text-neutral-500 hover:text-red-500 px-3 py-1.5 border border-neutral-200 rounded-xl hover:border-red-200 transition-colors">
+            className="flex items-center gap-1.5 text-xs text-neutral-500 hover:text-red-500 px-3 py-1.5 border border-neutral-200 rounded-xl hover:border-red-200 transition-colors whitespace-nowrap">
             <LogOut className="w-3.5 h-3.5" /> Exit Admin
           </button>
         </div>
