@@ -479,6 +479,19 @@ interface AuthRequest extends express.Request {
 // has no tokenVersion claim at all; treating that as 0 means it stays valid
 // until the user's first password change/reset after this deploy, rather
 // than logging everyone out immediately.
+// req.userRole is ALWAYS the DB's current role, never the JWT payload's
+// role claim — the claim is stamped once at login and never updated, so a
+// role change (promoting someone to TUCO_TEAM/MODERATOR, or demoting them)
+// silently would not apply to any token issued before that change until
+// the person happened to log out and back in. That bit a real promotion
+// (glucky421@gmail.com: genuinely TUCO_TEAM in the DB, 403'd on every admin
+// endpoint anyway because their token predated the promotion) and would
+// equally have affected every MODERATOR/TUCO_TEAM check in this file
+// (requireAdmin, requireModerator, every inline isMod check, the role-
+// change guard on PATCH /api/users/me) — not just the admin dashboard.
+// tokenVersion is already fetched here for every request, so reading role
+// in the same query is free; this closes the whole bug class in one place
+// rather than requiring every call site to remember to re-check.
 const authenticate = async (req: AuthRequest, res: express.Response, next: express.NextFunction) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -487,12 +500,12 @@ const authenticate = async (req: AuthRequest, res: express.Response, next: expre
   const token = authHeader.slice(7);
   try {
     const payload = jwt.verify(token, JWT_SECRET) as { userId: string; role: string; tokenVersion?: number };
-    const user = await prisma.user.findUnique({ where: { id: payload.userId }, select: { tokenVersion: true } });
+    const user = await prisma.user.findUnique({ where: { id: payload.userId }, select: { tokenVersion: true, role: true } });
     if (!user || (payload.tokenVersion ?? 0) !== user.tokenVersion) {
       return res.status(401).json({ error: 'Invalid or expired token' });
     }
     req.userId = payload.userId;
-    req.userRole = payload.role;
+    req.userRole = user.role;
     next();
   } catch {
     return res.status(401).json({ error: 'Invalid or expired token' });
@@ -505,10 +518,10 @@ const optionalAuth = async (req: AuthRequest, res: express.Response, next: expre
     const token = authHeader.slice(7);
     try {
       const payload = jwt.verify(token, JWT_SECRET) as { userId: string; role: string; tokenVersion?: number };
-      const user = await prisma.user.findUnique({ where: { id: payload.userId }, select: { tokenVersion: true } });
+      const user = await prisma.user.findUnique({ where: { id: payload.userId }, select: { tokenVersion: true, role: true } });
       if (user && (payload.tokenVersion ?? 0) === user.tokenVersion) {
         req.userId = payload.userId;
-        req.userRole = payload.role;
+        req.userRole = user.role;
       }
     } catch {
       // ignore invalid token for optional auth
@@ -3583,27 +3596,16 @@ app.get('/apps/community', verifyShopifyProxy, (req, res) => {
 // ADMIN API
 // ------------------------------
 
-async function requireAdmin(req: AuthRequest, res: any, next: any) {
-  // Deliberately re-checks the role from the DATABASE rather than trusting
-  // req.userRole (which comes from the JWT payload, stamped at login time).
-  // A promotion to TUCO_TEAM done via the admin panel or a direct DB update
-  // doesn't change any token that's already been issued — someone promoted
-  // this way stayed 403'd on every admin endpoint until they happened to
-  // log out and back in, with the failure silently swallowed client-side
-  // (looked like the dashboard was just stuck on "Loading stats…" forever,
-  // no error shown). Confirmed live: glucky421@gmail.com was TUCO_TEAM in
-  // the DB but still carrying an old MEMBER-role token. This fresh lookup
-  // means a promotion takes effect on the very next request, no re-login
-  // needed, and it can't recur for anyone promoted in the future.
-  try {
-    const user = await prisma.user.findUnique({ where: { id: req.userId }, select: { role: true } });
-    if (user?.role !== 'TUCO_TEAM') {
-      return res.status(403).json({ error: 'Admin access required' });
-    }
-    next();
-  } catch (error) {
-    next(error);
+function requireAdmin(req: AuthRequest, res: any, next: any) {
+  // req.userRole is safe to trust here — authenticate() (which always runs
+  // before this) now reads role fresh from the DB on every request instead
+  // of the JWT's stale role claim. See the comment on authenticate() for
+  // why that fix exists: a role promotion used to not take effect until
+  // the promoted account logged out and back in.
+  if (req.userRole !== 'TUCO_TEAM') {
+    return res.status(403).json({ error: 'Admin access required' });
   }
+  next();
 }
 
 // Stats dashboard
