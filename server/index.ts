@@ -7,6 +7,8 @@ import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import pino from 'pino-http';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { execFile } from 'child_process';
+import fs from 'fs';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
@@ -3661,7 +3663,7 @@ app.get('/api/admin/conversations', authenticate, requireAdmin, async (req, res,
     res.json(conversations.map(c => ({
       id: c.id, title: c.title, category: c.category,
       moderationStatus: c.moderationStatus.toLowerCase(),
-      isPinned: c.isPinned, isFeatured: c.isFeatured,
+      isPinned: c.isPinned, isFeatured: c.isFeatured, isWeeklyHighlight: c.isWeeklyHighlight,
       votes: c.votes, views: c.views, createdAt: c.createdAt,
       authorId: c.authorId, opAuthor: c.opAuthor,
       replyCount: c._count.replies, voteCount: c._count.votesRelation,
@@ -3706,6 +3708,259 @@ app.get('/api/admin/logs', authenticate, requireAdmin, async (req, res, next) =>
       take: 200,
     });
     res.json(logs);
+  } catch (error) { next(error); }
+});
+
+// ------------------------------
+// ADMIN — dashboard v2 additions
+// All of these are purely additive read/compose endpoints reusing the same
+// requireAdmin gate as everything above — none of them touch a member-facing
+// route or change existing behavior for regular users.
+// ------------------------------
+
+// Approved threads sitting with zero replies, oldest-waiting-first — the
+// queue a tuco-team member works through when replying from the dashboard.
+app.get('/api/admin/needs-reply', authenticate, requireAdmin, async (req, res, next) => {
+  try {
+    const threads = await prisma.conversation.findMany({
+      where: { moderationStatus: 'APPROVED', replies: { none: {} } },
+      orderBy: { createdAt: 'asc' },
+      take: 100,
+      select: { id: true, title: true, category: true, opAuthor: true, createdAt: true, opText: true },
+    });
+    res.json(threads.map(t => ({
+      id: t.id, title: t.title, category: t.category, opAuthor: t.opAuthor,
+      createdAt: t.createdAt, preview: t.opText?.slice(0, 200) || '',
+    })));
+  } catch (error) { next(error); }
+});
+
+// Open reports: a FLAGGED ModerationLog entry for a target that hasn't had
+// an APPROVED/REJECTED entry logged AFTER it — i.e. nobody has acted on it
+// yet. Old FLAGGED rows never get deleted (they're the audit trail), so
+// "still open" has to be computed from the latest entry per target rather
+// than just listing every FLAGGED row ever created.
+app.get('/api/admin/reports', authenticate, requireAdmin, async (req, res, next) => {
+  try {
+    const allLogs = await prisma.moderationLog.findMany({
+      orderBy: { timestamp: 'desc' },
+      take: 2000,
+    });
+    const latestByTarget = new Map<string, typeof allLogs[number]>();
+    for (const log of allLogs) {
+      const key = `${log.targetType}:${log.targetId}`;
+      if (!latestByTarget.has(key)) latestByTarget.set(key, log);
+    }
+    const openFlags = [...latestByTarget.values()].filter(l => l.action === 'FLAGGED');
+
+    const reports = await Promise.all(openFlags.map(async flag => {
+      const reporter = await prisma.user.findUnique({ where: { id: flag.moderatorId }, select: { username: true } });
+      let preview = '';
+      let contentAuthorId: string | null = null;
+      let contentAuthorName = '';
+      if (flag.targetType === 'CONVERSATION') {
+        const conv = await prisma.conversation.findUnique({ where: { id: flag.targetId }, select: { title: true, authorId: true, opAuthor: true } });
+        preview = conv?.title || '(deleted thread)';
+        contentAuthorId = conv?.authorId ?? null;
+        contentAuthorName = conv?.opAuthor || '';
+      } else {
+        const reply = await prisma.reply.findUnique({ where: { id: flag.targetId }, select: { text: true, authorId: true, author: true } });
+        preview = reply?.text?.slice(0, 150) || '(deleted reply)';
+        contentAuthorId = reply?.authorId ?? null;
+        contentAuthorName = reply?.author || '';
+      }
+      // How many times THIS exact piece of content has been flagged (by one
+      // or more reporters) — distinguishes "one person flagged this once"
+      // from "several different people flagged the same thing."
+      const timesThisContentWasFlagged = allLogs.filter(
+        l => l.action === 'FLAGGED' && l.targetType === flag.targetType && l.targetId === flag.targetId
+      ).length;
+      return {
+        id: flag.id,
+        targetType: flag.targetType,
+        targetId: flag.targetId,
+        reason: flag.reason,
+        timestamp: flag.timestamp,
+        reporterUsername: reporter?.username || '(deleted user)',
+        contentPreview: preview,
+        contentAuthorId,
+        contentAuthorName,
+        timesThisContentWasFlagged,
+      };
+    }));
+    reports.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    res.json(reports);
+  } catch (error) { next(error); }
+});
+
+// Find a user by username/email to inspect their Nector standing.
+app.get('/api/admin/nector/search', authenticate, requireAdmin, async (req, res, next) => {
+  try {
+    const q = String(req.query.q || '').trim();
+    if (!q) return res.json([]);
+    const users = await prisma.user.findMany({
+      where: { OR: [{ username: { contains: q, mode: 'insensitive' } }, { email: { contains: q, mode: 'insensitive' } }] },
+      select: { id: true, username: true, email: true, phone: true },
+      take: 20,
+    });
+    res.json(users);
+  } catch (error) { next(error); }
+});
+
+// One user's full Nector picture: live balance (if reachable) + our local
+// award ledger — the two things I've been checking by hand over SSH/API
+// calls all session.
+app.get('/api/admin/nector/user/:id', authenticate, requireAdmin, async (req, res, next) => {
+  try {
+    const user = await prisma.user.findUnique({ where: { id: req.params.id }, select: { id: true, username: true, email: true, phone: true } });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    const [balance, awards] = await Promise.all([
+      nectorGetBalance(user.id),
+      prisma.nectorAward.findMany({ where: { userId: user.id }, orderBy: { createdAt: 'desc' } }),
+    ]);
+    res.json({ user, balance, phoneOnFile: !!user.phone, awards });
+  } catch (error) { next(error); }
+});
+
+// Recent award ledger across all users — what actually got attempted,
+// regardless of whether the underlying Nector call succeeded (that's only
+// visible in server logs today; this at least shows what we tried).
+app.get('/api/admin/nector/awards', authenticate, requireAdmin, async (req, res, next) => {
+  try {
+    const sourceType = req.query.sourceType as string | undefined;
+    const awards = await prisma.nectorAward.findMany({
+      where: sourceType ? { sourceType: sourceType.toUpperCase() as any } : undefined,
+      orderBy: { createdAt: 'desc' },
+      take: 200,
+    });
+    const userIds = [...new Set(awards.map(a => a.userId))];
+    const users = await prisma.user.findMany({ where: { id: { in: userIds } }, select: { id: true, username: true, email: true } });
+    const byId = new Map(users.map(u => [u.id, u]));
+    res.json(awards.map(a => ({ ...a, user: byId.get(a.userId) || null })));
+  } catch (error) { next(error); }
+});
+
+// Whitelisted cron scripts — nothing here accepts an arbitrary path/command,
+// only one of these two known names, so this can't become a remote-code-
+// execution hole even though it's spawning a child process from a request.
+const ADMIN_JOBS: Record<string, { script: string; logFile: string; sendsRealEmail?: boolean }> = {
+  rotateWeeklyHighlight: { script: 'scripts/rotateWeeklyHighlight.cjs', logFile: '/home/ubuntu/rotate-highlight.log' },
+  sendWeeklyDigest: { script: 'scripts/sendWeeklyDigest.cjs', logFile: '/home/ubuntu/weekly-digest.log', sendsRealEmail: true },
+};
+
+app.get('/api/admin/jobs', authenticate, requireAdmin, async (req, res, next) => {
+  try {
+    const jobs = await Promise.all(Object.entries(ADMIN_JOBS).map(async ([name, cfg]) => {
+      try {
+        const stat = await fs.promises.stat(cfg.logFile);
+        const content = await fs.promises.readFile(cfg.logFile, 'utf8');
+        const lastLines = content.trim().split('\n').slice(-20).join('\n');
+        return { name, lastRun: stat.mtime, lastOutput: lastLines, sendsRealEmail: !!cfg.sendsRealEmail };
+      } catch {
+        // No log file yet just means it's never run on this box — not an error.
+        return { name, lastRun: null, lastOutput: '', sendsRealEmail: !!cfg.sendsRealEmail };
+      }
+    }));
+    res.json(jobs);
+  } catch (error) { next(error); }
+});
+
+// Runs a whitelisted script on demand. Defaults to --dry-run unless the
+// caller explicitly opts out — sendWeeklyDigest with dryRun:false emails the
+// entire follower base for real, so that path requires an explicit,
+// unambiguous flag rather than being the default of a button click.
+app.post('/api/admin/jobs/run', authenticate, requireAdmin, async (req: AuthRequest, res, next) => {
+  try {
+    const { name, dryRun = true } = req.body;
+    const cfg = ADMIN_JOBS[name];
+    if (!cfg) return res.status(400).json({ error: 'Unknown job' });
+    const args = dryRun ? [cfg.script, '--dry-run'] : [cfg.script];
+    const repoRoot = path.resolve(__dirname, '..');
+    execFile('node', args, { cwd: repoRoot, timeout: 60_000 }, (err, stdout, stderr) => {
+      if (err) {
+        console.error(`Admin job "${name}" failed:`, err, stderr);
+        return res.status(500).json({ error: 'Job failed', output: stderr || err.message });
+      }
+      console.warn(`🔧 Admin job "${name}" run by ${req.userId} (dryRun=${dryRun})`);
+      res.json({ success: true, output: stdout });
+    });
+  } catch (error) { next(error); }
+});
+
+// Recent activity across the platform in one feed, instead of me querying
+// each table by hand over SSH every time you ask "what's been happening."
+app.get('/api/admin/activity', authenticate, requireAdmin, async (req, res, next) => {
+  try {
+    const [signups, posts, replies, bouncedUsers] = await Promise.all([
+      prisma.user.findMany({ orderBy: { createdAt: 'desc' }, take: 20, select: { id: true, username: true, email: true, createdAt: true } }),
+      prisma.conversation.findMany({ orderBy: { createdAt: 'desc' }, take: 20, select: { id: true, title: true, opAuthor: true, createdAt: true, moderationStatus: true } }),
+      prisma.reply.findMany({ orderBy: { createdAt: 'desc' }, take: 20, select: { id: true, author: true, text: true, conversationId: true, createdAt: true } }),
+      prisma.user.findMany({ where: { emailBounced: true }, select: { id: true, username: true, email: true, emailBounceReason: true } }),
+    ]);
+    const feed = [
+      ...signups.map(u => ({ type: 'signup' as const, at: u.createdAt, summary: `${u.username} signed up`, meta: u })),
+      ...posts.map(p => ({ type: 'post' as const, at: p.createdAt, summary: `${p.opAuthor} posted "${p.title.slice(0, 60)}"`, meta: p })),
+      ...replies.map(r => ({ type: 'reply' as const, at: r.createdAt, summary: `${r.author} replied on thread #${r.conversationId}`, meta: r })),
+    ].sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime()).slice(0, 40);
+    res.json({ feed, currentlyBounced: bouncedUsers });
+  } catch (error) { next(error); }
+});
+
+// Single-glance health check for the external services this app depends on.
+app.get('/api/admin/health', authenticate, requireAdmin, async (req, res, next) => {
+  try {
+    const checks: Record<string, { ok: boolean; detail?: string }> = {};
+    try {
+      await prisma.$queryRaw`SELECT 1`;
+      checks.database = { ok: true };
+    } catch (err: any) {
+      checks.database = { ok: false, detail: err?.message };
+    }
+    checks.nector = NECTOR_CONFIGURED
+      ? { ok: true, detail: 'API key + workspace configured' }
+      : { ok: false, detail: 'NECTOR_API_KEY/NECTOR_WORKSPACE_ID not set' };
+    checks.resend = resend
+      ? { ok: true, detail: 'RESEND_API_KEY configured' }
+      : { ok: false, detail: 'RESEND_API_KEY not set — emails are only simulated/logged' };
+    checks.resendWebhook = process.env.RESEND_WEBHOOK_SECRET
+      ? { ok: true, detail: 'Bounce webhook secret configured' }
+      : { ok: false, detail: 'RESEND_WEBHOOK_SECRET not set — bounces are not being tracked' };
+    const jobStatuses = await Promise.all(Object.entries(ADMIN_JOBS).map(async ([name, cfg]) => {
+      try {
+        const stat = await fs.promises.stat(cfg.logFile);
+        const ageMs = Date.now() - stat.mtime.getTime();
+        return { name, lastRun: stat.mtime, staleDays: Math.floor(ageMs / (24 * 60 * 60 * 1000)) };
+      } catch {
+        return { name, lastRun: null, staleDays: null };
+      }
+    }));
+    res.json({ checks, jobStatuses });
+  } catch (error) { next(error); }
+});
+
+// One search box across users/threads/replies instead of picking a tab first.
+app.get('/api/admin/search', authenticate, requireAdmin, async (req, res, next) => {
+  try {
+    const q = String(req.query.q || '').trim();
+    if (!q || q.length < 2) return res.json({ users: [], conversations: [], replies: [] });
+    const [users, conversations, replies] = await Promise.all([
+      prisma.user.findMany({
+        where: { OR: [{ username: { contains: q, mode: 'insensitive' } }, { email: { contains: q, mode: 'insensitive' } }] },
+        select: { id: true, username: true, email: true },
+        take: 10,
+      }),
+      prisma.conversation.findMany({
+        where: { title: { contains: q, mode: 'insensitive' } },
+        select: { id: true, title: true, opAuthor: true },
+        take: 10,
+      }),
+      prisma.reply.findMany({
+        where: { text: { contains: q, mode: 'insensitive' } },
+        select: { id: true, text: true, author: true, conversationId: true },
+        take: 10,
+      }),
+    ]);
+    res.json({ users, conversations, replies });
   } catch (error) { next(error); }
 });
 

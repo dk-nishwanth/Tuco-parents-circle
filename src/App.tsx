@@ -2075,6 +2075,7 @@ function AdminRoute() {
   return (
     <AdminPanel
       currentUserRole={user.role}
+      currentUser={user}
       onLogout={() => { api.logout(); navigate('/'); }}
     />
   );

@@ -200,6 +200,7 @@ export const api = {
       views: number;
       isPinned: boolean;
       isFeatured: boolean;
+      isWeeklyHighlight: boolean;
       featuredLabel: string;
       moderationStatus: string;
       moderationReason: string;
