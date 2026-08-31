@@ -58,7 +58,8 @@ interface NectorUserDetail {
   user: NectorSearchResult; balance: number | null; phoneOnFile: boolean; awards: NectorAward[];
 }
 interface AdminJob {
-  name: string; lastRun: string | null; lastOutput: string; sendsRealEmail: boolean;
+  name: string; lastRun: string | null; lastOutput: string;
+  sendsRealEmail: boolean; supportsDryRun: boolean;
 }
 interface ActivityItem {
   type: 'signup' | 'post' | 'reply'; at: string; summary: string; meta: any;
@@ -924,8 +925,13 @@ function JobsTab() {
 
   useEffect(() => { load(); }, [load]);
 
-  const run = async (name: string, dryRun: boolean, sendsRealEmail: boolean) => {
-    if (!dryRun && sendsRealEmail && !confirm('This sends REAL emails to real users right now. Are you sure?')) return;
+  const run = async (name: string, dryRun: boolean, job: AdminJob) => {
+    if (!dryRun) {
+      const warning = job.sendsRealEmail
+        ? 'This sends REAL emails to real users right now. Are you sure?'
+        : `This job has no preview mode — running it will make a real, live change (${name}). Are you sure?`;
+      if (!confirm(warning)) return;
+    }
     setRunning(name);
     try {
       const res = await adminFetch('/api/admin/jobs/run', { method: 'POST', body: JSON.stringify({ name, dryRun }) });
@@ -949,15 +955,18 @@ function JobsTab() {
               <div className="font-bold text-neutral-800 flex items-center gap-2">
                 {job.name}
                 {job.sendsRealEmail && <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-bold uppercase">sends email</span>}
+                {!job.supportsDryRun && <span className="text-[10px] bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full font-bold uppercase">no preview mode</span>}
               </div>
               <div className="text-xs text-neutral-400">Last run: {job.lastRun ? ago(job.lastRun) : 'never (on this server)'}</div>
             </div>
             <div className="flex items-center gap-2">
-              <button onClick={() => run(job.name, true, job.sendsRealEmail)} disabled={running === job.name}
-                className="flex items-center gap-1 text-xs font-bold text-neutral-600 border border-neutral-200 hover:bg-neutral-50 px-3 py-1.5 rounded-lg">
-                <Play className="w-3.5 h-3.5" /> Dry run
-              </button>
-              <button onClick={() => run(job.name, false, job.sendsRealEmail)} disabled={running === job.name}
+              {job.supportsDryRun && (
+                <button onClick={() => run(job.name, true, job)} disabled={running === job.name}
+                  className="flex items-center gap-1 text-xs font-bold text-neutral-600 border border-neutral-200 hover:bg-neutral-50 px-3 py-1.5 rounded-lg">
+                  <Play className="w-3.5 h-3.5" /> Dry run
+                </button>
+              )}
+              <button onClick={() => run(job.name, false, job)} disabled={running === job.name}
                 className="flex items-center gap-1 text-xs font-bold text-white bg-tuco-cyan hover:bg-tuco-cyan-hover px-3 py-1.5 rounded-lg">
                 <Play className="w-3.5 h-3.5" /> Run for real
               </button>

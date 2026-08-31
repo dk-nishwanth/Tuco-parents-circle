@@ -3843,9 +3843,13 @@ app.get('/api/admin/nector/awards', authenticate, requireAdmin, async (req, res,
 // Whitelisted cron scripts — nothing here accepts an arbitrary path/command,
 // only one of these two known names, so this can't become a remote-code-
 // execution hole even though it's spawning a child process from a request.
-const ADMIN_JOBS: Record<string, { script: string; logFile: string; sendsRealEmail?: boolean }> = {
-  rotateWeeklyHighlight: { script: 'scripts/rotateWeeklyHighlight.cjs', logFile: '/home/ubuntu/rotate-highlight.log' },
-  sendWeeklyDigest: { script: 'scripts/sendWeeklyDigest.cjs', logFile: '/home/ubuntu/weekly-digest.log', sendsRealEmail: true },
+// supportsDryRun must match the script's ACTUAL behavior — rotateWeeklyHighlight.cjs
+// has no --dry-run flag at all, so passing one would be silently ignored and
+// the "preview" would really rotate the live homepage highlight. Only mark a
+// script true here once it's been verified to genuinely no-op under --dry-run.
+const ADMIN_JOBS: Record<string, { script: string; logFile: string; sendsRealEmail?: boolean; supportsDryRun: boolean }> = {
+  rotateWeeklyHighlight: { script: 'scripts/rotateWeeklyHighlight.cjs', logFile: '/home/ubuntu/rotate-highlight.log', supportsDryRun: false },
+  sendWeeklyDigest: { script: 'scripts/sendWeeklyDigest.cjs', logFile: '/home/ubuntu/weekly-digest.log', sendsRealEmail: true, supportsDryRun: true },
 };
 
 app.get('/api/admin/jobs', authenticate, requireAdmin, async (req, res, next) => {
@@ -3855,10 +3859,10 @@ app.get('/api/admin/jobs', authenticate, requireAdmin, async (req, res, next) =>
         const stat = await fs.promises.stat(cfg.logFile);
         const content = await fs.promises.readFile(cfg.logFile, 'utf8');
         const lastLines = content.trim().split('\n').slice(-20).join('\n');
-        return { name, lastRun: stat.mtime, lastOutput: lastLines, sendsRealEmail: !!cfg.sendsRealEmail };
+        return { name, lastRun: stat.mtime, lastOutput: lastLines, sendsRealEmail: !!cfg.sendsRealEmail, supportsDryRun: cfg.supportsDryRun };
       } catch {
         // No log file yet just means it's never run on this box — not an error.
-        return { name, lastRun: null, lastOutput: '', sendsRealEmail: !!cfg.sendsRealEmail };
+        return { name, lastRun: null, lastOutput: '', sendsRealEmail: !!cfg.sendsRealEmail, supportsDryRun: cfg.supportsDryRun };
       }
     }));
     res.json(jobs);
@@ -3874,6 +3878,12 @@ app.post('/api/admin/jobs/run', authenticate, requireAdmin, async (req: AuthRequ
     const { name, dryRun = true } = req.body;
     const cfg = ADMIN_JOBS[name];
     if (!cfg) return res.status(400).json({ error: 'Unknown job' });
+    // Refuse a "dry run" for a script that doesn't actually have one —
+    // silently running it for real while the caller thinks it's a preview
+    // is worse than just erroring.
+    if (dryRun && !cfg.supportsDryRun) {
+      return res.status(400).json({ error: `${name} has no dry-run mode — this would run for real. Pass dryRun:false to confirm.` });
+    }
     const args = dryRun ? [cfg.script, '--dry-run'] : [cfg.script];
     const repoRoot = path.resolve(__dirname, '..');
     execFile('node', args, { cwd: repoRoot, timeout: 60_000 }, (err, stdout, stderr) => {
