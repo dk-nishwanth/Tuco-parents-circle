@@ -10,6 +10,8 @@ import { api, tokenStore } from '../utils/api';
 import { threadShareUrl } from '../utils/slug';
 import { getAvatarColor, getInitials } from '../utils/helpers';
 import { parseYouTubeId, stripYouTubeUrl, TucoVideoCard } from './TucoVideo';
+import { CATEGORIES } from '../data/categories';
+import { Plus } from 'lucide-react';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -886,9 +888,105 @@ function ComposePreview({ text, imageUrl, authorName }: { text: string; imageUrl
   );
 }
 
+// Starts a brand new thread as the tuco team — distinct from replying,
+// which is everything else in this tab. Posts through the same
+// api.createConversation() the real "new post" button uses, with one
+// deliberate difference: moderationStatus is sent explicitly as 'approved'.
+// The server defaults a MODERATOR/TUCO_TEAM-authored post to PENDING
+// unless a status is given (unlike a regular member's post, which
+// auto-publishes) — so leaving that out here would silently queue every
+// tuco-team post for review instead of publishing it immediately.
+function NewPostForm({ adminUser }: { adminUser: User }) {
+  const [title, setTitle] = useState('');
+  const [category, setCategory] = useState(Object.keys(CATEGORIES)[0]);
+  const [text, setText] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
+  const [composeView, setComposeView] = useState<'write' | 'preview'>('write');
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState<{ id: number; title: string } | null>(null);
+
+  const submit = async () => {
+    if (!title.trim()) { setError('Add a title.'); return; }
+    setSending(true);
+    setError('');
+    try {
+      const created = await api.createConversation({
+        title: title.trim(),
+        category,
+        city: adminUser.city || 'India',
+        text: text.trim(),
+        moderationStatus: 'approved',
+        ...(imageUrl.trim() ? { image: imageUrl.trim() } : {}),
+      });
+      setSuccess({ id: created.id, title: created.title });
+      setTitle(''); setText(''); setImageUrl(''); setComposeView('write');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to post.');
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <div className="max-w-xl border border-neutral-200 rounded-xl p-4 space-y-3">
+      {success && (
+        <div className="flex items-center justify-between gap-2 bg-emerald-50 border border-emerald-100 text-emerald-700 text-xs font-bold px-3 py-2 rounded-lg">
+          <span>Posted "{success.title.slice(0, 40)}"</span>
+          <a href={threadShareUrl(success.id, success.title)} target="_blank" rel="noopener noreferrer"
+            className="flex items-center gap-1 underline shrink-0">
+            View <ExternalLink className="w-3 h-3" />
+          </a>
+        </div>
+      )}
+      <input value={title} onChange={e => setTitle(e.target.value)} maxLength={300}
+        placeholder="Title or question…"
+        className="w-full text-sm font-bold border border-neutral-200 rounded-xl px-3 py-2 focus:outline-none focus:border-tuco-cyan" />
+      <select value={category} onChange={e => setCategory(e.target.value)}
+        className="w-full text-sm border border-neutral-200 rounded-xl px-3 py-2 bg-white focus:outline-none focus:border-tuco-cyan">
+        {Object.values(CATEGORIES).map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
+      </select>
+
+      <div className="flex gap-1 bg-neutral-100 rounded-lg p-1 w-fit">
+        <button onClick={() => setComposeView('write')}
+          className={`px-3 py-1 text-xs font-bold rounded-md transition-colors ${composeView === 'write' ? 'bg-white text-tuco-cyan shadow-sm' : 'text-neutral-500'}`}>
+          Write
+        </button>
+        <button onClick={() => setComposeView('preview')}
+          className={`px-3 py-1 text-xs font-bold rounded-md transition-colors ${composeView === 'preview' ? 'bg-white text-tuco-cyan shadow-sm' : 'text-neutral-500'}`}>
+          Preview
+        </button>
+      </div>
+
+      {composeView === 'write' ? (
+        <>
+          <textarea value={text} onChange={e => setText(e.target.value)} rows={6} maxLength={5000}
+            placeholder="Write the post… (paste a YouTube link to embed a video)"
+            className="w-full text-sm border border-neutral-200 rounded-xl px-3 py-2 focus:outline-none focus:border-tuco-cyan resize-none" />
+          <input value={imageUrl} onChange={e => setImageUrl(e.target.value)}
+            placeholder="Optional image URL"
+            className="w-full text-sm border border-neutral-200 rounded-xl px-3 py-2 focus:outline-none focus:border-tuco-cyan" />
+        </>
+      ) : (
+        <ComposePreview text={text} imageUrl={imageUrl} authorName="tuco Team" />
+      )}
+
+      {error && <p className="text-xs font-bold text-red-600">{error}</p>}
+      <button onClick={submit} disabled={sending || !title.trim()}
+        className="flex items-center gap-1.5 bg-tuco-cyan hover:bg-tuco-cyan-hover disabled:opacity-60 text-white text-sm font-bold px-4 py-2 rounded-lg transition-colors">
+        <Send className="w-3.5 h-3.5" /> {sending ? 'Posting…' : 'Publish post'}
+      </button>
+      <p className="text-[11px] text-neutral-400">
+        Publishes immediately and live — same as a real member's post, just authored as tuco Team.
+      </p>
+    </div>
+  );
+}
+
 function ComposeTab({ adminUser, openThreadId, onThreadOpened }: {
   adminUser: User; openThreadId?: number | null; onThreadOpened?: () => void;
 }) {
+  const [mode, setMode] = useState<'reply' | 'new-post'>('reply');
   const [queue, setQueue] = useState<NeedsReplyThread[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeThreadId, setActiveThreadId] = useState<number | null>(null);
@@ -933,6 +1031,7 @@ function ComposeTab({ adminUser, openThreadId, onThreadOpened }: {
   // re-renders correctly on its own.
   useEffect(() => {
     if (openThreadId == null) return;
+    setMode('reply');
     setActiveThreadId(openThreadId);
     setError('');
     onThreadOpened?.();
@@ -971,6 +1070,19 @@ function ComposeTab({ adminUser, openThreadId, onThreadOpened }: {
   };
 
   return (
+    <div className="space-y-4">
+      <div className="flex gap-1 bg-neutral-100 rounded-lg p-1 w-fit">
+        <button onClick={() => setMode('reply')}
+          className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-md transition-colors ${mode === 'reply' ? 'bg-white text-tuco-cyan shadow-sm' : 'text-neutral-500'}`}>
+          <Send className="w-3.5 h-3.5" /> Reply to a thread
+        </button>
+        <button onClick={() => setMode('new-post')}
+          className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-md transition-colors ${mode === 'new-post' ? 'bg-white text-tuco-cyan shadow-sm' : 'text-neutral-500'}`}>
+          <Plus className="w-3.5 h-3.5" /> New post
+        </button>
+      </div>
+
+      {mode === 'new-post' ? <NewPostForm adminUser={adminUser} /> : (
     // min-w-0 on both grid children below is load-bearing, not decorative:
     // a grid item's default min-width is "auto" (fit its content), so a
     // truncating flex child deeper inside (the thread title span) refuses
@@ -1132,6 +1244,8 @@ function ComposeTab({ adminUser, openThreadId, onThreadOpened }: {
           </div>
         )}
       </div>
+    </div>
+      )}
     </div>
   );
 }
