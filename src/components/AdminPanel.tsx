@@ -53,6 +53,7 @@ interface Report {
   id: string; targetType: string; targetId: number; reason?: string;
   timestamp: string; reporterUsername: string; contentPreview: string;
   contentAuthorId: string | null; contentAuthorName: string;
+  contentDeleted: boolean;
   timesThisContentWasFlagged: number;
   threadId: number | null; threadTitle: string | null;
 }
@@ -784,7 +785,8 @@ function LogsTab() {
           <div className="flex items-center justify-between gap-2 mb-1">
             <span className={`font-bold uppercase text-xs ${
               l.action === 'APPROVED' ? 'text-emerald-600' :
-              l.action === 'REJECTED' ? 'text-red-500' : 'text-amber-600'
+              l.action === 'REJECTED' || l.action === 'DELETED' ? 'text-red-500' :
+              l.action === 'DISMISSED' ? 'text-neutral-400' : 'text-amber-600'
             }`}>{l.action}</span>
             <span className="text-[11px] text-neutral-400">{ago(l.timestamp)}</span>
           </div>
@@ -810,7 +812,8 @@ function LogsTab() {
               <td className="px-3 py-2.5">
                 <span className={`font-bold uppercase ${
                   l.action === 'APPROVED' ? 'text-emerald-600' :
-                  l.action === 'REJECTED' ? 'text-red-500' : 'text-amber-600'
+                  l.action === 'REJECTED' || l.action === 'DELETED' ? 'text-red-500' :
+                  l.action === 'DISMISSED' ? 'text-neutral-400' : 'text-amber-600'
                 }`}>{l.action}</span>
               </td>
               <td className="px-3 py-2.5 text-neutral-600">
@@ -1280,6 +1283,22 @@ function ModerationTab() {
     }
   };
 
+  // Approve/reject both try to update the reported content — impossible
+  // when it's already gone (deleted through some other path). This just
+  // closes the report instead.
+  const dismiss = async (report: Report) => {
+    setUpdating(report.id);
+    try {
+      await adminFetch('/api/admin/reports/dismiss', {
+        method: 'POST',
+        body: JSON.stringify({ targetType: report.targetType, targetId: report.targetId }),
+      });
+      setReports(r => r.filter(x => x.id !== report.id));
+    } finally {
+      setUpdating(null);
+    }
+  };
+
   if (loading) return <div className="text-center py-8 text-neutral-400">Loading reports…</div>;
   if (reports.length === 0) {
     return <div className="text-center py-12 text-neutral-400 text-sm">No open reports — the queue is clear 🎉</div>;
@@ -1319,16 +1338,29 @@ function ModerationTab() {
             <div>Reported by: <span className="font-bold text-neutral-700">{r.reporterUsername}</span></div>
             {r.reason && <div>Reason: <span className="text-neutral-700">{r.reason}</span></div>}
           </div>
-          <div className="flex items-center gap-2">
-            <button onClick={() => resolve(r, 'approved')} disabled={updating === r.id}
-              className="flex items-center gap-1 text-xs font-bold text-emerald-600 border border-emerald-200 hover:bg-emerald-50 px-3 py-1.5 rounded-lg">
-              <CheckCircle className="w-3.5 h-3.5" /> Keep up
-            </button>
-            <button onClick={() => resolve(r, 'rejected')} disabled={updating === r.id}
-              className="flex items-center gap-1 text-xs font-bold text-red-600 border border-red-200 hover:bg-red-50 px-3 py-1.5 rounded-lg">
-              <XCircle className="w-3.5 h-3.5" /> Remove
-            </button>
-          </div>
+          {r.contentDeleted ? (
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-[11px] text-neutral-400">
+                Already gone — deleted through some other path before this report was reviewed. Nothing left to
+                approve or reject.
+              </p>
+              <button onClick={() => dismiss(r)} disabled={updating === r.id}
+                className="flex items-center gap-1 text-xs font-bold text-neutral-600 border border-neutral-200 hover:bg-neutral-50 px-3 py-1.5 rounded-lg shrink-0">
+                <XCircle className="w-3.5 h-3.5" /> Dismiss
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <button onClick={() => resolve(r, 'approved')} disabled={updating === r.id}
+                className="flex items-center gap-1 text-xs font-bold text-emerald-600 border border-emerald-200 hover:bg-emerald-50 px-3 py-1.5 rounded-lg">
+                <CheckCircle className="w-3.5 h-3.5" /> Keep up
+              </button>
+              <button onClick={() => resolve(r, 'rejected')} disabled={updating === r.id}
+                className="flex items-center gap-1 text-xs font-bold text-red-600 border border-red-200 hover:bg-red-50 px-3 py-1.5 rounded-lg">
+                <XCircle className="w-3.5 h-3.5" /> Remove
+              </button>
+            </div>
+          )}
         </div>
       ))}
     </div>

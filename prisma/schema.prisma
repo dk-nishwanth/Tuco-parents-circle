@@ -318,6 +318,18 @@ enum ModerationAction {
   APPROVED
   REJECTED
   FLAGGED
+  // A conversation/reply delete never used to write anything here at all —
+  // it just vanished with zero trace of who deleted it, when, or why. Any
+  // report against that content stayed permanently "open" in the
+  // moderation queue with no way to close it and no answer to "why was
+  // this deleted" beyond "it's gone." DELETE routes now log this.
+  DELETED
+  // Closes an open report against content that's already gone by the time
+  // a moderator looks at it (deleted through some other path — the
+  // author's own account deletion, a direct DB cleanup, etc.) — lets the
+  // queue actually clear instead of retrying a PATCH against a conversation
+  // id that no longer exists.
+  DISMISSED
 }
 
 enum EmailType {

@@ -2572,6 +2572,18 @@ app.delete('/api/conversations/:id', authenticate, async (req: AuthRequest, res,
     }
     await prisma.conversation.delete({ where: { id } });
     flagNectorClawbackIfAwarded('POST', String(id)).catch(() => {});
+    // Record WHO deleted this and whether it was the author themselves or a
+    // moderator — previously a delete left zero trace, so any open report
+    // against it stayed permanently unanswerable ("why was this removed?").
+    prisma.moderationLog.create({
+      data: {
+        moderatorId: req.userId!,
+        targetType: 'CONVERSATION',
+        targetId: id,
+        action: 'DELETED',
+        reason: isMod && conversation.authorId !== req.userId ? 'Deleted by moderator' : 'Deleted by author',
+      },
+    }).catch(err => console.error('Failed to log conversation deletion:', err));
     res.status(200).json({ success: true });
   } catch (error) {
     next(error);
@@ -2925,6 +2937,15 @@ app.delete('/api/replies/:id', authenticate, async (req: AuthRequest, res, next)
 
     await prisma.reply.delete({ where: { id } });
     flagNectorClawbackIfAwarded('REPLY', String(id)).catch(() => {});
+    prisma.moderationLog.create({
+      data: {
+        moderatorId: req.userId!,
+        targetType: 'REPLY',
+        targetId: id,
+        action: 'DELETED',
+        reason: isMod && reply.authorId !== req.userId ? 'Deleted by moderator' : 'Deleted by author',
+      },
+    }).catch(err => console.error('Failed to log reply deletion:', err));
     res.status(200).json({ success: true });
   } catch (error) {
     next(error);
@@ -3725,9 +3746,13 @@ app.get('/api/admin/replies', authenticate, requireAdmin, async (req, res, next)
 });
 
 // Delete reply (admin)
-app.delete('/api/admin/replies/:id', authenticate, requireAdmin, async (req, res, next) => {
+app.delete('/api/admin/replies/:id', authenticate, requireAdmin, async (req: AuthRequest, res, next) => {
   try {
-    await prisma.reply.delete({ where: { id: parseInt(req.params.id) } });
+    const id = parseInt(req.params.id);
+    await prisma.reply.delete({ where: { id } });
+    prisma.moderationLog.create({
+      data: { moderatorId: req.userId!, targetType: 'REPLY', targetId: id, action: 'DELETED', reason: 'Deleted from admin panel' },
+    }).catch(err => console.error('Failed to log reply deletion:', err));
     res.json({ success: true });
   } catch (error) { next(error); }
 });
@@ -3786,22 +3811,33 @@ app.get('/api/admin/reports', authenticate, requireAdmin, async (req, res, next)
     const openFlags = [...latestByTarget.values()].filter(l => l.action === 'FLAGGED');
 
     const reports = await Promise.all(openFlags.map(async flag => {
-      const reporter = await prisma.user.findUnique({ where: { id: flag.moderatorId }, select: { username: true } });
+      // moderatorId on a FLAGGED row is actually the REPORTER's id (see
+      // POST /api/reports) — except for old auto-flags written by retired
+      // cooling-period code, which used the literal string 'SYSTEM'. That
+      // never matches a real user, so it used to render as "(deleted
+      // user)" — a misleading label implying a real reporter existed and
+      // was later removed, when actually no person ever reported it.
+      const reporter = flag.moderatorId === 'SYSTEM'
+        ? null
+        : await prisma.user.findUnique({ where: { id: flag.moderatorId }, select: { username: true } });
       let preview = '';
       let contentAuthorId: string | null = null;
       let contentAuthorName = '';
       let threadId: number | null = null;
       let threadTitle: string | null = null;
+      let contentDeleted = false;
       if (flag.targetType === 'CONVERSATION') {
         const conv = await prisma.conversation.findUnique({ where: { id: flag.targetId }, select: { title: true, authorId: true, opAuthor: true } });
-        preview = conv?.title || '(deleted thread)';
+        contentDeleted = !conv;
+        preview = conv?.title || '(this thread was deleted — no further detail is available)';
         contentAuthorId = conv?.authorId ?? null;
         contentAuthorName = conv?.opAuthor || '';
         threadId = conv ? flag.targetId : null;
         threadTitle = conv?.title ?? null;
       } else {
         const reply = await prisma.reply.findUnique({ where: { id: flag.targetId }, select: { text: true, authorId: true, author: true, conversationId: true, conversation: { select: { title: true } } } });
-        preview = reply?.text?.slice(0, 150) || '(deleted reply)';
+        contentDeleted = !reply;
+        preview = reply?.text?.slice(0, 150) || '(this reply was deleted — no further detail is available)';
         contentAuthorId = reply?.authorId ?? null;
         contentAuthorName = reply?.author || '';
         threadId = reply?.conversationId ?? null;
@@ -3819,10 +3855,11 @@ app.get('/api/admin/reports', authenticate, requireAdmin, async (req, res, next)
         targetId: flag.targetId,
         reason: flag.reason,
         timestamp: flag.timestamp,
-        reporterUsername: reporter?.username || '(deleted user)',
+        reporterUsername: flag.moderatorId === 'SYSTEM' ? 'Auto-flagged by system' : (reporter?.username || '(deleted user)'),
         contentPreview: preview,
         contentAuthorId,
         contentAuthorName,
+        contentDeleted,
         timesThisContentWasFlagged,
         threadId,
         threadTitle,
@@ -3830,6 +3867,32 @@ app.get('/api/admin/reports', authenticate, requireAdmin, async (req, res, next)
     }));
     reports.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
     res.json(reports);
+  } catch (error) { next(error); }
+});
+
+// Closes an open report whose content is already gone (deleted through
+// some other path — the author's own account deletion, a direct DB
+// cleanup, or a delete that predates the DELETED-action logging above) —
+// approve/reject can't apply since there's nothing left to approve or
+// reject. Writes a DISMISSED entry so this stops showing as open.
+app.post('/api/admin/reports/dismiss', authenticate, requireAdmin, async (req: AuthRequest, res, next) => {
+  try {
+    const { targetType, targetId } = req.body;
+    if (targetType !== 'CONVERSATION' && targetType !== 'REPLY') {
+      return res.status(400).json({ error: 'targetType must be CONVERSATION or REPLY' });
+    }
+    const id = parseInt(targetId);
+    if (Number.isNaN(id)) return res.status(400).json({ error: 'Invalid targetId' });
+    await prisma.moderationLog.create({
+      data: {
+        moderatorId: req.userId!,
+        targetType,
+        targetId: id,
+        action: 'DISMISSED',
+        reason: 'Dismissed — content no longer exists',
+      },
+    });
+    res.status(200).json({ success: true });
   } catch (error) { next(error); }
 });
 
