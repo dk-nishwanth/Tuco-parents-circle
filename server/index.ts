@@ -3726,22 +3726,41 @@ app.get('/api/admin/conversations', authenticate, requireAdmin, async (req, res,
 });
 
 // All replies (admin)
+// Was a flat take:500 with no pagination and client-side-only search — with
+// more than 500 replies total, the oldest ones silently fell off the end
+// with no way to page to them, search them, or delete them from here at
+// all. Now genuinely paginated, and search runs server-side so it covers
+// every reply, not just whatever page happened to load first.
 app.get('/api/admin/replies', authenticate, requireAdmin, async (req, res, next) => {
   try {
-    const replies = await prisma.reply.findMany({
-      orderBy: { createdAt: 'desc' },
-      take: 500,
-      select: {
-        id: true, author: true, authorId: true, text: true, likes: true,
-        createdAt: true, moderationStatus: true, conversationId: true,
-        conversation: { select: { title: true } },
-      },
+    const page = Math.max(1, parseInt(String(req.query.page || '1')) || 1);
+    const pageSize = Math.min(200, Math.max(1, parseInt(String(req.query.pageSize || '50')) || 50));
+    const search = String(req.query.search || '').trim();
+    const where = search
+      ? { OR: [{ text: { contains: search, mode: 'insensitive' as const } }, { author: { contains: search, mode: 'insensitive' as const } }] }
+      : {};
+    const [replies, total] = await Promise.all([
+      prisma.reply.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        select: {
+          id: true, author: true, authorId: true, text: true, likes: true,
+          createdAt: true, moderationStatus: true, conversationId: true,
+          conversation: { select: { title: true } },
+        },
+      }),
+      prisma.reply.count({ where }),
+    ]);
+    res.json({
+      replies: replies.map(r => ({
+        ...r,
+        moderationStatus: r.moderationStatus.toLowerCase(),
+        conversationTitle: r.conversation?.title,
+      })),
+      total, page, pageSize,
     });
-    res.json(replies.map(r => ({
-      ...r,
-      moderationStatus: r.moderationStatus.toLowerCase(),
-      conversationTitle: r.conversation?.title,
-    })));
   } catch (error) { next(error); }
 });
 

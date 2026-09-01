@@ -653,31 +653,44 @@ function ConversationsTab() {
 
 function RepliesTab() {
   const [replies, setReplies] = useState<AdminReply[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 50;
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [deleting, setDeleting] = useState<number | null>(null);
 
+  // Was a flat take:500 + client-side filter — with 500+ replies total, the
+  // oldest ones fell off the end permanently: unsearchable, undeletable,
+  // invisible. Search and paging now both run server-side so every reply is
+  // reachable, not just whichever batch happened to load first.
   const load = useCallback(async () => {
     setLoading(true);
-    try { setReplies(await adminFetch('/api/admin/replies')); }
-    finally { setLoading(false); }
-  }, []);
+    try {
+      const params = new URLSearchParams({ page: String(page), pageSize: String(PAGE_SIZE) });
+      if (search.trim()) params.set('search', search.trim());
+      const res = await adminFetch(`/api/admin/replies?${params}`);
+      setReplies(res.replies);
+      setTotal(res.total);
+    } finally { setLoading(false); }
+  }, [page, search]);
 
   useEffect(() => { load(); }, [load]);
+  // Any new search resets to page 1 — otherwise "page 4" of a fresh, much
+  // shorter result set can land past the end and show nothing.
+  useEffect(() => { setPage(1); }, [search]);
 
   const deleteReply = async (id: number) => {
     if (!confirm('Delete this reply?')) return;
     setDeleting(id);
     try {
       await adminFetch(`/api/admin/replies/${id}`, { method: 'DELETE' });
-      setReplies(r => r.filter(x => x.id !== id));
+      load();
     } finally { setDeleting(null); }
   };
 
-  const filtered = replies.filter(r =>
-    !search || r.author.toLowerCase().includes(search.toLowerCase()) ||
-    r.text.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = replies;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
     <div className="space-y-3">
@@ -720,7 +733,9 @@ function RepliesTab() {
               </div>
             </div>
           ))}
-          <div className="text-[10px] text-neutral-400 text-center py-1">{filtered.length} of {replies.length} replies (latest 500)</div>
+          <div className="text-[10px] text-neutral-400 text-center py-1">
+            {total === 0 ? '0 replies' : `Showing ${(page - 1) * PAGE_SIZE + 1}–${Math.min(page * PAGE_SIZE, total)} of ${total} replies`}
+          </div>
         </div>
         <div className="hidden md:block overflow-x-auto rounded-xl border border-neutral-200">
           <table className="w-full text-xs">
@@ -760,9 +775,22 @@ function RepliesTab() {
             </tbody>
           </table>
           <div className="px-3 py-2 bg-neutral-50 border-t border-neutral-200 text-[10px] text-neutral-400">
-            {filtered.length} of {replies.length} replies (latest 500)
+            {total === 0 ? '0 replies' : `Showing ${(page - 1) * PAGE_SIZE + 1}–${Math.min(page * PAGE_SIZE, total)} of ${total} replies`}
           </div>
         </div>
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-3">
+            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1}
+              className="px-3 py-1.5 text-xs font-bold border border-neutral-200 rounded-lg disabled:opacity-40 hover:bg-neutral-50">
+              Previous
+            </button>
+            <span className="text-xs text-neutral-500">Page {page} of {totalPages}</span>
+            <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page >= totalPages}
+              className="px-3 py-1.5 text-xs font-bold border border-neutral-200 rounded-lg disabled:opacity-40 hover:bg-neutral-50">
+              Next
+            </button>
+          </div>
+        )}
         </>
       )}
     </div>
