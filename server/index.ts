@@ -3689,6 +3689,64 @@ app.get('/api/admin/users', authenticate, requireAdmin, async (req, res, next) =
   } catch (error) { next(error); }
 });
 
+// Full per-user picture in one call — post/reply history, live Nector
+// standing, who they've blocked and who's blocked them, recent logins, and
+// any moderation history tied to them. Previously this meant checking the
+// Users list, the Nector tab, and a raw DB query separately with nothing
+// tying them to one person. Purely additive read endpoint — doesn't touch
+// anything a member-facing page reads.
+app.get('/api/admin/users/:id', authenticate, requireAdmin, async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const [
+      posts, replies, blockedByThem, blockingThem, recentLogins,
+      flagsAsReporter, flagsOnThem, nectorAwards, balance,
+    ] = await Promise.all([
+      prisma.conversation.findMany({
+        where: { authorId: id }, orderBy: { createdAt: 'desc' }, take: 20,
+        select: { id: true, title: true, moderationStatus: true, votes: true, createdAt: true, category: true },
+      }),
+      prisma.reply.findMany({
+        where: { authorId: id }, orderBy: { createdAt: 'desc' }, take: 20,
+        select: { id: true, text: true, moderationStatus: true, likes: true, createdAt: true, conversationId: true, conversation: { select: { title: true } } },
+      }),
+      prisma.block.findMany({ where: { blockerId: id }, include: { blocked: { select: { id: true, username: true } } } }),
+      prisma.block.findMany({ where: { blockedId: id }, include: { blocker: { select: { id: true, username: true } } } }),
+      prisma.loginEvent.findMany({ where: { userId: id }, orderBy: { createdAt: 'desc' }, take: 10 }),
+      prisma.moderationLog.count({ where: { moderatorId: id, action: 'FLAGGED' } }),
+      // A flag's targetId is a conversation/reply id, not this user's id, so
+      // "flags against this user's content" needs a join through their own
+      // authored posts/replies rather than a direct targetId match.
+      prisma.moderationLog.count({
+        where: {
+          action: 'FLAGGED',
+          OR: [
+            { targetType: 'CONVERSATION', targetId: { in: (await prisma.conversation.findMany({ where: { authorId: id }, select: { id: true } })).map(c => c.id) } },
+            { targetType: 'REPLY', targetId: { in: (await prisma.reply.findMany({ where: { authorId: id }, select: { id: true } })).map(r => r.id) } },
+          ],
+        },
+      }),
+      prisma.nectorAward.findMany({ where: { userId: id }, orderBy: { createdAt: 'desc' } }),
+      nectorGetBalance(id),
+    ]);
+
+    res.json({
+      user: formatUser(user),
+      posts,
+      replies: replies.map(r => ({ ...r, conversationTitle: r.conversation?.title })),
+      blocked: blockedByThem.map(b => ({ id: b.blocked.id, username: b.blocked.username, since: b.createdAt })),
+      blockedBy: blockingThem.map(b => ({ id: b.blocker.id, username: b.blocker.username, since: b.createdAt })),
+      recentLogins,
+      flagsFiledByThem: flagsAsReporter,
+      flagsOnTheirContent: flagsOnThem,
+      nector: { balance, awards: nectorAwards, phoneOnFile: !!user.phone },
+    });
+  } catch (error) { next(error); }
+});
+
 // Update user (role, ban, etc.)
 app.patch('/api/admin/users/:id', authenticate, requireAdmin, async (req: AuthRequest, res, next) => {
   try {

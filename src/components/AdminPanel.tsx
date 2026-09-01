@@ -77,6 +77,17 @@ interface HealthResponse {
   checks: Record<string, HealthCheck>;
   jobStatuses: { name: string; lastRun: string | null; staleDays: number | null }[];
 }
+interface UserDetail {
+  user: AdminUser & { phone?: string };
+  posts: { id: number; title: string; moderationStatus: string; votes: number; createdAt: string; category: string }[];
+  replies: { id: number; text: string; moderationStatus: string; likes: number; createdAt: string; conversationId: number; conversationTitle?: string }[];
+  blocked: { id: string; username: string; since: string }[];
+  blockedBy: { id: string; username: string; since: string }[];
+  recentLogins: { id: number; method: string; ipAddress: string | null; createdAt: string }[];
+  flagsFiledByThem: number;
+  flagsOnTheirContent: number;
+  nector: { balance: number | null; awards: NectorAward[]; phoneOnFile: boolean };
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -197,6 +208,143 @@ function DashboardTab({ stats, error, onRetry }: { stats: Stats | null; error?: 
   );
 }
 
+// Everything about one user in one place — previously this meant checking
+// the Users list, the Nector tab, and a raw DB query separately with no
+// single view tying them together. Read-only: every action a moderator
+// might take from here (role change, block review, content removal)
+// already exists elsewhere in the panel and stays there — this is purely
+// "what does this account's history actually look like."
+function UserDetailModal({ userId, onClose }: { userId: string; onClose: () => void }) {
+  const [detail, setDetail] = useState<UserDetail | null>(null);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    adminFetch(`/api/admin/users/${userId}`)
+      .then(setDetail)
+      .catch(err => setError(err instanceof Error ? err.message : 'Failed to load.'));
+  }, [userId]);
+
+  return (
+    <div className="fixed inset-0 bg-neutral-900/50 flex items-start justify-center p-4 z-30 overflow-y-auto" onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} className="bg-white rounded-2xl shadow-xl w-full max-w-2xl my-8">
+        <div className="flex items-center justify-between p-4 border-b border-neutral-200 sticky top-0 bg-white rounded-t-2xl">
+          <h3 className="font-display font-black text-neutral-800">User detail</h3>
+          <button onClick={onClose} className="text-neutral-400 hover:text-neutral-600 text-xl leading-none">×</button>
+        </div>
+        <div className="p-4 space-y-4">
+          {error && <p className="text-sm font-bold text-red-600">{error}</p>}
+          {!detail && !error && <p className="text-sm text-neutral-400 text-center py-8">Loading…</p>}
+          {detail && (
+            <>
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <div>
+                  <div className="font-bold text-lg text-neutral-800">{detail.user.username}</div>
+                  <div className="text-xs text-neutral-400">{detail.user.email}{detail.user.phone ? ` · ${detail.user.phone}` : ' · no phone on file'}</div>
+                  <div className="text-xs text-neutral-400">{detail.user.city}{detail.user.childAge ? ` · child: ${detail.user.childAge}` : ''} · joined {ago(detail.user.createdAt)}</div>
+                </div>
+                <span className="text-[10px] bg-purple-100 text-purple-700 px-2 py-1 rounded-full font-bold uppercase">{detail.user.role.replace('_', ' ')}</span>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                <div className="bg-neutral-50 rounded-lg p-2.5 text-center">
+                  <div className="font-black text-neutral-800">{detail.user.postCount}</div>
+                  <div className="text-[10px] text-neutral-400">posts</div>
+                </div>
+                <div className="bg-neutral-50 rounded-lg p-2.5 text-center">
+                  <div className="font-black text-neutral-800">{detail.user.replyCount}</div>
+                  <div className="text-[10px] text-neutral-400">replies</div>
+                </div>
+                <div className="bg-neutral-50 rounded-lg p-2.5 text-center">
+                  <div className="font-black text-neutral-800">{Math.round(detail.user.trustScore * 100)}</div>
+                  <div className="text-[10px] text-neutral-400">trust score</div>
+                </div>
+              </div>
+
+              <div className="grid sm:grid-cols-2 gap-2">
+                <div className="border border-neutral-200 rounded-lg p-3">
+                  <div className="text-[10px] font-bold text-neutral-400 uppercase mb-1">Nector</div>
+                  <div className="text-sm font-bold text-tuco-cyan">{detail.nector.balance ?? '—'} points (live)</div>
+                  <div className={`text-xs font-bold ${detail.nector.phoneOnFile ? 'text-emerald-600' : 'text-amber-600'}`}>
+                    {detail.nector.phoneOnFile ? '✓ Phone on file' : '⚠ No phone — not linkable'}
+                  </div>
+                  <div className="text-[11px] text-neutral-400">{detail.nector.awards.length} local award(s)</div>
+                </div>
+                <div className="border border-neutral-200 rounded-lg p-3">
+                  <div className="text-[10px] font-bold text-neutral-400 uppercase mb-1">Moderation</div>
+                  <div className="text-xs text-neutral-600">{detail.flagsFiledByThem} report(s) filed by them</div>
+                  <div className="text-xs text-neutral-600">{detail.flagsOnTheirContent} flag(s) on their own content</div>
+                  {detail.user.emailBounced && <div className="text-xs font-bold text-red-500 mt-1">📭 Email bounced</div>}
+                </div>
+              </div>
+
+              {(detail.blocked.length > 0 || detail.blockedBy.length > 0) && (
+                <div className="grid sm:grid-cols-2 gap-2">
+                  {detail.blocked.length > 0 && (
+                    <div className="border border-neutral-200 rounded-lg p-3">
+                      <div className="text-[10px] font-bold text-neutral-400 uppercase mb-1">Blocked by them ({detail.blocked.length})</div>
+                      {detail.blocked.map(b => <div key={b.id} className="text-xs text-neutral-600">{b.username}</div>)}
+                    </div>
+                  )}
+                  {detail.blockedBy.length > 0 && (
+                    <div className="border border-neutral-200 rounded-lg p-3">
+                      <div className="text-[10px] font-bold text-neutral-400 uppercase mb-1">Blocked them ({detail.blockedBy.length})</div>
+                      {detail.blockedBy.map(b => <div key={b.id} className="text-xs text-neutral-600">{b.username}</div>)}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {detail.recentLogins.length > 0 && (
+                <div>
+                  <div className="text-[10px] font-bold text-neutral-400 uppercase mb-1">Recent logins</div>
+                  <div className="space-y-1 max-h-28 overflow-y-auto">
+                    {detail.recentLogins.map(l => (
+                      <div key={l.id} className="flex items-center justify-between text-xs bg-neutral-50 rounded px-2 py-1">
+                        <span className="text-neutral-600">{l.method}{l.ipAddress ? ` · ${l.ipAddress}` : ''}</span>
+                        <span className="text-neutral-400">{ago(l.createdAt)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <div className="text-[10px] font-bold text-neutral-400 uppercase mb-1">Recent posts ({detail.posts.length})</div>
+                {detail.posts.length === 0 ? <p className="text-xs text-neutral-400">None.</p> : (
+                  <div className="space-y-1 max-h-40 overflow-y-auto">
+                    {detail.posts.map(p => (
+                      <a key={p.id} href={threadShareUrl(p.id, p.title)} target="_blank" rel="noopener noreferrer"
+                        className="flex items-center justify-between gap-2 text-xs bg-neutral-50 hover:bg-neutral-100 rounded px-2 py-1.5">
+                        <span className="truncate min-w-0">{p.title}</span>
+                        {statusBadge(p.moderationStatus)}
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <div className="text-[10px] font-bold text-neutral-400 uppercase mb-1">Recent replies ({detail.replies.length})</div>
+                {detail.replies.length === 0 ? <p className="text-xs text-neutral-400">None.</p> : (
+                  <div className="space-y-1 max-h-40 overflow-y-auto">
+                    {detail.replies.map(r => (
+                      <a key={r.id} href={threadShareUrl(r.conversationId, r.conversationTitle)} target="_blank" rel="noopener noreferrer"
+                        className="flex items-center justify-between gap-2 text-xs bg-neutral-50 hover:bg-neutral-100 rounded px-2 py-1.5">
+                        <span className="truncate min-w-0">{r.text.slice(0, 60)}</span>
+                        {statusBadge(r.moderationStatus)}
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function UsersTab() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
@@ -206,6 +354,7 @@ function UsersTab() {
   const [updating, setUpdating] = useState<string | null>(null);
   const [bouncedOnly, setBouncedOnly] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [viewingUserId, setViewingUserId] = useState<string | null>(null);
 
   const exportCsv = async () => {
     setExporting(true);
@@ -307,10 +456,16 @@ function UsersTab() {
                     </span>
                   )}
                 </div>
-                <button onClick={() => deleteUser(u.id, u.username)} disabled={updating === u.id}
-                  className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors shrink-0">
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                <div className="flex items-center gap-1 shrink-0">
+                  <button onClick={() => setViewingUserId(u.id)} title="View details"
+                    className="p-1.5 text-neutral-400 hover:text-tuco-cyan hover:bg-tuco-cyan/5 rounded-lg transition-colors">
+                    <Eye className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => deleteUser(u.id, u.username)} disabled={updating === u.id}
+                    className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
               <div className="flex items-center justify-between gap-2 text-xs text-neutral-600 mb-2">
                 <span>{u.postCount} posts · {u.replyCount} replies</span>
@@ -397,11 +552,17 @@ function UsersTab() {
                   </td>
                   <td className="px-3 py-2.5 text-neutral-400">{ago(u.createdAt)}</td>
                   <td className="px-3 py-2.5">
-                    <button onClick={() => deleteUser(u.id, u.username)}
-                      disabled={updating === u.id}
-                      className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                    <div className="flex items-center gap-1">
+                      <button onClick={() => setViewingUserId(u.id)} title="View details"
+                        className="p-1.5 text-neutral-400 hover:text-tuco-cyan hover:bg-tuco-cyan/5 rounded-lg transition-colors">
+                        <Eye className="w-3.5 h-3.5" />
+                      </button>
+                      <button onClick={() => deleteUser(u.id, u.username)}
+                        disabled={updating === u.id}
+                        className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -413,6 +574,7 @@ function UsersTab() {
         </div>
         </>
       )}
+      {viewingUserId && <UserDetailModal userId={viewingUserId} onClose={() => setViewingUserId(null)} />}
     </div>
   );
 }
