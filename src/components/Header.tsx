@@ -270,8 +270,13 @@ export function Header({
             )}
           </div>
 
-          {/* Nector points — hidden entirely while loading/unreachable rather
-              than ever showing a stale or wrong number. */}
+          {/* Nector points — hidden entirely while loading/genuinely
+              unreachable rather than ever showing a stale or wrong number.
+              For a phone-less user specifically (the overwhelming majority —
+              points can't sync to their real account until they add one),
+              this becomes a standing prompt instead of just vanishing: a
+              one-time notification is easy to miss, this shows on every
+              visit until it's resolved. */}
           {currentUser && nectorPoints !== null && (
             <div
               className="hidden sm:flex items-center gap-1 bg-tuco-yellow/20 text-[#4D4747] font-display font-bold text-[12px] px-2.5 py-1 rounded-full mr-1"
@@ -280,6 +285,16 @@ export function Header({
               <span aria-hidden="true">⭐</span>
               {nectorPoints}
             </div>
+          )}
+          {currentUser && nectorPoints === null && !currentUser.phone && (
+            <button
+              onClick={() => onProfileClick?.()}
+              title="Add your phone number to see and sync your tuco Points"
+              className="hidden sm:flex items-center gap-1 bg-tuco-yellow/20 hover:bg-tuco-yellow/30 text-[#4D4747] font-display font-bold text-[11px] px-2.5 py-1 rounded-full mr-1 transition-colors"
+            >
+              <span aria-hidden="true">📱</span>
+              Add phone for points
+            </button>
           )}
 
           {/* User */}

@@ -225,7 +225,7 @@ function ChangePhoneSection({ currentPhone }: { currentPhone?: string }) {
   };
 
   return (
-    <div className="border-t border-neutral-150 pt-4 mt-4">
+    <div id="add-phone-section" className="border-t border-neutral-150 pt-4 mt-4">
       <button
         type="button"
         onClick={() => {
@@ -596,7 +596,7 @@ export function MemberProfile({
         {isCurrentUser && <BlockedUsersSection />}
       </div>
       {}
-      <div className={`grid gap-3 mb-6 ${nectorPoints !== null ? 'grid-cols-4' : 'grid-cols-3'}`}>
+      <div className={`grid gap-3 mb-6 ${nectorPoints !== null || (isCurrentUser && !user.phone) ? 'grid-cols-4' : 'grid-cols-3'}`}>
         <div className="bg-neutral-50 rounded-lg p-3 text-center">
           <div className="font-display font-black text-lg text-neutral-800">{user.postCount}</div>
           <div className="text-xs text-neutral-500 font-medium mt-1">Posts</div>
@@ -609,12 +609,25 @@ export function MemberProfile({
           <div className="font-display font-black text-lg text-tuco-cyan">{user.totalUpvotes}</div>
           <div className="text-xs text-neutral-500 font-medium mt-1">Upvotes</div>
         </div>
-        {nectorPoints !== null && (
+        {nectorPoints !== null ? (
           <div className="bg-tuco-yellow/10 rounded-lg p-3 text-center">
             <div className="font-display font-black text-lg text-neutral-800">⭐ {nectorPoints}</div>
             <div className="text-xs text-neutral-500 font-medium mt-1">tuco Points</div>
           </div>
-        )}
+        ) : isCurrentUser && !user.phone ? (
+          // Previously this cell just vanished for anyone without a phone —
+          // silently hiding "you have unclaimed points" is exactly the kind
+          // of thing a one-time notification (easy to miss/forget) doesn't
+          // fix but a standing prompt right where the points would be does.
+          <button
+            type="button"
+            onClick={() => document.getElementById('add-phone-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
+            className="bg-tuco-yellow/10 hover:bg-tuco-yellow/20 rounded-lg p-3 text-center transition-colors"
+          >
+            <div className="font-display font-black text-lg text-tuco-cyan">📱</div>
+            <div className="text-[10px] text-neutral-600 font-bold mt-1 leading-tight">Add phone to see your points</div>
+          </button>
+        ) : null}
       </div>
       {}
       {user.badges.length > 0 && (
