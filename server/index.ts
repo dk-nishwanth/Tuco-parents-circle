@@ -726,27 +726,35 @@ function emailShell(bodyHtml: string, ctaLabel?: string, ctaUrl?: string): strin
 // base64 portion of the whsec_-prefixed signing secret from the Resend
 // dashboard's Webhooks tab. svix-signature can carry several "v1,<sig>"
 // candidates (key rotation) — valid if we match any of them.
+// Resend issues a SEPARATE signing secret per webhook endpoint, not per
+// account — and this app has two webhooks pointed at the same URL (one for
+// email.bounced, one for email.complained), each with its own secret. So a
+// delivery might be signed with either one; both must be accepted.
+function resendWebhookSecrets(): string[] {
+  return [process.env.RESEND_WEBHOOK_SECRET, process.env.RESEND_WEBHOOK_SECRET_2]
+    .filter((s): s is string => !!s);
+}
+
 function verifyResendWebhookSignature(req: { headers: Record<string, any>; body: Buffer }): boolean {
-  const secret = process.env.RESEND_WEBHOOK_SECRET;
-  if (!secret) return false;
+  const secrets = resendWebhookSecrets();
+  if (secrets.length === 0) return false;
   const svixId = req.headers['svix-id'];
   const svixTimestamp = req.headers['svix-timestamp'];
   const svixSignature = req.headers['svix-signature'];
   if (!svixId || !svixTimestamp || !svixSignature) return false;
-  const secretKey = secret.startsWith('whsec_') ? secret.slice('whsec_'.length) : secret;
   const signedContent = `${svixId}.${svixTimestamp}.${req.body.toString('utf8')}`;
-  const expected = crypto.createHmac('sha256', Buffer.from(secretKey, 'base64')).update(signedContent).digest('base64');
-  return String(svixSignature)
-    .split(' ')
-    .map(part => part.split(',')[1])
-    .filter(Boolean)
-    .some(sig => {
+  const candidateSigs = String(svixSignature).split(' ').map(part => part.split(',')[1]).filter(Boolean);
+  return secrets.some(secret => {
+    const secretKey = secret.startsWith('whsec_') ? secret.slice('whsec_'.length) : secret;
+    const expected = crypto.createHmac('sha256', Buffer.from(secretKey, 'base64')).update(signedContent).digest('base64');
+    return candidateSigs.some(sig => {
       try {
         return crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected));
       } catch {
         return false; // length mismatch — definitely not a match
       }
     });
+  });
 }
 
 // Handles bounce/complaint notifications from Resend so a dead or mistyped
@@ -756,7 +764,7 @@ function verifyResendWebhookSignature(req: { headers: Record<string, any>; body:
 // set, this 501s rather than silently no-op-ing, so a misconfigured deploy
 // is visible instead of quietly never recording bounces.
 async function handleResendWebhook(req: express.Request, res: express.Response) {
-  if (!process.env.RESEND_WEBHOOK_SECRET) {
+  if (resendWebhookSecrets().length === 0) {
     return res.status(501).json({ error: 'RESEND_WEBHOOK_SECRET not configured' });
   }
   if (!verifyResendWebhookSignature(req as any)) {
@@ -4054,8 +4062,8 @@ app.get('/api/admin/health', authenticate, requireAdmin, async (req, res, next) 
     checks.resend = resend
       ? { ok: true, detail: 'RESEND_API_KEY configured' }
       : { ok: false, detail: 'RESEND_API_KEY not set — emails are only simulated/logged' };
-    checks.resendWebhook = process.env.RESEND_WEBHOOK_SECRET
-      ? { ok: true, detail: 'Bounce webhook secret configured' }
+    checks.resendWebhook = resendWebhookSecrets().length > 0
+      ? { ok: true, detail: `${resendWebhookSecrets().length} webhook secret(s) configured` }
       : { ok: false, detail: 'RESEND_WEBHOOK_SECRET not set — bounces are not being tracked' };
     const jobStatuses = await Promise.all(Object.entries(ADMIN_JOBS).map(async ([name, cfg]) => {
       try {
